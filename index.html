@@ -433,71 +433,6 @@
                             </div>
                         </div>
 
-                        <!-- 👑 АДМИН ПАНЕЛЬ -->
-                        <div class="settings-card glass-card" style="border: 2px solid gold; background: rgba(255, 215, 0, 0.05);">
-                            <h3 style="color: gold;">👑 Админ панель</h3>
-                            
-                            <div class="settings-field">
-                                <label>🆔 ID игрока:</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="adminUserId" class="glass-input" value="-Onbl-wmWqYsAV-cYUWm" style="flex: 2;">
-                                    <button class="glass-btn small" id="adminGetData" style="flex: 1; background: rgba(0,255,0,0.2);">📊 GET</button>
-                                </div>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div>
-                                    <label>💎 Дилики</label>
-                                    <input type="number" id="adminDilicksAmount" class="glass-input" value="1000">
-                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                        <button class="glass-btn settings-save-btn" id="adminDilicksSet" style="flex:1;">SET</button>
-                                        <button class="glass-btn settings-warning-btn" id="adminDilicksAdd" style="flex:1;">ADD</button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label>💰 Деньги</label>
-                                    <input type="number" id="adminMoneyAmount" class="glass-input" value="1000">
-                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                        <button class="glass-btn settings-save-btn" id="adminMoneySet" style="flex:1;">SET</button>
-                                        <button class="glass-btn settings-warning-btn" id="adminMoneyAdd" style="flex:1;">ADD</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                                <div>
-                                    <label>🖱️ Клики</label>
-                                    <input type="number" id="adminClicksAmount" class="glass-input" value="1000">
-                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                        <button class="glass-btn settings-save-btn" id="adminClicksSet" style="flex:1;">SET</button>
-                                        <button class="glass-btn settings-warning-btn" id="adminClicksAdd" style="flex:1;">ADD</button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label>🎨 Скин</label>
-                                    <select id="adminSkinSelect" class="glass-input">
-                                        <option value="classic">Классический</option>
-                                        <option value="neon">Неоновый</option>
-                                        <option value="monsters_skin">Монстр</option>
-                                        <option value="dragon_skin">Драконий</option>
-                                    </select>
-                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                        <button class="glass-btn settings-save-btn" id="adminSkinGive" style="flex:1;">ДАЙ</button>
-                                        <button class="glass-btn settings-danger-btn" id="adminSkinRemove" style="flex:1;">УДАЛИ</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; gap: 5px; margin-top: 10px;">
-                                <button class="glass-btn settings-warning-btn" id="adminEquipSkin" style="flex:1;">✨ ЭКИПИРОВАТЬ</button>
-                                <button class="glass-btn settings-danger-btn" id="adminResetProgress" style="flex:1;">🔄 СБРОС</button>
-                            </div>
-                            
-                            <div id="adminResult" style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 10px; font-size: 11px; color: #0f0; max-height: 200px; overflow-y: auto;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Сезонный пропуск -->
             <div id="season" class="tab">
@@ -540,9 +475,9 @@
                     
                     <div class="promocode-input-section glass-card">
                         <div class="promocode-input-wrapper">
-                            <input type="text" id="promocodeInput" class="glass-input promocode-input" placeholder="ВВЕДИ ПРОМОКОД" maxlength="20">
+                            <input type="text" id="promocodeInput" class="glass-input promocode-input" placeholder="ВВЕДИТЕ" maxlength="20">
                             <button class="glass-btn promocode-activate-btn" id="activatePromocodeBtn">
-                                <span class="btn-text">Активировать</span>
+                                <span class="btn-text">Активаций</span>
                             </button>
                         </div>
                         <div id="promocodeMessage" class="promocode-message"></div>
@@ -585,7 +520,5 @@
     </div>
     
     <script src="script.js"></script>
-    <script src="admin.js"></script>
-    <script src="admin-ui.js"></script>
 </body>
 </html>

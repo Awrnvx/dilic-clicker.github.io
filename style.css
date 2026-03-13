@@ -2701,3 +2701,142 @@ a {
         bottom: 20px;
     }
 }
+
+/* ===== УЛУЧШЕНИЯ ДЛЯ ЭКСПОРТА/ИМПОРТА ===== */
+.settings-warning-btn {
+    background: rgba(255, 193, 7, 0.2);
+    border: 1px solid rgba(255, 193, 7, 0.4);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.settings-warning-btn:hover {
+    background: rgba(255, 193, 7, 0.3);
+    border-color: rgba(255, 193, 7, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
+}
+
+.settings-warning-btn:active {
+    transform: translateY(0);
+}
+
+/* Индикатор загрузки */
+.import-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.import-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    border: 2px solid transparent;
+    border-top-color: gold;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Улучшенные тосты */
+.settings-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(20, 25, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 16px;
+    padding: 15px 25px;
+    color: white;
+    font-size: 15px;
+    z-index: 10001;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    max-width: 350px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-toast.show {
+    transform: translateX(0);
+}
+
+.settings-toast.success {
+    border-color: rgba(76, 175, 80, 0.5);
+    background: rgba(76, 175, 80, 0.15);
+}
+
+.settings-toast.success::before {
+    content: '✅';
+    font-size: 18px;
+}
+
+.settings-toast.error {
+    border-color: rgba(244, 67, 54, 0.5);
+    background: rgba(244, 67, 54, 0.15);
+}
+
+.settings-toast.error::before {
+    content: '❌';
+    font-size: 18px;
+}
+
+.settings-toast.warning {
+    border-color: rgba(255, 193, 7, 0.5);
+    background: rgba(255, 193, 7, 0.15);
+}
+
+.settings-toast.warning::before {
+    content: '⚠️';
+    font-size: 18px;
+}
+
+.settings-toast.info {
+    border-color: rgba(33, 150, 243, 0.5);
+    background: rgba(33, 150, 243, 0.15);
+}
+
+.settings-toast.info::before {
+    content: 'ℹ️';
+    font-size: 18px;
+}
+
+/* Адаптивность для мобилок */
+@media (max-width: 768px) {
+    .settings-toast {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+        bottom: 20px;
+        transform: translateY(120%);
+    }
+    
+    .settings-toast.show {
+        transform: translateY(0);
+    }
+    
+    .settings-warning-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
