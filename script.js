@@ -1,4 +1,4 @@
-// script.js - Полная версия игры с правильными ценами в улучшениях
+// script.js - Полная версия игры
 
 class ClickerGame {
     constructor() {
@@ -7,6 +7,7 @@ class ClickerGame {
         this.playtimeInterval = null;
         this.bubbleFrame = null;
         this.lastBubbleTime = 0;
+        this.settings = null;
         
         // Данные скинов
         this.skinsData = {
@@ -211,10 +212,13 @@ class ClickerGame {
             this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
         }
         
+        // Инициализируем настройки
+        this.settings = new Settings(this);
+        
         this.updateUI();
         this.updateInventory();
         this.updateShopStatus();
-        this.updateUpgradePrices(); // ← ВАЖНО: обновляем цены при загрузке
+        this.updateUpgradePrices();
         this.updatePromocodesList();
         this.updatePromocodesHistory();
         this.updateLeaderboard('clicks');
@@ -237,6 +241,14 @@ class ClickerGame {
             completedAchievements: [],
             activatedPromocodes: [],
             promocodesHistory: [],
+            settings: {
+                displayName: '',
+                theme: 'dark',
+                notifications: true,
+                sound: true,
+                animations: true,
+                language: 'ru'
+            },
             lastSave: Date.now()
         };
     }
@@ -379,10 +391,13 @@ class ClickerGame {
             this.updateInventory();
         }
         if (tabId === 'upgrades') {
-            this.updateUpgradePrices(); // ← ВАЖНО: обновляем цены при открытии вкладки
+            this.updateUpgradePrices();
         }
         if (tabId === 'profile') {
             this.updateProfile();
+        }
+        if (tabId === 'settings' && this.settings) {
+            this.settings.updateUI();
         }
         if (tabId === 'promocodes') {
             this.updatePromocodesList();
@@ -529,7 +544,7 @@ class ClickerGame {
         }
     }
 
-    // ===== ОБНОВЛЕНИЕ ЦЕН УЛУЧШЕНИЙ (ИСПРАВЛЕНО) =====
+    // ===== ОБНОВЛЕНИЕ ЦЕН УЛУЧШЕНИЙ =====
     updateUpgradePrices() {
         document.querySelectorAll('.upgrade-item').forEach(item => {
             const upgradeType = item.dataset.upgrade;
@@ -771,7 +786,8 @@ class ClickerGame {
                         break;
                 }
                 
-                leaderboard.push({ username: userData.username, value });
+                const displayName = userData.settings?.displayName || userData.username;
+                leaderboard.push({ username: displayName, value, realUsername: userData.username });
             }
             
             leaderboard.sort((a, b) => b.value - a.value);
@@ -794,11 +810,11 @@ class ClickerGame {
                 
                 row.innerHTML = `
                     <td>${medal ? medal : index + 1}</td>
-                    <td>${entry.username} ${entry.username === localStorage.getItem('currentUser') ? '👑' : ''}</td>
+                    <td>${entry.username} ${entry.realUsername === localStorage.getItem('currentUser') ? '👑' : ''}</td>
                     <td>${this.formatLeaderboardValue(entry.value, type)}</td>
                 `;
                 
-                if (entry.username === localStorage.getItem('currentUser')) {
+                if (entry.realUsername === localStorage.getItem('currentUser')) {
                     row.style.background = 'rgba(255, 215, 0, 0.1)';
                     row.style.border = '1px solid gold';
                 }
@@ -825,8 +841,9 @@ class ClickerGame {
 
     // ===== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА =====
     async updateUI() {
+        const displayName = this.userData.settings?.displayName || this.userData.username;
         if (this.usernameDisplay) {
-            this.usernameDisplay.textContent = localStorage.getItem('currentUser');
+            this.usernameDisplay.textContent = displayName;
         }
         if (this.moneySpan) {
             this.moneySpan.textContent = this.userData.money.toLocaleString();
@@ -958,7 +975,8 @@ class ClickerGame {
     updateProfile() {
         if (!this.profileUsername) return;
         
-        this.profileUsername.textContent = localStorage.getItem('currentUser');
+        const displayName = this.userData.settings?.displayName || this.userData.username;
+        this.profileUsername.textContent = displayName;
         this.profileLevel.textContent = this.userData.seasonLevel;
         this.profileClicks.textContent = this.userData.clicks.toLocaleString();
         this.profileMoney.textContent = this.userData.money.toLocaleString();
@@ -1289,28 +1307,6 @@ class ClickerGame {
     }
 }
 
-// ===== ЗАПУСК ИГРЫ =====
-document.addEventListener('DOMContentLoaded', () => {
-    window.clickerGame = new ClickerGame();
-});
-
-// ===== ОБРАБОТЧИК ДЛЯ КАРТОЧЕК НА ОСТРОВЕ =====
-document.addEventListener('DOMContentLoaded', function() {
-    const featureCards = document.querySelectorAll('.feature-card');
-    
-    featureCards.forEach(card => {
-        card.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-            if (tabId) {
-                const navBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
-                if (navBtn) {
-                    navBtn.click();
-                }
-            }
-        });
-    });
-});
-
 // ========== КЛАСС НАСТРОЕК ==========
 class Settings {
     constructor(game) {
@@ -1424,43 +1420,36 @@ class Settings {
     }
 
     updateUI() {
-        // Отображаемое имя
         const displayNameInput = document.getElementById('displayName');
         if (displayNameInput) {
             displayNameInput.value = this.game.userData.settings.displayName || this.game.userData.username;
         }
 
-        // Логин (только для чтения)
         const usernameInput = document.getElementById('username');
         if (usernameInput) {
             usernameInput.value = this.game.userData.username;
         }
 
-        // Тема
         const themeSelect = document.getElementById('themeSelect');
         if (themeSelect) {
             themeSelect.value = this.game.userData.settings.theme || 'dark';
         }
 
-        // Уведомления
         const notificationsEnabled = document.getElementById('notificationsEnabled');
         if (notificationsEnabled) {
             notificationsEnabled.checked = this.game.userData.settings.notifications !== false;
         }
 
-        // Звук
         const soundEnabled = document.getElementById('soundEnabled');
         if (soundEnabled) {
             soundEnabled.checked = this.game.userData.settings.sound !== false;
         }
 
-        // Анимации
         const animationsEnabled = document.getElementById('animationsEnabled');
         if (animationsEnabled) {
             animationsEnabled.checked = this.game.userData.settings.animations !== false;
         }
 
-        // Язык
         const languageSelect = document.getElementById('languageSelect');
         if (languageSelect) {
             languageSelect.value = this.game.userData.settings.language || 'ru';
@@ -1484,13 +1473,12 @@ class Settings {
         this.game.userData.settings.displayName = newName;
         await this.game.saveGame();
         
-        // Обновляем отображение в профиле
+        // Обновляем отображение в профиле и шапке
         const profileUsername = document.getElementById('profileUsername');
         if (profileUsername) {
             profileUsername.textContent = newName;
         }
         
-        // Обновляем в шапке
         const usernameDisplay = document.getElementById('usernameDisplay');
         if (usernameDisplay) {
             usernameDisplay.textContent = newName;
@@ -1527,7 +1515,6 @@ class Settings {
         this.game.userData.password = newPass;
         await this.game.saveGame();
         
-        // Очищаем поля
         document.getElementById('oldPassword').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('confirmPassword').value = '';
@@ -1553,7 +1540,6 @@ class Settings {
         } else if (theme === 'dark') {
             document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
         } else {
-            // Авто - проверяем системные настройки
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
             } else {
@@ -1576,57 +1562,134 @@ class Settings {
         this.showToast(`✅ Язык изменен на ${langNames[lang] || lang}`, 'success');
     }
 
+    // ===== ЭКСПОРТ ДАННЫХ =====
     exportData() {
-        const dataStr = JSON.stringify(this.game.userData, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-        
-        const date = new Date();
-        const fileName = `dilic_clicker_backup_${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}.json`;
-        
-        const link = document.createElement('a');
-        link.setAttribute('href', dataUri);
-        link.setAttribute('download', fileName);
-        link.click();
-        
-        this.showToast('✅ Данные экспортированы', 'success');
+        try {
+            const exportData = {
+                username: this.game.userData.username,
+                displayName: this.game.userData.settings?.displayName || this.game.userData.username,
+                clicks: this.game.userData.clicks,
+                money: this.game.userData.money,
+                dilicks: this.game.userData.dilicks,
+                clickPower: this.game.userData.clickPower,
+                autoClickerLevel: this.game.userData.autoClickerLevel,
+                critChance: this.game.userData.critChance,
+                inventory: this.game.userData.inventory,
+                currentSkin: this.game.userData.currentSkin,
+                seasonLevel: this.game.userData.seasonLevel,
+                seasonExp: this.game.userData.seasonExp,
+                playtime: this.game.userData.playtime,
+                completedAchievements: this.game.userData.completedAchievements,
+                settings: this.game.userData.settings,
+                exportDate: new Date().toLocaleString()
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            
+            const date = new Date();
+            const fileName = `dilic_clicker_${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}.json`;
+            
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            this.showToast('✅ Данные успешно экспортированы', 'success');
+        } catch (error) {
+            console.error('Ошибка экспорта:', error);
+            this.showToast('❌ Ошибка при экспорте данных', 'error');
+        }
     }
 
+    // ===== ИМПОРТ ДАННЫХ =====
     importData() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json';
+        input.accept = '.json,application/json';
         
-        input.onchange = (e) => {
+        input.onchange = async (e) => {
             const file = e.target.files[0];
-            const reader = new FileReader();
+            if (!file) return;
             
-            reader.onload = async (event) => {
-                try {
-                    const importedData = JSON.parse(event.target.result);
-                    
-                    // Сохраняем логин и пароль
-                    importedData.username = this.game.userData.username;
-                    importedData.password = this.game.userData.password;
-                    
-                    this.game.userData = importedData;
-                    await this.game.saveGame();
-                    
-                    this.updateUI();
-                    this.game.updateUI();
-                    this.game.updateInventory();
-                    this.game.updateShopStatus();
-                    this.game.updateUpgradePrices();
-                    
-                    this.showToast('✅ Данные импортированы', 'success');
-                } catch (error) {
-                    this.showToast('❌ Ошибка импорта: неверный формат файла', 'error');
-                }
-            };
+            if (!confirm('⚠️ Импорт данных заменит текущий прогресс. Продолжить?')) {
+                return;
+            }
             
-            reader.readAsText(file);
+            this.showToast('📤 Чтение файла...', 'info');
+            
+            try {
+                const reader = new FileReader();
+                
+                reader.onload = async (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        
+                        // Валидация
+                        if (!this.validateImportedData(importedData)) {
+                            this.showToast('❌ Неверный формат файла', 'error');
+                            return;
+                        }
+                        
+                        // Сохраняем логин и пароль
+                        importedData.username = this.game.userData.username;
+                        importedData.password = this.game.userData.password;
+                        
+                        this.game.userData = importedData;
+                        await this.game.saveGame();
+                        
+                        this.updateUI();
+                        this.game.updateUI();
+                        this.game.updateInventory();
+                        this.game.updateShopStatus();
+                        this.game.updateUpgradePrices();
+                        
+                        this.showToast('✅ Данные успешно импортированы', 'success');
+                        
+                    } catch (parseError) {
+                        this.showToast('❌ Ошибка чтения файла: неверный формат JSON', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+                
+            } catch (error) {
+                console.error('Ошибка импорта:', error);
+                this.showToast('❌ Ошибка при импорте данных', 'error');
+            }
         };
         
         input.click();
+    }
+
+    validateImportedData(data) {
+        const requiredFields = ['clicks', 'money', 'dilicks', 'clickPower', 'inventory', 'currentSkin'];
+        
+        for (const field of requiredFields) {
+            if (!(field in data)) {
+                console.error(`Отсутствует поле: ${field}`);
+                return false;
+            }
+        }
+        
+        if (typeof data.clicks !== 'number' || 
+            typeof data.money !== 'number' || 
+            typeof data.dilicks !== 'number') {
+            console.error('Неверные типы данных');
+            return false;
+        }
+        
+        if (!Array.isArray(data.inventory)) {
+            console.error('Инвентарь должен быть массивом');
+            return false;
+        }
+        
+        return true;
     }
 
     confirmResetProgress() {
@@ -1638,7 +1701,6 @@ class Settings {
     }
 
     async resetProgress() {
-        // Сохраняем логин и пароль
         const username = this.game.userData.username;
         const password = this.game.userData.password;
         
@@ -1658,7 +1720,7 @@ class Settings {
             completedAchievements: [],
             activatedPromocodes: [],
             promocodesHistory: [],
-            settings: this.game.userData.settings, // Сохраняем настройки
+            settings: this.game.userData.settings,
             lastSave: Date.now(),
             username: username,
             password: password
@@ -1690,7 +1752,6 @@ class Settings {
             await firebase.database().ref('users/' + userId).remove();
         }
         
-        // Останавливаем все интервалы
         if (this.game.bubbleFrame) {
             cancelAnimationFrame(this.game.bubbleFrame);
         }
@@ -1710,7 +1771,6 @@ class Settings {
     }
 
     showToast(message, type = 'info') {
-        // Удаляем старый тост, если есть
         const oldToast = document.querySelector('.settings-toast');
         if (oldToast) oldToast.remove();
         
@@ -1728,7 +1788,6 @@ class Settings {
     }
 
     showModal(title, message, onConfirm) {
-        // Удаляем старую модалку, если есть
         const oldModal = document.querySelector('.modal-overlay');
         if (oldModal) oldModal.remove();
         
@@ -1762,3 +1821,24 @@ class Settings {
     }
 }
 
+// ===== ЗАПУСК ИГРЫ =====
+document.addEventListener('DOMContentLoaded', () => {
+    window.clickerGame = new ClickerGame();
+});
+
+// ===== ОБРАБОТЧИК ДЛЯ КАРТОЧЕК НА ОСТРОВЕ =====
+document.addEventListener('DOMContentLoaded', function() {
+    const featureCards = document.querySelectorAll('.feature-card');
+    
+    featureCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            if (tabId) {
+                const navBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+                if (navBtn) {
+                    navBtn.click();
+                }
+            }
+        });
+    });
+});

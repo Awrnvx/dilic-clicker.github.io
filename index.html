@@ -174,6 +174,7 @@
             <div id="shop" class="tab">
                 <h2 class="section-title">Магазин скинов</h2>
                 <div class="shop-grid">
+                    <!-- Классический скин -->
                     <div class="glass-card shop-item" data-item="classic" data-skin="classic">
                         <div class="skin-preview">
                             <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Classic Skin">
@@ -188,6 +189,7 @@
                         <button class="glass-btn buy-btn disabled" data-item="classic" data-price="0" disabled>Куплено</button>
                     </div>
                     
+                    <!-- Неоновый скин -->
                     <div class="glass-card shop-item" data-item="neon" data-skin="neon">
                         <div class="skin-preview">
                             <img src="https://img.freepik.com/premium-photo/neon-style-computer-cursor-arrow-design-vector_1018059-4.jpg?semt=ais_hybrid&w=740" alt="Neon Skin">
@@ -202,6 +204,7 @@
                         <button class="glass-btn buy-btn" data-item="neon" data-price="1000">Купить</button>
                     </div>
 
+                    <!-- Скин монстра -->
                     <div class="glass-card shop-item" data-item="monsters_skin" data-skin="monsters_skin">
                         <div class="skin-preview">
                             <img src="https://avatars.mds.yandex.net/i?id=83ac2b7a91b5b67b7ffb26da4b8b1a2abd4fc83f-8981816-images-thumbs&n=13" alt="Monster Skin">
@@ -216,6 +219,7 @@
                         <button class="glass-btn buy-btn" data-item="monsters_skin" data-price="0">Купить</button>
                     </div>
                     
+                    <!-- Драконий скин -->
                     <div class="glass-card shop-item" data-item="dragon_skin" data-skin="dragon_skin">
                         <div class="skin-preview">
                             <img src="https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13" alt="Dragon Skin">
@@ -324,7 +328,7 @@
                 </div>
             </div>
 
-            <!-- Настройки профиля (ИСПРАВЛЕННЫЕ) -->
+            <!-- Настройки профиля (БЕЗ АДМИНКИ) -->
             <div id="settings" class="tab">
                 <div class="settings-container">
                     <h2 class="section-title">⚙️ Настройки профиля</h2>
@@ -409,7 +413,7 @@
                                     <button class="glass-btn settings-warning-btn" id="exportDataBtn">📥 Экспорт</button>
                                     <button class="glass-btn settings-warning-btn" id="importDataBtn">📤 Импорт</button>
                                 </div>
-                                <p class="settings-hint">Сохраните свои данные или восстановите из备份</p>
+                                <p class="settings-hint">Сохраните свои данные или восстановите из резервной копии</p>
                             </div>
                             
                             <div class="settings-field">
@@ -432,7 +436,9 @@
                                 <button class="glass-btn" id="checkUpdatesBtn" style="width: 100%;">🔄 Проверить обновления</button>
                             </div>
                         </div>
-
+                    </div>
+                </div>
+            </div>
 
             <!-- Сезонный пропуск -->
             <div id="season" class="tab">
@@ -475,9 +481,9 @@
                     
                     <div class="promocode-input-section glass-card">
                         <div class="promocode-input-wrapper">
-                            <input type="text" id="promocodeInput" class="glass-input promocode-input" placeholder="ВВЕДИТЕ" maxlength="20">
+                            <input type="text" id="promocodeInput" class="glass-input promocode-input" placeholder="ВВЕДИ ПРОМОКОД" maxlength="20">
                             <button class="glass-btn promocode-activate-btn" id="activatePromocodeBtn">
-                                <span class="btn-text">Активаций</span>
+                                <span class="btn-text">Активировать</span>
                             </button>
                         </div>
                         <div id="promocodeMessage" class="promocode-message"></div>
