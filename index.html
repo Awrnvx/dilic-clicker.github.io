@@ -6,16 +6,15 @@
     <title>Dilic Clicker - Игра с кликерами</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Telegram Web App скрипт -->
+    <!-- Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Firebase SDK (стабильная версия) -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="firebase-config.js"></script>
     
     <script>
-        // Инициализация Telegram Mini App
         const telegram = window.Telegram.WebApp;
         telegram.ready();
         telegram.expand();
@@ -23,7 +22,6 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- Навигация -->
         <nav class="glass-nav">
             <div class="nav-links">
                 <button class="nav-btn active" data-tab="main">Главная</button>
@@ -49,9 +47,7 @@
             </div>
         </nav>
 
-        <!-- Основной контент -->
         <div class="content">
-            <!-- Главная вкладка -->
             <div id="main" class="tab active">
                 <div class="clicker-section">
                     <div class="glass-card clicker-card">
@@ -69,7 +65,6 @@
                 </div>
             </div>
 
-            <!-- Магазин -->
             <div id="shop" class="tab">
                 <h2 class="section-title">Магазин скинов</h2>
                 <div class="shop-grid">
@@ -84,7 +79,7 @@
                             <span class="price-value">0</span>
                         </p>
                         <p class="skin-status" id="status-classic">В инвентаре</p>
-                        <button class="glass-btn buy-btn disabled" data-item="classic" data-price="0" data-currency="money" disabled>Куплено</button>
+                        <button class="glass-btn buy-btn disabled" data-item="classic" data-price="0" disabled>Куплено</button>
                     </div>
                     
                     <div class="glass-card shop-item" data-item="neon" data-skin="neon">
@@ -98,20 +93,16 @@
                             <span class="price-value">1000</span>
                         </p>
                         <p class="skin-status" id="status-neon">Не куплено</p>
-                        <button class="glass-btn buy-btn" data-item="neon" data-price="1000" data-currency="money">Купить</button>
+                        <button class="glass-btn buy-btn" data-item="neon" data-price="1000">Купить</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Инвентарь -->
             <div id="inventory" class="tab">
                 <h2 class="section-title">Инвентарь скинов</h2>
-                <div class="inventory-grid" id="inventoryGrid">
-                    <!-- Сюда будут добавляться скины через JavaScript -->
-                </div>
+                <div class="inventory-grid" id="inventoryGrid"></div>
             </div>
 
-            <!-- Улучшения -->
             <div id="upgrades" class="tab">
                 <h2 class="section-title">Улучшения</h2>
                 <div class="upgrades-grid">
@@ -123,7 +114,7 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">50</span>
                         </p>
-                        <button class="glass-btn upgrade-btn" data-upgrade="clickPower" data-currency="dilicks">Улучшить</button>
+                        <button class="glass-btn upgrade-btn">Улучшить</button>
                     </div>
                     <div class="glass-card upgrade-item" data-upgrade="autoClicker">
                         <h3>Автокликер</h3>
@@ -133,7 +124,7 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">100</span>
                         </p>
-                        <button class="glass-btn upgrade-btn" data-upgrade="autoClicker" data-currency="dilicks">Купить</button>
+                        <button class="glass-btn upgrade-btn">Купить</button>
                     </div>
                     <div class="glass-card upgrade-item" data-upgrade="critChance">
                         <h3>Критический удар</h3>
@@ -143,15 +134,13 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">200</span>
                         </p>
-                        <button class="glass-btn upgrade-btn" data-upgrade="critChance" data-currency="dilicks">Улучшить</button>
+                        <button class="glass-btn upgrade-btn">Улучшить</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Профиль игрока с ачивками -->
             <div id="profile" class="tab">
                 <div class="profile-container">
-                    <!-- Верхняя часть с аватаром и статистикой -->
                     <div class="profile-header glass-card">
                         <div class="profile-avatar">
                             <div class="avatar-ring">
@@ -184,13 +173,9 @@
                         </div>
                     </div>
 
-                    <!-- Достижения (ачивки) -->
                     <h2 class="section-title">Достижения</h2>
-                    <div class="achievements-grid" id="achievementsGrid">
-                        <!-- Ачивки будут добавляться через JavaScript -->
-                    </div>
+                    <div class="achievements-grid" id="achievementsGrid"></div>
 
-                    <!-- Статистика скинов -->
                     <div class="skin-stats glass-card">
                         <h3>Коллекция скинов</h3>
                         <div class="skin-progress">
@@ -199,14 +184,11 @@
                             </div>
                             <p><span id="ownedSkins">1</span> / <span id="totalSkins">3</span> скинов</p>
                         </div>
-                        <div class="owned-skins-list" id="ownedSkinsList">
-                            <!-- Список скинов будет добавляться через JavaScript -->
-                        </div>
+                        <div class="owned-skins-list" id="ownedSkinsList"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Сезонный пропуск -->
             <div id="season" class="tab">
                 <div class="season-pass glass-card">
                     <h2>Сезонный пропуск</h2>
@@ -231,13 +213,12 @@
                                 <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                                 <span>500</span>
                             </p>
-                            <button class="glass-btn" id="buyPremiumBtn" data-currency="dilicks">Купить премиум</button>
+                            <button class="glass-btn" id="buyPremiumBtn">Купить премиум</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Промокоды -->
             <div id="promocodes" class="tab">
                 <div class="promocodes-container">
                     <div class="promocodes-header glass-card">
@@ -245,7 +226,6 @@
                         <p class="promocodes-subtitle">Вводи промокоды и получай бонусы!</p>
                     </div>
                     
-                    <!-- Поле ввода промокода -->
                     <div class="promocode-input-section glass-card">
                         <div class="promocode-input-wrapper">
                             <input type="text" id="promocodeInput" class="glass-input promocode-input" placeholder="ВВЕДИ ПРОМОКОД" maxlength="20">
@@ -256,25 +236,18 @@
                         <div id="promocodeMessage" class="promocode-message"></div>
                     </div>
                     
-                    <!-- Список активных промокодов -->
                     <div class="active-promocodes glass-card">
                         <h3>Доступные промокоды</h3>
-                        <div class="promocodes-list" id="promocodesList">
-                            <!-- Промокоды будут добавляться через JavaScript -->
-                        </div>
+                        <div class="promocodes-list" id="promocodesList"></div>
                     </div>
                     
-                    <!-- История активированных промокодов -->
                     <div class="promocodes-history glass-card">
                         <h3>История активаций</h3>
-                        <div class="history-list" id="promocodesHistory">
-                            <!-- История будет добавляться через JavaScript -->
-                        </div>
+                        <div class="history-list" id="promocodesHistory"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Лидерборд -->
             <div id="leaderboard" class="tab">
                 <div class="leaderboard-container glass-card">
                     <h2>Таблица лидеров</h2>

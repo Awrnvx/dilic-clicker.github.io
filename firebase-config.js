@@ -1,6 +1,4 @@
 // firebase-config.js
-// Подключаем Firebase (простая рабочая версия)
-
 const firebaseConfig = {
     apiKey: "AIzaSyBHcptZefbC53BR6wMPEtyIF9GCx2y7xjw",
     authDomain: "dilic-clicker.firebaseapp.com",
@@ -11,6 +9,5 @@ const firebaseConfig = {
     appId: "1:651188156647:web:7ef858931f7fb4526b8a42"
 };
 
-// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
