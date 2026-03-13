@@ -1,4 +1,4 @@
-// register.js - ПОЛНАЯ ВЕРСИЯ С ПАРОЛЯМИ
+// register.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 
 // Очищаем localStorage при загрузке
 localStorage.removeItem('currentUser');
@@ -22,7 +22,7 @@ class UserManager {
             const newUserRef = firebase.database().ref('users').push();
             const userData = {
                 username: username,
-                password: password,  // ← ВОТ ТУТ ПАРОЛЬ СОХРАНЯЕТСЯ!
+                password: password,  // ← ПАРОЛЬ ЗДЕСЬ!
                 clicks: 0,
                 money: 1000,
                 dilicks: 500,
@@ -42,9 +42,10 @@ class UserManager {
             };
             
             await newUserRef.set(userData);
+            console.log('✅ Новый пользователь создан с паролем');
             return { success: true, message: 'Регистрация успешна' };
         } catch (error) {
-            console.error('Ошибка регистрации:', error);
+            console.error('❌ Ошибка регистрации:', error);
             return { success: false, message: 'Ошибка при регистрации' };
         }
     }
@@ -65,10 +66,12 @@ class UserManager {
             snapshot.forEach(child => {
                 userData = child.val();
                 userId = child.key;
+                console.log('Найден пользователь:', userData.username);
             });
             
             // Проверяем пароль
             if (userData.password !== password) {
+                console.log('Пароль не совпадает');
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
@@ -77,9 +80,10 @@ class UserManager {
             localStorage.setItem('currentUser', username);
             localStorage.setItem('userId', userId);
             
+            console.log('✅ Вход выполнен');
             return { success: true, message: 'Вход выполнен' };
         } catch (error) {
-            console.error('Ошибка входа:', error);
+            console.error('❌ Ошибка входа:', error);
             return { success: false, message: 'Ошибка при входе' };
         }
     }
@@ -124,17 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         
         if (password !== confirmPassword) {
-            alert('Пароли не совпадают');
+            alert('❌ Пароли не совпадают');
             return;
         }
         
         const result = await userManager.register(username, password);
         
         if (result.success) {
-            alert('Регистрация успешна! Теперь войдите в систему.');
+            alert('✅ Регистрация успешна! Теперь войдите.');
             loginTab.click();
         } else {
-            alert(result.message);
+            alert('❌ ' + result.message);
         }
     });
     
@@ -150,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.success) {
             window.location.href = 'index.html';
         } else {
-            alert(result.message);
+            alert('❌ ' + result.message);
         }
     });
     
