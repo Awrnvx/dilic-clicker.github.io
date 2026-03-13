@@ -43,7 +43,7 @@ a {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Простой стеклянный эффект без анимаций и штриховки */
+/* Простой стеклянный эффект */
 .glass-effect {
     position: relative;
     background: rgba(255, 255, 255, 0.02);
@@ -95,7 +95,7 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-/* Навигация */
+/* Навигация - КАК БЫЛО НА ПК */
 .glass-nav {
     background: rgba(15, 18, 25, 0.6);
     backdrop-filter: blur(10px);
@@ -184,6 +184,7 @@ a {
     transform: rotate(180deg);
 }
 
+/* USER-INFO - КАК БЫЛО НА ПК */
 .user-info {
     display: flex;
     gap: 20px;
@@ -218,6 +219,10 @@ a {
     border-radius: 50%;
     object-fit: cover;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+#logoutBtn {
+    order: 3;
 }
 
 .content {
@@ -923,7 +928,7 @@ a {
     font-style: italic;
 }
 
-/* ЛИДЕРБОРД С КРАСИВЫМ СКРОЛЛОМ */
+/* ЛИДЕРБОРД */
 .leaderboard-container {
     color: white;
     max-width: 800px;
@@ -940,7 +945,6 @@ a {
     overflow-x: hidden;
 }
 
-/* Красивый скролл для лидерборда */
 .leaderboard-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -1025,33 +1029,6 @@ a {
     font-weight: 600;
     color: gold;
     width: 60px;
-}
-
-/* Адаптивность для лидерборда */
-@media (max-width: 768px) {
-    .leaderboard-container {
-        max-height: 400px;
-        padding: 15px;
-    }
-    
-    .leaderboard-table th,
-    .leaderboard-table td {
-        padding: 10px 8px;
-        font-size: 14px;
-    }
-    
-    .leaderboard-table th {
-        font-size: 14px;
-    }
-    
-    .leaderboard-table td:first-child {
-        width: 40px;
-    }
-    
-    .leaderboard-tabs .glass-btn.small {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
 }
 
 .auth-container {
@@ -1185,7 +1162,7 @@ a {
     box-shadow: 0 15px 28px rgba(0, 0, 0, 0.35);
 }
 
-/* Эффект пузырьков - легкий */
+/* Эффект пузырьков */
 .bubble {
     position: fixed;
     background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
@@ -1859,61 +1836,75 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+/* ===== ТОЛЬКО ДЛЯ МОБИЛОК (ПК НЕ МЕНЯЕМ) ===== */
 @media (max-width: 768px) {
-    /* Кнопка скрытия НЕ скрывается */
+    .glass-nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 10px;
+    }
+    
     .nav-toggle-btn {
-        display: flex !important;
         order: 1;
     }
     
-    /* Скрываем текст на кнопках */
-    .nav-btn .nav-text {
-        display: none;
+    .user-info {
+        order: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
     }
     
-    /* Добавляем эмодзи через псевдоэлементы */
-    .nav-btn[data-tab="main"]::before {
-        content: "🏠";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="shop"]::before {
-        content: "🛒";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="inventory"]::before {
-        content: "📦";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="upgrades"]::before {
-        content: "⚡";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="profile"]::before {
-        content: "👤";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="settings"]::before {
-        content: "⚙️";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="season"]::before {
-        content: "🎫";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="promocodes"]::before {
-        content: "🎁";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="leaderboard"]::before {
-        content: "🏆";
-        font-size: 24px;
+    .user-info-top {
+        width: 100%;
+        text-align: center;
     }
     
-    /* Делаем кнопки круглыми */
+    .user-info-bottom {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #usernameDisplay {
+        font-weight: bold;
+        font-size: 16px;
+    }
+    
+    #logoutBtn {
+        margin: 0;
+        padding: 5px 12px;
+        font-size: 13px;
+        order: 0;
+    }
+    
+    .currency, .dilic {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+    
+    .currency-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .nav-links {
+        order: 3;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 15px;
+    }
+    
     .nav-btn {
-        width: 50px;
-        height: 50px;
+        width: 45px;
+        height: 45px;
         padding: 0 !important;
         display: flex;
         align-items: center;
@@ -1921,86 +1912,46 @@ a {
         border-radius: 50% !important;
     }
     
-    /* Навигация адаптируется */
-    .glass-nav {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        padding: 10px;
-        gap: 10px;
+    .nav-btn .nav-text {
+        display: none;
     }
     
-    .nav-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-        width: 100%;
-        order: 3;
-        margin-top: 10px;
+    .nav-btn[data-tab="main"]::before {
+        content: "🏠";
+        font-size: 22px;
     }
-    
-    .user-info {
-        order: 2;
-        flex: 1;
-        justify-content: flex-end;
+    .nav-btn[data-tab="shop"]::before {
+        content: "🛒";
+        font-size: 22px;
     }
-    
-    /* Остальные адаптивные стили... */
-    .click-btn {
-        width: 180px;
-        height: 180px;
+    .nav-btn[data-tab="inventory"]::before {
+        content: "📦";
+        font-size: 22px;
     }
-    
-    .shop-grid,
-    .upgrades-grid,
-    .inventory-grid,
-    .achievements-grid,
-    .settings-grid {
-        grid-template-columns: 1fr;
+    .nav-btn[data-tab="upgrades"]::before {
+        content: "⚡";
+        font-size: 22px;
     }
-    
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
+    .nav-btn[data-tab="profile"]::before {
+        content: "👤";
+        font-size: 22px;
     }
-    
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
+    .nav-btn[data-tab="settings"]::before {
+        content: "⚙️";
+        font-size: 22px;
     }
-    
-    .leaderboard-container {
-        max-height: 400px;
+    .nav-btn[data-tab="season"]::before {
+        content: "🎫";
+        font-size: 22px;
     }
-    
-    .promocode-input-wrapper {
-        flex-direction: column;
+    .nav-btn[data-tab="promocodes"]::before {
+        content: "🎁";
+        font-size: 22px;
     }
-    
-    .settings-input-group {
-        flex-direction: column;
+    .nav-btn[data-tab="leaderboard"]::before {
+        content: "🏆";
+        font-size: 22px;
     }
-    
-    .settings-warning-btn,
-    .settings-danger-btn {
-        width: 100%;
-        margin-right: 0;
-    }
-}
-
-/* ===== УЛУЧШЕНИЯ ДЛЯ СЕНСОРНЫХ ЭКРАНОВ ===== */
-* {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-}
-
-.nav-btn:active,
-.glass-btn:active,
-.buy-btn:active,
-.upgrade-btn:active,
-.equip-btn:active {
-    transform: scale(0.95);
 }
 
 @media (max-width: 500px) {
@@ -2023,121 +1974,5 @@ a {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-    }
-}
-
-/* Мобильная адаптация для кнопки выхода */
-@media (max-width: 768px) {
-    .user-info {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        justify-content: flex-start;
-    }
-    
-    .glass-btn.small {
-        padding: 6px 12px;
-        font-size: 13px;
-        margin-top: 0;
-        order: 1;
-    }
-    
-    .currency {
-        order: 2;
-    }
-    
-    .dilic {
-        order: 3;
-    }
-    
-    #usernameDisplay {
-        order: 0;
-        width: 100%;
-        margin-bottom: 5px;
-        text-align: center;
-    }
-}
-
-/* ФИНАЛЬНАЯ СТРУКТУРА ВЕРХНЕЙ ПАНЕЛИ */
-.user-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-}
-
-.user-info-top {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    width: 100%;
-}
-
-.user-info-bottom {
-    display: flex;
-    gap: 15px;
-    width: 100%;
-    justify-content: flex-end;
-}
-
-#logoutBtn {
-    margin-left: auto;
-}
-
-/* Десктоп версия */
-@media (min-width: 769px) {
-    .user-info {
-        flex-direction: row;
-        align-items: center;
-        gap: 20px;
-    }
-    
-    .user-info-top,
-    .user-info-bottom {
-        display: contents;
-    }
-    
-    #usernameDisplay {
-        order: 0;
-    }
-    
-    #logoutBtn {
-        order: 1;
-        margin-left: 0;
-    }
-    
-    .currency {
-        order: 2;
-    }
-    
-    .dilic {
-        order: 3;
-    }
-}
-
-/* Мобильная версия */
-@media (max-width: 768px) {
-    .glass-nav {
-        flex-wrap: wrap;
-        padding: 10px;
-    }
-    
-    .nav-links {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        margin-top: 10px;
-    }
-    
-    .user-info {
-        order: 2;
-        width: auto;
-        min-width: 150px;
-    }
-    
-    .nav-toggle-btn {
-        order: 1;
     }
 }
