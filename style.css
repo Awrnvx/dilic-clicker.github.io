@@ -1765,15 +1765,17 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ - ТОЛЬКО ТО, ЧТО НУЖНО ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ - ИСПРАВЛЕННАЯ ===== */
 @media (max-width: 768px) {
     .glass-nav {
+        display: flex;
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
         padding: 10px;
+        position: relative;
     }
     
-    /* Верхняя строка: кнопка слева, имя по центру */
+    /* Кнопка скрытия слева */
     .nav-toggle-btn {
         position: absolute;
         left: 10px;
@@ -1781,46 +1783,46 @@ a {
         margin: 0;
     }
     
-    .user-info {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-        margin-top: 0;
-        padding-top: 5px;
-    }
-    
+    /* Имя по центру сверху */
     #usernameDisplay {
         font-size: 16px;
         font-weight: bold;
         text-align: center;
         width: 100%;
-        margin-bottom: 5px;
-    }
-    
-    /* Вторая строка: кнопка выйти и валюты */
-    .user-info-bottom {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-    }
-    
-    #logoutBtn {
-        order: 0;
-        margin: 0;
-        padding: 5px 12px;
-        font-size: 13px;
-    }
-    
-    .currency {
+        margin: 5px 0 10px 0;
         order: 1;
     }
     
-    .dilic {
+    /* Контейнер для кнопки выйти и валют */
+    .user-info {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
         order: 2;
+        margin-bottom: 15px;
+    }
+    
+    /* Кнопка выйти */
+    #logoutBtn {
+        order: 1;
+        margin: 0;
+        padding: 6px 15px;
+        font-size: 14px;
+    }
+    
+    /* Валюта */
+    .currency {
+        order: 2;
+        padding: 6px 12px;
+    }
+    
+    /* Дилики */
+    .dilic {
+        order: 3;
+        padding: 6px 12px;
     }
     
     /* Навигация снизу */
@@ -1829,14 +1831,15 @@ a {
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
-        margin-top: 15px;
         width: 100%;
+        order: 3;
     }
     
     .nav-links.hidden {
         display: flex !important;
     }
     
+    /* Круглые кнопки с эмодзи */
     .nav-btn {
         width: 45px;
         height: 45px;
@@ -1860,6 +1863,12 @@ a {
     .nav-btn[data-tab="season"]::before { content: "🎫"; font-size: 22px; }
     .nav-btn[data-tab="promocodes"]::before { content: "🎁"; font-size: 22px; }
     .nav-btn[data-tab="leaderboard"]::before { content: "🏆"; font-size: 22px; }
+    
+    /* Скрываем старые структуры */
+    .user-info-top,
+    .user-info-bottom {
+        display: contents;
+    }
 }
 
 @media (max-width: 500px) {
