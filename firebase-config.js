@@ -1,5 +1,4 @@
 // firebase-config.js
-// Импортируем функции Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, get, child, update, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
@@ -17,5 +16,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Экспортируем для использования в других файлах
+// Экспортируем для использования в script.js
 export { database, ref, set, get, child, update, query, orderByChild, limitToLast };

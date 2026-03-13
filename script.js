@@ -1,3 +1,6 @@
+// script.js
+import { database, ref, set, get, child, update, query, orderByChild, limitToLast } from './firebase-config.js';
+
 class ClickerGame {
     constructor() {
         this.userManager = new UserManager();
@@ -144,7 +147,7 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
-            'MONSTERS-SKIN': {  // НОВЫЙ ПРОМОКОД С ВАШИМ НАЗВАНИЕМ
+            'MONSTERS-SKIN': {
                 code: 'MONSTERS-SKIN',
                 reward: { money: 0, dilicks: 0, skin: 'monsters_skin' },
                 description: 'Скин монстра в подарок!',
@@ -164,27 +167,9 @@ class ClickerGame {
         }
         
         this.userManager.currentUser = currentUser;
-        this.userData = this.userManager.loadUserData();
         
-        if (!this.userData) {
-            this.userData = this.createDefaultData();
-        } else {
-            if (!this.userData.inventory || !this.userData.inventory.includes('classic')) {
-                if (!this.userData.inventory) this.userData.inventory = [];
-                if (!this.userData.inventory.includes('classic')) {
-                    this.userData.inventory.unshift('classic');
-                }
-            }
-            if (!this.userData.currentSkin) {
-                this.userData.currentSkin = 'classic';
-            }
-            if (!this.userData.activatedPromocodes) {
-                this.userData.activatedPromocodes = [];
-            }
-            if (!this.userData.promocodesHistory) {
-                this.userData.promocodesHistory = [];
-            }
-        }
+        // Загружаем данные из Firebase
+        await this.loadUserDataFromFirebase();
         
         this.loadElements();
         this.setupEventListeners();
@@ -202,6 +187,49 @@ class ClickerGame {
         this.updateUpgradePrices();
         this.updatePromocodesList();
         this.updatePromocodesHistory();
+        
+        // Загружаем лидерборд сразу
+        this.updateLeaderboard('clicks');
+    }
+
+    async loadUserDataFromFirebase() {
+        const username = this.userManager.currentUser;
+        
+        try {
+            const userRef = ref(database, 'users/' + username);
+            const snapshot = await get(userRef);
+            
+            if (snapshot.exists()) {
+                // Данные есть в Firebase
+                this.userData = snapshot.val();
+                console.log('✅ Данные загружены из Firebase');
+            } else {
+                // Нет данных - создаем новые
+                this.userData = this.createDefaultData();
+                // Сохраняем в Firebase
+                await this.saveUserDataToFirebase();
+                console.log('✅ Новые данные созданы и сохранены в Firebase');
+            }
+        } catch (error) {
+            console.error('❌ Ошибка загрузки из Firebase:', error);
+            // Если Firebase недоступен, грузим из localStorage
+            this.userData = this.userManager.loadUserData();
+            if (!this.userData) {
+                this.userData = this.createDefaultData();
+            }
+        }
+    }
+
+    async saveUserDataToFirebase() {
+        const username = this.userManager.currentUser;
+        
+        try {
+            const userRef = ref(database, 'users/' + username);
+            await set(userRef, this.userData);
+            console.log('✅ Данные сохранены в Firebase');
+        } catch (error) {
+            console.error('❌ Ошибка сохранения в Firebase:', error);
+        }
     }
 
     createDefaultData() {
@@ -322,7 +350,6 @@ class ClickerGame {
             this.buyPremiumBtn.addEventListener('click', () => this.buyPremiumPass());
         }
         
-        // Обработчик для промокодов
         if (this.activatePromocodeBtn) {
             this.activatePromocodeBtn.addEventListener('click', () => this.activatePromocode());
         }
@@ -357,6 +384,11 @@ class ClickerGame {
             this.updatePromocodesList();
             this.updatePromocodesHistory();
         }
+        if (tabId === 'leaderboard') {
+            const activeTab = document.querySelector('.leaderboard-tabs .active');
+            const type = activeTab ? activeTab.dataset.leaderboard : 'clicks';
+            this.updateLeaderboard(type);
+        }
     }
 
     handleClick(e) {
@@ -379,7 +411,6 @@ class ClickerGame {
         this.updateUI();
         this.saveGame();
         
-        // Проверяем ачивки при каждом клике
         this.checkAchievements();
     }
 
@@ -401,7 +432,7 @@ class ClickerGame {
         }, 600);
     }
 
-    buyItem(item, price) {
+    async buyItem(item, price) {
         if (this.userData.money >= price) {
             this.userData.money -= price;
             
@@ -415,11 +446,10 @@ class ClickerGame {
             }
             
             this.updateUI();
-            this.saveGame();
+            await this.saveGame();
             this.updateInventory();
             this.updateShopStatus();
             
-            // Проверяем ачивки после покупки
             this.checkAchievements();
             
             alert(`Куплен скин: ${this.skinsData[item].name}`);
@@ -428,7 +458,7 @@ class ClickerGame {
         }
     }
 
-    buyUpgrade(upgradeType) {
+    async buyUpgrade(upgradeType) {
         let currentLevel;
         let price;
         
@@ -441,7 +471,7 @@ class ClickerGame {
                     this.userData.clickPower++;
                     this.updateUpgradePrices();
                     this.updateUI();
-                    this.saveGame();
+                    await this.saveGame();
                     this.checkAchievements();
                     alert(`Усилитель клика улучшен до ${this.userData.clickPower} уровня!`);
                 } else {
@@ -458,7 +488,7 @@ class ClickerGame {
                     this.restartAutoClicker();
                     this.updateUpgradePrices();
                     this.updateUI();
-                    this.saveGame();
+                    await this.saveGame();
                     this.checkAchievements();
                     alert(`Автокликер улучшен до ${this.userData.autoClickerLevel} уровня!`);
                 } else {
@@ -474,7 +504,7 @@ class ClickerGame {
                     this.userData.critChance += 5;
                     this.updateUpgradePrices();
                     this.updateUI();
-                    this.saveGame();
+                    await this.saveGame();
                     this.checkAchievements();
                     alert(`Шанс крита увеличен до ${this.userData.critChance}%!`);
                 } else {
@@ -689,53 +719,93 @@ class ClickerGame {
         this.userData.dilicks += 10;
     }
 
-    buyPremiumPass() {
+    async buyPremiumPass() {
         if (this.userData.dilicks >= 500) {
             this.userData.dilicks -= 500;
             this.userData.premiumPass = true;
             this.updateUI();
-            this.saveGame();
+            await this.saveGame();
             alert('Премиум пропуск активирован!');
         } else {
             alert(`Недостаточно диликов! Нужно: 500`);
         }
     }
 
-    updateLeaderboard(type) {
+    async updateLeaderboard(type) {
         if (!this.leaderboardBody) return;
         
-        const users = this.userManager.users;
-        const leaderboard = [];
-        
-        for (let [username, userData] of Object.entries(users)) {
-            let value = 0;
-            switch(type) {
-                case 'clicks':
-                    value = userData.data.clicks;
-                    break;
-                case 'money':
-                    value = userData.data.money;
-                    break;
-                case 'playtime':
-                    value = userData.data.playtime;
-                    break;
+        try {
+            // Показываем загрузку
+            this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
+            
+            // Получаем всех пользователей из Firebase
+            const usersRef = ref(database, 'users');
+            const snapshot = await get(usersRef);
+            
+            if (!snapshot.exists()) {
+                this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Нет данных</td></tr>';
+                return;
             }
             
-            leaderboard.push({ username, value });
+            const users = snapshot.val();
+            const leaderboard = [];
+            
+            for (let [username, userData] of Object.entries(users)) {
+                let value = 0;
+                switch(type) {
+                    case 'clicks':
+                        value = userData.clicks || 0;
+                        break;
+                    case 'money':
+                        value = userData.money || 0;
+                        break;
+                    case 'playtime':
+                        value = userData.playtime || 0;
+                        break;
+                }
+                
+                leaderboard.push({ username, value });
+            }
+            
+            // Сортировка по убыванию
+            leaderboard.sort((a, b) => b.value - a.value);
+            
+            // Берем топ-50
+            const topPlayers = leaderboard.slice(0, 50);
+            
+            this.leaderboardBody.innerHTML = '';
+            
+            if (topPlayers.length === 0) {
+                this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Нет данных</td></tr>';
+                return;
+            }
+            
+            topPlayers.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                let medal = '';
+                if (index === 0) medal = '🥇';
+                else if (index === 1) medal = '🥈';
+                else if (index === 2) medal = '🥉';
+                
+                row.innerHTML = `
+                    <td>${medal ? medal : index + 1}</td>
+                    <td>${entry.username} ${entry.username === this.userManager.currentUser ? '👑' : ''}</td>
+                    <td>${this.formatLeaderboardValue(entry.value, type)}</td>
+                `;
+                
+                // Выделяем текущего игрока
+                if (entry.username === this.userManager.currentUser) {
+                    row.style.background = 'rgba(255, 215, 0, 0.1)';
+                    row.style.border = '1px solid gold';
+                }
+                
+                this.leaderboardBody.appendChild(row);
+            });
+            
+        } catch (error) {
+            console.error('Ошибка загрузки лидерборда:', error);
+            this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Ошибка загрузки</td></tr>';
         }
-        
-        leaderboard.sort((a, b) => b.value - a.value);
-        
-        this.leaderboardBody.innerHTML = '';
-        leaderboard.slice(0, 10).forEach((entry, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${entry.username}</td>
-                <td>${this.formatLeaderboardValue(entry.value, type)}</td>
-            `;
-            this.leaderboardBody.appendChild(row);
-        });
     }
 
     formatLeaderboardValue(value, type) {
@@ -749,7 +819,7 @@ class ClickerGame {
         }
     }
 
-    updateUI() {
+    async updateUI() {
         if (this.usernameDisplay) {
             this.usernameDisplay.textContent = this.userManager.currentUser;
         }
@@ -774,17 +844,19 @@ class ClickerGame {
             this.seasonLevel.textContent = this.userData.seasonLevel;
         }
         
-        // Обновляем профиль, если он открыт
         if (document.getElementById('profile').classList.contains('active')) {
             this.updateProfile();
         }
     }
 
-    saveGame() {
+    async saveGame() {
+        // Сохраняем в localStorage
         this.userManager.saveUserData(this.userData);
+        // Сохраняем в Firebase
+        await this.saveUserDataToFirebase();
     }
 
-    logout() {
+    async logout() {
         if (this.bubbleFrame) {
             cancelAnimationFrame(this.bubbleFrame);
         }
@@ -1058,12 +1130,10 @@ class ClickerGame {
         // Выдаем скин, если есть
         if (promocode.reward.skin) {
             const skinId = promocode.reward.skin;
-            // Проверяем, есть ли такой скин в данных и нет ли его уже у игрока
             if (this.skinsData[skinId] && !this.userData.inventory.includes(skinId)) {
                 this.userData.inventory.push(skinId);
                 rewardMessage += `+скин "${this.skinsData[skinId].name}" ✨`;
                 
-                // Если у игрока еще нет активного скина, автоматически надеваем новый
                 if (!this.userData.currentSkin) {
                     this.userData.currentSkin = skinId;
                     if (this.clickIcon) {
@@ -1071,7 +1141,6 @@ class ClickerGame {
                     }
                 }
             } else {
-                // Если скин уже есть, выдаем небольшую компенсацию
                 this.userData.dilicks += 100;
                 rewardMessage += `+100💎 (скин уже был)`;
             }
@@ -1100,20 +1169,14 @@ class ClickerGame {
         
         this.saveGame();
         this.updateUI();
-        this.updateInventory(); // Обновляем инвентарь, чтобы новый скин отобразился
+        this.updateInventory();
         this.updatePromocodesList();
         this.updatePromocodesHistory();
         
         this.showPromocodeMessage(`Промокод активирован! ${rewardMessage}`, 'success');
         this.promocodeInput.value = '';
         
-        // Проверяем ачивки после активации
         this.checkAchievements();
-    }
-
-    getPromocodeActivationCount(code) {
-        if (!this.userData.activatedPromocodes) return 0;
-        return this.userData.activatedPromocodes.filter(c => c === code).length;
     }
 
     showPromocodeMessage(text, type) {
@@ -1196,7 +1259,6 @@ class ClickerGame {
             return;
         }
         
-        // Сортируем по дате (сначала новые)
         const sortedHistory = [...history].sort((a, b) => b.timestamp - a.timestamp);
         
         sortedHistory.forEach(item => {
@@ -1278,27 +1340,6 @@ class UserManager {
     logout() {
         this.currentUser = null;
         localStorage.removeItem('currentUser');
-    }
-
-    createDefaultData() {
-        return {
-            clicks: 0,
-            money: 1000,
-            dilicks: 500,
-            clickPower: 1,
-            autoClickerLevel: 0,
-            critChance: 5,
-            inventory: ['classic'],
-            currentSkin: 'classic',
-            seasonLevel: 1,
-            seasonExp: 0,
-            playtime: 0,
-            premiumPass: false,
-            completedAchievements: [],
-            activatedPromocodes: [],
-            promocodesHistory: [],
-            lastSave: Date.now()
-        };
     }
 
     saveUserData(userData) {
