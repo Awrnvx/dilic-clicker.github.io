@@ -169,8 +169,9 @@ class ClickerGame {
                 const snapshot = await firebase.database().ref('users/' + userId).once('value');
                 if (snapshot.exists()) {
                     this.userData = snapshot.val();
-                    console.log('✅ Данные загружены из Firebase');
+                    console.log('✅ Данные загружены из Firebase:', this.userData);
                 } else {
+                    console.log('❌ Пользователь не найден в Firebase');
                     this.userData = this.createDefaultData();
                     await firebase.database().ref('users/' + userId).set(this.userData);
                 }

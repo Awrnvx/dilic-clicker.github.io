@@ -17,6 +17,7 @@ class UserManager {
             
             return { success: true, message: 'Регистрация успешна' };
         } catch (error) {
+            console.error('Ошибка регистрации:', error);
             return { success: false, message: 'Ошибка при регистрации' };
         }
     }
@@ -44,9 +45,11 @@ class UserManager {
             this.currentUser = username;
             localStorage.setItem('currentUser', username);
             localStorage.setItem('userId', userId);
+            localStorage.setItem('userPassword', password); // Сохраняем пароль для проверки
             
             return { success: true, message: 'Вход выполнен' };
         } catch (error) {
+            console.error('Ошибка входа:', error);
             return { success: false, message: 'Ошибка при входе' };
         }
     }
@@ -55,6 +58,7 @@ class UserManager {
         this.currentUser = null;
         localStorage.removeItem('currentUser');
         localStorage.removeItem('userId');
+        localStorage.removeItem('userPassword');
     }
 
     createDefaultData(username, password) {
