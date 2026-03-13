@@ -1909,7 +1909,7 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ - С КНОПКОЙ ◀ И БЕЗ ЖЕЛТОГО ФОНА ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ - С РАБОЧЕЙ КНОПКОЙ ◀ ===== */
 @media (max-width: 768px) {
     .glass-nav {
         display: flex;
@@ -1924,6 +1924,10 @@ a {
         order: 1;
         display: flex !important;
         margin-right: 0;
+    }
+    
+    .nav-toggle-btn.hidden .toggle-icon {
+        transform: rotate(180deg);
     }
     
     .user-info {
@@ -1954,11 +1958,16 @@ a {
     .nav-links {
         order: 3;
         width: 100%;
-        display: flex !important;
+        display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
         margin-top: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-links.hidden {
+        display: none !important;
     }
     
     /* Эмодзи для мобилок */
@@ -2062,7 +2071,6 @@ a {
     *:active {
         -webkit-tap-highlight-color: transparent !important;
         tap-highlight-color: transparent !important;
-        background: inherit !important;
     }
     
     /* Адаптация контента */
