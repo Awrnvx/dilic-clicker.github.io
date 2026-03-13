@@ -2025,3 +2025,37 @@ a {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Мобильная адаптация для кнопки выхода */
+@media (max-width: 768px) {
+    .user-info {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .glass-btn.small {
+        padding: 6px 12px;
+        font-size: 13px;
+        margin-top: 0;
+        order: 1;
+    }
+    
+    .currency {
+        order: 2;
+    }
+    
+    .dilic {
+        order: 3;
+    }
+    
+    #usernameDisplay {
+        order: 0;
+        width: 100%;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+}
