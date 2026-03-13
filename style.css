@@ -20,64 +20,17 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative;
-    -webkit-tap-highlight-color: transparent !important;
-    tap-highlight-color: transparent !important;
 }
 
-/* Убираем желтый фон при нажатии в Telegram WebApp */
 button, 
 .glass-btn, 
 .nav-btn, 
 .buy-btn, 
 .upgrade-btn, 
 .equip-btn,
-.click-btn,
-.promocode-activate-btn,
-.settings-save-btn,
-.settings-warning-btn,
-.settings-danger-btn,
-.auth-btn,
-.auth-tab,
-.nav-toggle-btn,
-.leaderboard-tabs .glass-btn,
-.promocode-item,
-.skin-tag,
-.history-item,
-.modal-btn,
-.nav-links .nav-btn,
-.user-info button,
-.glass-card button,
-.profile-stat-item,
-.achievement-card,
-.shop-item,
-.upgrade-item,
-.inventory-item,
-.season-rewards .glass-btn,
-.promocode-input-wrapper button,
-.settings-field button,
-.modal-buttons button,
-.glass-input,
-select,
-input[type="checkbox"],
-input[type="text"],
-input[type="password"],
-input[type="email"] {
+.click-btn {
     -webkit-tap-highlight-color: transparent !important;
-    tap-highlight-color: transparent !important;
-    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
     -webkit-focus-ring-color: transparent !important;
-    outline: none !important;
-    -webkit-touch-callout: none !important;
-    -webkit-user-select: none !important;
-    user-select: none !important;
-}
-
-/* Убираем любой стандартный фон при нажатии в Telegram */
-*:active,
-*:focus,
-*:hover {
-    -webkit-tap-highlight-color: transparent !important;
-    tap-highlight-color: transparent !important;
     outline: none !important;
 }
 
@@ -571,6 +524,8 @@ a {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
 }
 
 .glass-btn:hover {
@@ -991,6 +946,7 @@ a {
     overflow-x: hidden;
 }
 
+/* Красивый скролл для лидерборда */
 .leaderboard-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -1909,7 +1865,7 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ - С РАБОЧЕЙ КНОПКОЙ ◀ ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ - С КНОПКОЙ ◀ И БЕЗ ЗОЛОТА ===== */
 @media (max-width: 768px) {
     .glass-nav {
         display: flex;
@@ -1924,10 +1880,6 @@ a {
         order: 1;
         display: flex !important;
         margin-right: 0;
-    }
-    
-    .nav-toggle-btn.hidden .toggle-icon {
-        transform: rotate(180deg);
     }
     
     .user-info {
@@ -1958,16 +1910,11 @@ a {
     .nav-links {
         order: 3;
         width: 100%;
-        display: flex;
+        display: flex !important;
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
         margin-top: 10px;
-        transition: all 0.3s ease;
-    }
-    
-    .nav-links.hidden {
-        display: none !important;
     }
     
     /* Эмодзи для мобилок */
@@ -1982,8 +1929,6 @@ a {
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.15);
         transition: transform 0.1s ease;
-        -webkit-tap-highlight-color: transparent !important;
-        tap-highlight-color: transparent !important;
     }
     
     .nav-btn .nav-text {
@@ -2027,50 +1972,16 @@ a {
         font-size: 24px;
     }
     
-    /* Убираем желтый фон полностью */
-    .nav-btn.active,
-    .nav-btn:active,
-    .nav-btn:focus,
-    .nav-btn:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
-        border-color: rgba(255, 255, 255, 0.25) !important;
-        -webkit-tap-highlight-color: transparent !important;
-        tap-highlight-color: transparent !important;
+    /* Убираем золотой фон, оставляем только эффект нажатия */
+    .nav-btn.active {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.25);
     }
     
-    /* Эффект нажатия на кнопку (без желтого) */
+    /* Эффект нажатия на кнопку (без золота) */
     .nav-btn:active {
         transform: scale(0.9);
-        background: rgba(255, 255, 255, 0.2) !important;
-    }
-    
-    /* Для всех кнопок на мобилках */
-    button, 
-    .glass-btn, 
-    .buy-btn, 
-    .upgrade-btn, 
-    .equip-btn,
-    .click-btn,
-    .promocode-activate-btn,
-    .settings-save-btn,
-    .settings-warning-btn,
-    .settings-danger-btn,
-    .auth-btn,
-    .auth-tab,
-    .leaderboard-tabs .glass-btn,
-    .promocode-item,
-    .skin-tag,
-    .history-item,
-    .modal-btn {
-        -webkit-tap-highlight-color: transparent !important;
-        tap-highlight-color: transparent !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-    }
-    
-    /* Принудительно убираем любой фон при нажатии */
-    *:active {
-        -webkit-tap-highlight-color: transparent !important;
-        tap-highlight-color: transparent !important;
+        background: rgba(255, 255, 255, 0.2);
     }
     
     /* Адаптация контента */
