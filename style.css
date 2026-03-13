@@ -168,7 +168,7 @@ a {
 }
 
 .nav-links.hidden {
-    display: none;
+    display: none !important;
 }
 
 .nav-btn {
@@ -223,10 +223,6 @@ a {
 
 .nav-toggle-btn .toggle-icon {
     transition: transform 0.3s ease;
-}
-
-.nav-toggle-btn.hidden .toggle-icon {
-    transform: rotate(180deg);
 }
 
 /* USER-INFO - ПК версия */
@@ -1926,6 +1922,10 @@ a {
         margin-right: 0;
     }
     
+    .nav-toggle-btn.hidden .toggle-icon {
+        transform: rotate(180deg);
+    }
+    
     .user-info {
         order: 2;
         flex: 1;
@@ -1964,10 +1964,6 @@ a {
     
     .nav-links.hidden {
         display: none !important;
-    }
-    
-    .nav-toggle-btn.hidden .toggle-icon {
-        transform: rotate(180deg);
     }
     
     /* Эмодзи для мобилок */
