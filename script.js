@@ -1,5 +1,4 @@
-// script.js - Полная версия игры с кнопкой скрытия навигации
-
+// ========== ГЛАВНЫЙ КЛАСС ИГРЫ ==========
 class ClickerGame {
     constructor() {
         this.userData = null;
@@ -7,6 +6,7 @@ class ClickerGame {
         this.playtimeInterval = null;
         this.bubbleFrame = null;
         this.lastBubbleTime = 0;
+        this.settings = null;
         
         // Данные скинов
         this.skinsData = {
@@ -158,18 +158,15 @@ class ClickerGame {
     }
 
     async init() {
-        // Получаем ID пользователя из localStorage
         const userId = localStorage.getItem('userId');
         const currentUser = localStorage.getItem('currentUser');
         
-        // Если нет userId - отправляем на регистрацию
         if (!userId || !currentUser) {
             window.location.href = 'register.html';
             return;
         }
         
         try {
-            // Загружаем данные пользователя из Firebase
             const userRef = firebase.database().ref('users/' + userId);
             const snapshot = await userRef.once('value');
             
@@ -177,7 +174,6 @@ class ClickerGame {
                 this.userData = snapshot.val();
                 console.log('✅ Данные загружены из Firebase');
             } else {
-                // Если пользователь не найден в Firebase
                 console.error('❌ Пользователь не найден');
                 localStorage.clear();
                 window.location.href = 'register.html';
@@ -190,27 +186,19 @@ class ClickerGame {
             return;
         }
         
-        // Загружаем все элементы интерфейса
         this.loadElements();
-        
-        // Настраиваем обработчики событий
         this.setupEventListeners();
-        
-        // Запускаем автокликер
         this.startAutoClicker();
-        
-        // Запускаем трекер времени
         this.startPlaytimeTracker();
-        
-        // Запускаем пузырьки
         this.startBubbles();
         
-        // Устанавливаем иконку скина
         if (this.clickIcon && this.userData.currentSkin) {
             this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
         }
         
-        // Обновляем интерфейс
+        // Инициализируем настройки
+        this.settings = new Settings(this);
+        
         this.updateUI();
         this.updateInventory();
         this.updateShopStatus();
@@ -220,7 +208,6 @@ class ClickerGame {
         this.updateLeaderboard('clicks');
     }
 
-    // Создание данных по умолчанию
     createDefaultData() {
         return {
             clicks: 0,
@@ -238,11 +225,18 @@ class ClickerGame {
             completedAchievements: [],
             activatedPromocodes: [],
             promocodesHistory: [],
+            settings: {
+                displayName: '',
+                theme: 'dark',
+                notifications: true,
+                sound: true,
+                animations: true,
+                language: 'ru'
+            },
             lastSave: Date.now()
         };
     }
 
-    // Загрузка элементов DOM
     loadElements() {
         this.usernameDisplay = document.getElementById('usernameDisplay');
         this.moneySpan = document.getElementById('money');
@@ -269,7 +263,6 @@ class ClickerGame {
         
         this.inventoryGrid = document.getElementById('inventoryGrid');
         
-        // Элементы профиля
         this.profileUsername = document.getElementById('profileUsername');
         this.profileLevel = document.getElementById('profileLevel');
         this.profileClicks = document.getElementById('profileClicks');
@@ -283,14 +276,12 @@ class ClickerGame {
         this.ownedSkins = document.getElementById('ownedSkins');
         this.totalSkins = document.getElementById('totalSkins');
         
-        // Элементы промокодов
         this.promocodeInput = document.getElementById('promocodeInput');
         this.activatePromocodeBtn = document.getElementById('activatePromocodeBtn');
         this.promocodeMessage = document.getElementById('promocodeMessage');
         this.promocodesList = document.getElementById('promocodesList');
         this.promocodesHistory = document.getElementById('promocodesHistory');
         
-        // Кнопка скрытия навигации
         this.navToggleBtn = document.getElementById('navToggleBtn');
         this.navLinks = document.querySelector('.nav-links');
         
@@ -300,7 +291,6 @@ class ClickerGame {
         }
     }
 
-    // Настройка обработчиков событий
     setupEventListeners() {
         this.navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -356,7 +346,6 @@ class ClickerGame {
             });
         }
         
-        // Обработчик для кнопки скрытия навигации
         if (this.navToggleBtn) {
             this.navToggleBtn.addEventListener('click', () => {
                 this.navLinks.classList.toggle('hidden');
@@ -371,7 +360,6 @@ class ClickerGame {
         }
     }
 
-    // Переключение вкладок
     switchTab(tabId) {
         this.navBtns.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabId);
@@ -390,6 +378,9 @@ class ClickerGame {
         if (tabId === 'profile') {
             this.updateProfile();
         }
+        if (tabId === 'settings' && this.settings) {
+            this.settings.updateUI();
+        }
         if (tabId === 'promocodes') {
             this.updatePromocodesList();
             this.updatePromocodesHistory();
@@ -401,7 +392,6 @@ class ClickerGame {
         }
     }
 
-    // Обработка клика
     handleClick(e) {
         let clickPower = this.userData.clickPower;
         const critRoll = Math.random() * 100;
@@ -424,7 +414,6 @@ class ClickerGame {
         this.checkAchievements();
     }
 
-    // Создание эффекта клика
     createClickEffect(x, y, text) {
         if (!this.clickEffects) return;
         
@@ -443,7 +432,6 @@ class ClickerGame {
         }, 600);
     }
 
-    // Покупка предмета
     async buyItem(item, price) {
         if (this.userData.money >= price) {
             this.userData.money -= price;
@@ -469,7 +457,6 @@ class ClickerGame {
         }
     }
 
-    // Покупка улучшения
     async buyUpgrade(upgradeType) {
         let currentLevel;
         let price;
@@ -526,7 +513,6 @@ class ClickerGame {
         }
     }
 
-    // Обновление цен улучшений
     updateUpgradePrices() {
         document.querySelectorAll('.upgrade-item').forEach(item => {
             const upgradeType = item.dataset.upgrade;
@@ -563,7 +549,6 @@ class ClickerGame {
         });
     }
 
-    // Обновление статуса магазина
     updateShopStatus() {
         document.querySelectorAll('.shop-item').forEach(item => {
             const skinId = item.dataset.skin;
@@ -588,7 +573,6 @@ class ClickerGame {
         });
     }
 
-    // Обновление инвентаря
     updateInventory() {
         if (!this.inventoryGrid) return;
         
@@ -635,7 +619,6 @@ class ClickerGame {
         });
     }
 
-    // Экипировка скина
     async equipSkin(skinId) {
         this.userData.currentSkin = skinId;
         if (this.clickIcon) {
@@ -660,7 +643,6 @@ class ClickerGame {
         }
     }
 
-    // Запуск автокликера
     startAutoClicker() {
         if (this.autoClickerInterval) {
             clearInterval(this.autoClickerInterval);
@@ -681,12 +663,10 @@ class ClickerGame {
         }, 1000);
     }
 
-    // Перезапуск автокликера
     restartAutoClicker() {
         this.startAutoClicker();
     }
 
-    // Запуск трекера времени
     startPlaytimeTracker() {
         this.playtimeInterval = setInterval(() => {
             this.userData.playtime++;
@@ -695,7 +675,6 @@ class ClickerGame {
         }, 1000);
     }
 
-    // Обновление отображения времени
     updatePlaytimeDisplay() {
         if (!this.playtimeSpan) return;
         
@@ -707,7 +686,6 @@ class ClickerGame {
             `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // Добавление опыта сезона
     addSeasonExp(amount) {
         this.userData.seasonExp += amount;
         const expNeeded = 100 + (this.userData.seasonLevel * 50);
@@ -726,7 +704,6 @@ class ClickerGame {
         }
     }
 
-    // Покупка премиум пропуска
     async buyPremiumPass() {
         if (this.userData.dilicks >= 500) {
             this.userData.dilicks -= 500;
@@ -739,7 +716,6 @@ class ClickerGame {
         }
     }
 
-    // Обновление лидерборда
     async updateLeaderboard(type) {
         if (!this.leaderboardBody) return;
         
@@ -770,7 +746,8 @@ class ClickerGame {
                         break;
                 }
                 
-                leaderboard.push({ username: userData.username, value });
+                const displayName = userData.settings?.displayName || userData.username;
+                leaderboard.push({ username: displayName, value, realUsername: userData.username });
             }
             
             leaderboard.sort((a, b) => b.value - a.value);
@@ -793,11 +770,11 @@ class ClickerGame {
                 
                 row.innerHTML = `
                     <td>${medal ? medal : index + 1}</td>
-                    <td>${entry.username} ${entry.username === localStorage.getItem('currentUser') ? '👑' : ''}</td>
+                    <td>${entry.username} ${entry.realUsername === localStorage.getItem('currentUser') ? '👑' : ''}</td>
                     <td>${this.formatLeaderboardValue(entry.value, type)}</td>
                 `;
                 
-                if (entry.username === localStorage.getItem('currentUser')) {
+                if (entry.realUsername === localStorage.getItem('currentUser')) {
                     row.style.background = 'rgba(255, 215, 0, 0.1)';
                     row.style.border = '1px solid gold';
                 }
@@ -811,7 +788,6 @@ class ClickerGame {
         }
     }
 
-    // Форматирование значения для лидерборда
     formatLeaderboardValue(value, type) {
         switch(type) {
             case 'playtime':
@@ -823,7 +799,6 @@ class ClickerGame {
         }
     }
 
-    // Обновление интерфейса
     async updateUI() {
         if (this.usernameDisplay) {
             this.usernameDisplay.textContent = localStorage.getItem('currentUser');
@@ -854,7 +829,6 @@ class ClickerGame {
         }
     }
 
-    // Сохранение игры
     async saveGame() {
         const userId = localStorage.getItem('userId');
         if (userId) {
@@ -866,7 +840,6 @@ class ClickerGame {
         }
     }
 
-    // Выход из игры
     async logout() {
         if (this.bubbleFrame) {
             cancelAnimationFrame(this.bubbleFrame);
@@ -884,7 +857,6 @@ class ClickerGame {
         window.location.href = 'register.html';
     }
 
-    // Создание пузырька
     createBubble() {
         const existingBubbles = document.querySelectorAll('.bubble').length;
         if (existingBubbles > 10) return;
@@ -910,7 +882,6 @@ class ClickerGame {
         }, duration * 1000);
     }
 
-    // Запуск пузырьков
     startBubbles() {
         const bubbleInterval = 2500;
         
@@ -925,7 +896,6 @@ class ClickerGame {
         this.bubbleFrame = requestAnimationFrame(createBubbleOptimized);
     }
 
-    // Проверка достижений
     checkAchievements() {
         if (!this.userData.completedAchievements) {
             this.userData.completedAchievements = [];
@@ -956,11 +926,11 @@ class ClickerGame {
         }
     }
 
-    // Обновление профиля
     updateProfile() {
         if (!this.profileUsername) return;
         
-        this.profileUsername.textContent = localStorage.getItem('currentUser');
+        const displayName = this.userData.settings?.displayName || this.userData.username;
+        this.profileUsername.textContent = displayName;
         this.profileLevel.textContent = this.userData.seasonLevel;
         this.profileClicks.textContent = this.userData.clicks.toLocaleString();
         this.profileMoney.textContent = this.userData.money.toLocaleString();
@@ -978,7 +948,6 @@ class ClickerGame {
         this.updateSkinStats();
     }
 
-    // Отображение достижений
     renderAchievements() {
         if (!this.achievementsGrid) return;
         
@@ -1011,7 +980,6 @@ class ClickerGame {
         });
     }
 
-    // Расчет прогресса достижения
     calculateAchievementProgress(achievement) {
         switch(achievement.id) {
             case 'firstClick':
@@ -1037,7 +1005,6 @@ class ClickerGame {
         }
     }
 
-    // Показ уведомления о достижении
     showAchievementNotification(achievement) {
         const notification = document.createElement('div');
         notification.className = 'achievement-notification';
@@ -1064,7 +1031,6 @@ class ClickerGame {
         }, 3000);
     }
 
-    // Обновление статистики скинов
     updateSkinStats() {
         if (!this.ownedSkinsList) return;
         
@@ -1098,7 +1064,6 @@ class ClickerGame {
         });
     }
 
-    // Активация промокода
     activatePromocode() {
         if (!this.promocodeInput) return;
         
@@ -1187,7 +1152,6 @@ class ClickerGame {
         this.checkAchievements();
     }
 
-    // Показ сообщения о промокоде
     showPromocodeMessage(text, type) {
         if (!this.promocodeMessage) return;
         
@@ -1202,7 +1166,6 @@ class ClickerGame {
         }, 3000);
     }
 
-    // Обновление списка промокодов
     updatePromocodesList() {
         if (!this.promocodesList) return;
         
@@ -1254,7 +1217,6 @@ class ClickerGame {
         }
     }
 
-    // Обновление истории промокодов
     updatePromocodesHistory() {
         if (!this.promocodesHistory) return;
         
@@ -1298,7 +1260,385 @@ class ClickerGame {
     }
 }
 
-// Запуск игры при загрузке страницы
+
+// ========== КЛАСС НАСТРОЕК ==========
+class Settings {
+    constructor(game) {
+        this.game = game;
+        this.init();
+    }
+
+    init() {
+        this.loadSettings();
+        this.setupEventListeners();
+        this.updateUI();
+    }
+
+    loadSettings() {
+        if (!this.game.userData.settings) {
+            this.game.userData.settings = {
+                displayName: this.game.userData.username,
+                theme: 'dark',
+                notifications: true,
+                sound: true,
+                animations: true,
+                language: 'ru'
+            };
+        }
+    }
+
+    setupEventListeners() {
+        const saveDisplayName = document.getElementById('saveDisplayName');
+        if (saveDisplayName) {
+            saveDisplayName.addEventListener('click', () => this.saveDisplayName());
+        }
+
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', () => this.changePassword());
+        }
+
+        const themeSelect = document.getElementById('themeSelect');
+        if (themeSelect) {
+            themeSelect.addEventListener('change', (e) => this.saveTheme(e.target.value));
+        }
+
+        const notificationsEnabled = document.getElementById('notificationsEnabled');
+        if (notificationsEnabled) {
+            notificationsEnabled.addEventListener('change', (e) => {
+                this.game.userData.settings.notifications = e.target.checked;
+                this.game.saveGame();
+                this.showToast('✅ Настройки уведомлений сохранены', 'success');
+            });
+        }
+
+        const soundEnabled = document.getElementById('soundEnabled');
+        if (soundEnabled) {
+            soundEnabled.addEventListener('change', (e) => {
+                this.game.userData.settings.sound = e.target.checked;
+                this.game.saveGame();
+                this.showToast('✅ Настройки звука сохранены', 'success');
+            });
+        }
+
+        const animationsEnabled = document.getElementById('animationsEnabled');
+        if (animationsEnabled) {
+            animationsEnabled.addEventListener('change', (e) => {
+                this.game.userData.settings.animations = e.target.checked;
+                this.game.saveGame();
+                this.showToast('✅ Настройки анимаций сохранены', 'success');
+            });
+        }
+
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (e) => this.saveLanguage(e.target.value));
+        }
+
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        if (exportDataBtn) {
+            exportDataBtn.addEventListener('click', () => this.exportData());
+        }
+
+        const importDataBtn = document.getElementById('importDataBtn');
+        if (importDataBtn) {
+            importDataBtn.addEventListener('click', () => this.importData());
+        }
+
+        const resetProgressBtn = document.getElementById('resetProgressBtn');
+        if (resetProgressBtn) {
+            resetProgressBtn.addEventListener('click', () => this.confirmResetProgress());
+        }
+
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        if (deleteAccountBtn) {
+            deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
+        }
+
+        const checkUpdatesBtn = document.getElementById('checkUpdatesBtn');
+        if (checkUpdatesBtn) {
+            checkUpdatesBtn.addEventListener('click', () => this.checkUpdates());
+        }
+    }
+
+    updateUI() {
+        const displayNameInput = document.getElementById('displayName');
+        if (displayNameInput) {
+            displayNameInput.value = this.game.userData.settings.displayName || this.game.userData.username;
+        }
+
+        const usernameInput = document.getElementById('username');
+        if (usernameInput) {
+            usernameInput.value = this.game.userData.username;
+        }
+
+        const themeSelect = document.getElementById('themeSelect');
+        if (themeSelect) {
+            themeSelect.value = this.game.userData.settings.theme || 'dark';
+        }
+
+        const notificationsEnabled = document.getElementById('notificationsEnabled');
+        if (notificationsEnabled) {
+            notificationsEnabled.checked = this.game.userData.settings.notifications !== false;
+        }
+
+        const soundEnabled = document.getElementById('soundEnabled');
+        if (soundEnabled) {
+            soundEnabled.checked = this.game.userData.settings.sound !== false;
+        }
+
+        const animationsEnabled = document.getElementById('animationsEnabled');
+        if (animationsEnabled) {
+            animationsEnabled.checked = this.game.userData.settings.animations !== false;
+        }
+
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.value = this.game.userData.settings.language || 'ru';
+        }
+    }
+
+    async saveDisplayName() {
+        const input = document.getElementById('displayName');
+        const newName = input.value.trim();
+        
+        if (!newName) {
+            this.showToast('❌ Введите никнейм', 'error');
+            return;
+        }
+
+        this.game.userData.settings.displayName = newName;
+        await this.game.saveGame();
+        this.showToast(`✅ Никнейм изменен на "${newName}"`, 'success');
+        
+        const profileUsername = document.getElementById('profileUsername');
+        if (profileUsername) {
+            profileUsername.textContent = newName;
+        }
+    }
+
+    async changePassword() {
+        const oldPass = document.getElementById('oldPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confirmPass = document.getElementById('confirmPassword').value;
+
+        if (!oldPass || !newPass || !confirmPass) {
+            this.showToast('❌ Заполните все поля', 'error');
+            return;
+        }
+
+        if (newPass !== confirmPass) {
+            this.showToast('❌ Новые пароли не совпадают', 'error');
+            return;
+        }
+
+        if (oldPass !== this.game.userData.password) {
+            this.showToast('❌ Неверный старый пароль', 'error');
+            return;
+        }
+
+        this.game.userData.password = newPass;
+        await this.game.saveGame();
+        
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        
+        this.showToast('✅ Пароль успешно изменен', 'success');
+    }
+
+    saveTheme(theme) {
+        this.game.userData.settings.theme = theme;
+        this.game.saveGame();
+        this.showToast(`✅ Тема изменена на ${this.getThemeName(theme)}`, 'success');
+        
+        if (theme === 'light') {
+            document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
+        } else if (theme === 'dark') {
+            document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
+        } else {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
+            }
+        }
+    }
+
+    getThemeName(theme) {
+        const themes = {
+            'dark': 'Тёмная',
+            'light': 'Светлая',
+            'auto': 'Как в системе'
+        };
+        return themes[theme] || theme;
+    }
+
+    async saveLanguage(lang) {
+        this.game.userData.settings.language = lang;
+        await this.game.saveGame();
+        this.showToast(`✅ Язык изменен на ${this.getLanguageName(lang)}`, 'success');
+    }
+
+    getLanguageName(lang) {
+        const languages = {
+            'ru': 'Русский',
+            'en': 'English',
+            'tr': 'Türkçe',
+            'es': 'Español'
+        };
+        return languages[lang] || lang;
+    }
+
+    exportData() {
+        const dataStr = JSON.stringify(this.game.userData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = `dilic_clicker_backup_${new Date().toISOString().slice(0,10)}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        
+        this.showToast('✅ Данные экспортированы', 'success');
+    }
+
+    importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = async (event) => {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    
+                    importedData.username = this.game.userData.username;
+                    importedData.password = this.game.userData.password;
+                    
+                    this.game.userData = importedData;
+                    await this.game.saveGame();
+                    
+                    this.showToast('✅ Данные импортированы', 'success');
+                    this.updateUI();
+                    this.game.updateUI();
+                    this.game.updateInventory();
+                } catch (error) {
+                    this.showToast('❌ Ошибка импорта', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+
+    confirmResetProgress() {
+        this.showModal(
+            '🔄 Сброс прогресса',
+            'Вы уверены, что хотите сбросить весь прогресс? Все клики, деньги и дилики будут обнулены.',
+            () => this.resetProgress()
+        );
+    }
+
+    async resetProgress() {
+        this.game.userData.clicks = 0;
+        this.game.userData.money = 1000;
+        this.game.userData.dilicks = 500;
+        this.game.userData.clickPower = 1;
+        this.game.userData.autoClickerLevel = 0;
+        this.game.userData.critChance = 5;
+        this.game.userData.inventory = ['classic'];
+        this.game.userData.currentSkin = 'classic';
+        this.game.userData.seasonLevel = 1;
+        this.game.userData.seasonExp = 0;
+        this.game.userData.playtime = 0;
+        this.game.userData.completedAchievements = [];
+        this.game.userData.activatedPromocodes = [];
+        this.game.userData.promocodesHistory = [];
+        
+        await this.game.saveGame();
+        this.game.updateUI();
+        this.game.updateInventory();
+        this.game.updateShopStatus();
+        this.game.updateUpgradePrices();
+        
+        this.showToast('✅ Прогресс сброшен', 'success');
+    }
+
+    confirmDeleteAccount() {
+        this.showModal(
+            '🗑️ Удаление аккаунта',
+            'Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить. Все данные будут потеряны.',
+            () => this.deleteAccount()
+        );
+    }
+
+    async deleteAccount() {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            await firebase.database().ref('users/' + userId).remove();
+        }
+        
+        localStorage.clear();
+        window.location.href = 'register.html';
+    }
+
+    checkUpdates() {
+        this.showToast('🔄 Установлена последняя версия 2.0.0', 'info');
+    }
+
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `settings-toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    showModal(title, message, onConfirm) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm">Да, подтверждаю</button>
+                    <button class="modal-btn cancel">Отмена</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        setTimeout(() => modal.classList.add('active'), 10);
+        
+        modal.querySelector('.confirm').addEventListener('click', () => {
+            onConfirm();
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+        });
+        
+        modal.querySelector('.cancel').addEventListener('click', () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+        });
+    }
+}
+
+
+// ========== ЗАПУСК ИГРЫ ==========
 document.addEventListener('DOMContentLoaded', () => {
     new ClickerGame();
 });

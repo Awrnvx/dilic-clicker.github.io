@@ -15,7 +15,6 @@
     <script src="firebase-config.js"></script>
     
     <script>
-        // Инициализация Telegram Mini App
         const telegram = window.Telegram.WebApp;
         telegram.ready();
         telegram.expand();
@@ -25,7 +24,6 @@
     <div class="game-container">
         <!-- Навигация -->
         <nav class="glass-nav">
-            <!-- КНОПКА СКРЫТИЯ/ПОКАЗА НАВИГАЦИИ -->
             <button class="nav-toggle-btn" id="navToggleBtn">
                 <span class="toggle-icon">◀</span>
             </button>
@@ -36,6 +34,7 @@
                 <button class="nav-btn" data-tab="inventory">Инвентарь</button>
                 <button class="nav-btn" data-tab="upgrades">Улучшения</button>
                 <button class="nav-btn" data-tab="profile">Профиль</button>
+                <button class="nav-btn" data-tab="settings">⚙️ Настройки</button>
                 <button class="nav-btn" data-tab="season">Сезонный пропуск</button>
                 <button class="nav-btn" data-tab="promocodes">Промокоды</button>
                 <button class="nav-btn" data-tab="leaderboard">Лидеры</button>
@@ -196,6 +195,112 @@
                             <p><span id="ownedSkins">1</span> / <span id="totalSkins">3</span> скинов</p>
                         </div>
                         <div class="owned-skins-list" id="ownedSkinsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- НАСТРОЙКИ ПРОФИЛЯ -->
+            <div id="settings" class="tab">
+                <div class="settings-container">
+                    <h2 class="section-title">⚙️ Настройки профиля</h2>
+                    
+                    <div class="settings-grid">
+                        <!-- Основная информация -->
+                        <div class="settings-card glass-card">
+                            <h3>👤 Основное</h3>
+                            <div class="settings-field">
+                                <label>👑 Никнейм (отображаемое имя)</label>
+                                <div class="settings-input-group">
+                                    <input type="text" id="displayName" class="glass-input" placeholder="Введите никнейм" maxlength="20">
+                                    <button class="glass-btn settings-save-btn" id="saveDisplayName">Сохранить</button>
+                                </div>
+                                <p class="settings-hint">Будет отображаться в лидерборде и профиле</p>
+                            </div>
+                            
+                            <div class="settings-field">
+                                <label>📧 @username (логин)</label>
+                                <input type="text" id="username" class="glass-input" readonly disabled>
+                                <p class="settings-hint">Логин нельзя изменить</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Безопасность -->
+                        <div class="settings-card glass-card">
+                            <h3>🔒 Безопасность</h3>
+                            <div class="settings-field">
+                                <label>🔑 Смена пароля</label>
+                                <input type="password" id="oldPassword" class="glass-input" placeholder="Старый пароль">
+                                <input type="password" id="newPassword" class="glass-input" placeholder="Новый пароль">
+                                <input type="password" id="confirmPassword" class="glass-input" placeholder="Подтвердите пароль">
+                                <button class="glass-btn settings-save-btn" id="changePasswordBtn">Изменить пароль</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Настройки интерфейса -->
+                        <div class="settings-card glass-card">
+                            <h3>🎨 Интерфейс</h3>
+                            <div class="settings-field">
+                                <label>🌙 Тема</label>
+                                <select id="themeSelect" class="glass-input">
+                                    <option value="dark">Тёмная</option>
+                                    <option value="light">Светлая</option>
+                                    <option value="auto">Как в системе</option>
+                                </select>
+                            </div>
+                            
+                            <div class="settings-field">
+                                <label>🔔 Уведомления</label>
+                                <div class="settings-checkbox">
+                                    <input type="checkbox" id="notificationsEnabled" checked>
+                                    <label for="notificationsEnabled">Включить уведомления</label>
+                                </div>
+                                <div class="settings-checkbox">
+                                    <input type="checkbox" id="soundEnabled" checked>
+                                    <label for="soundEnabled">Звуковые эффекты</label>
+                                </div>
+                                <div class="settings-checkbox">
+                                    <input type="checkbox" id="animationsEnabled" checked>
+                                    <label for="animationsEnabled">Анимации</label>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-field">
+                                <label>🌐 Язык</label>
+                                <select id="languageSelect" class="glass-input">
+                                    <option value="ru">Русский</option>
+                                    <option value="en">English</option>
+                                    <option value="tr">Türkçe</option>
+                                    <option value="es">Español</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Управление данными -->
+                        <div class="settings-card glass-card">
+                            <h3>💾 Управление данными</h3>
+                            <div class="settings-field">
+                                <label>📊 Статистика</label>
+                                <button class="glass-btn settings-warning-btn" id="exportDataBtn">📥 Экспортировать данные</button>
+                                <button class="glass-btn settings-warning-btn" id="importDataBtn">📤 Импортировать данные</button>
+                            </div>
+                            
+                            <div class="settings-field">
+                                <label>⚠️ Опасная зона</label>
+                                <button class="glass-btn settings-danger-btn" id="resetProgressBtn">🔄 Сбросить прогресс</button>
+                                <button class="glass-btn settings-danger-btn" id="deleteAccountBtn">🗑️ Удалить аккаунт</button>
+                            </div>
+                        </div>
+                        
+                        <!-- О приложении -->
+                        <div class="settings-card glass-card">
+                            <h3>ℹ️ О приложении</h3>
+                            <div class="settings-field">
+                                <p><strong>Версия:</strong> 2.0.0</p>
+                                <p><strong>Разработчик:</strong> Dilic Team</p>
+                                <p><strong>Telegram:</strong> @dilic_clicker_bot</p>
+                                <button class="glass-btn" id="checkUpdatesBtn">🔄 Проверить обновления</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
