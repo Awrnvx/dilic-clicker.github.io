@@ -1310,3 +1310,454 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// ========== КЛАСС НАСТРОЕК ==========
+class Settings {
+    constructor(game) {
+        this.game = game;
+        this.init();
+    }
+
+    init() {
+        this.loadSettings();
+        this.setupEventListeners();
+        this.updateUI();
+    }
+
+    loadSettings() {
+        if (!this.game.userData.settings) {
+            this.game.userData.settings = {
+                displayName: this.game.userData.username,
+                theme: 'dark',
+                notifications: true,
+                sound: true,
+                animations: true,
+                language: 'ru'
+            };
+        }
+    }
+
+    setupEventListeners() {
+        // Сохранение никнейма
+        const saveDisplayName = document.getElementById('saveDisplayName');
+        if (saveDisplayName) {
+            saveDisplayName.addEventListener('click', () => this.saveDisplayName());
+        }
+
+        // Смена пароля
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', () => this.changePassword());
+        }
+
+        // Тема
+        const themeSelect = document.getElementById('themeSelect');
+        if (themeSelect) {
+            themeSelect.addEventListener('change', (e) => this.saveTheme(e.target.value));
+        }
+
+        // Уведомления
+        const notificationsEnabled = document.getElementById('notificationsEnabled');
+        if (notificationsEnabled) {
+            notificationsEnabled.addEventListener('change', (e) => {
+                this.game.userData.settings.notifications = e.target.checked;
+                this.game.saveGame();
+                this.showToast('✅ Настройки уведомлений сохранены', 'success');
+            });
+        }
+
+        // Звук
+        const soundEnabled = document.getElementById('soundEnabled');
+        if (soundEnabled) {
+            soundEnabled.addEventListener('change', (e) => {
+                this.game.userData.settings.sound = e.target.checked;
+                this.game.saveGame();
+                this.showToast('✅ Настройки звука сохранены', 'success');
+            });
+        }
+
+        // Анимации
+        const animationsEnabled = document.getElementById('animationsEnabled');
+        if (animationsEnabled) {
+            animationsEnabled.addEventListener('change', (e) => {
+                this.game.userData.settings.animations = e.target.checked;
+                this.game.saveGame();
+                this.showToast('✅ Настройки анимаций сохранены', 'success');
+            });
+        }
+
+        // Язык
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (e) => this.saveLanguage(e.target.value));
+        }
+
+        // Экспорт данных
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        if (exportDataBtn) {
+            exportDataBtn.addEventListener('click', () => this.exportData());
+        }
+
+        // Импорт данных
+        const importDataBtn = document.getElementById('importDataBtn');
+        if (importDataBtn) {
+            importDataBtn.addEventListener('click', () => this.importData());
+        }
+
+        // Сброс прогресса
+        const resetProgressBtn = document.getElementById('resetProgressBtn');
+        if (resetProgressBtn) {
+            resetProgressBtn.addEventListener('click', () => this.confirmResetProgress());
+        }
+
+        // Удаление аккаунта
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        if (deleteAccountBtn) {
+            deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
+        }
+
+        // Проверка обновлений
+        const checkUpdatesBtn = document.getElementById('checkUpdatesBtn');
+        if (checkUpdatesBtn) {
+            checkUpdatesBtn.addEventListener('click', () => this.checkUpdates());
+        }
+    }
+
+    updateUI() {
+        // Отображаемое имя
+        const displayNameInput = document.getElementById('displayName');
+        if (displayNameInput) {
+            displayNameInput.value = this.game.userData.settings.displayName || this.game.userData.username;
+        }
+
+        // Логин (только для чтения)
+        const usernameInput = document.getElementById('username');
+        if (usernameInput) {
+            usernameInput.value = this.game.userData.username;
+        }
+
+        // Тема
+        const themeSelect = document.getElementById('themeSelect');
+        if (themeSelect) {
+            themeSelect.value = this.game.userData.settings.theme || 'dark';
+        }
+
+        // Уведомления
+        const notificationsEnabled = document.getElementById('notificationsEnabled');
+        if (notificationsEnabled) {
+            notificationsEnabled.checked = this.game.userData.settings.notifications !== false;
+        }
+
+        // Звук
+        const soundEnabled = document.getElementById('soundEnabled');
+        if (soundEnabled) {
+            soundEnabled.checked = this.game.userData.settings.sound !== false;
+        }
+
+        // Анимации
+        const animationsEnabled = document.getElementById('animationsEnabled');
+        if (animationsEnabled) {
+            animationsEnabled.checked = this.game.userData.settings.animations !== false;
+        }
+
+        // Язык
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.value = this.game.userData.settings.language || 'ru';
+        }
+    }
+
+    async saveDisplayName() {
+        const input = document.getElementById('displayName');
+        const newName = input.value.trim();
+        
+        if (!newName) {
+            this.showToast('❌ Введите никнейм', 'error');
+            return;
+        }
+
+        if (newName.length > 20) {
+            this.showToast('❌ Никнейм не должен превышать 20 символов', 'error');
+            return;
+        }
+
+        this.game.userData.settings.displayName = newName;
+        await this.game.saveGame();
+        
+        // Обновляем отображение в профиле
+        const profileUsername = document.getElementById('profileUsername');
+        if (profileUsername) {
+            profileUsername.textContent = newName;
+        }
+        
+        // Обновляем в шапке
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        if (usernameDisplay) {
+            usernameDisplay.textContent = newName;
+        }
+        
+        this.showToast(`✅ Никнейм изменен на "${newName}"`, 'success');
+    }
+
+    async changePassword() {
+        const oldPass = document.getElementById('oldPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confirmPass = document.getElementById('confirmPassword').value;
+
+        if (!oldPass || !newPass || !confirmPass) {
+            this.showToast('❌ Заполните все поля', 'error');
+            return;
+        }
+
+        if (newPass !== confirmPass) {
+            this.showToast('❌ Новые пароли не совпадают', 'error');
+            return;
+        }
+
+        if (newPass.length < 4) {
+            this.showToast('❌ Пароль должен быть не менее 4 символов', 'error');
+            return;
+        }
+
+        if (oldPass !== this.game.userData.password) {
+            this.showToast('❌ Неверный старый пароль', 'error');
+            return;
+        }
+
+        this.game.userData.password = newPass;
+        await this.game.saveGame();
+        
+        // Очищаем поля
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        
+        this.showToast('✅ Пароль успешно изменен', 'success');
+    }
+
+    saveTheme(theme) {
+        this.game.userData.settings.theme = theme;
+        this.game.saveGame();
+        
+        const themeNames = {
+            'dark': 'Тёмная',
+            'light': 'Светлая',
+            'auto': 'Как в системе'
+        };
+        
+        this.showToast(`✅ Тема изменена на ${themeNames[theme] || theme}`, 'success');
+        
+        // Применяем тему
+        if (theme === 'light') {
+            document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
+        } else if (theme === 'dark') {
+            document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
+        } else {
+            // Авто - проверяем системные настройки
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
+            }
+        }
+    }
+
+    async saveLanguage(lang) {
+        this.game.userData.settings.language = lang;
+        await this.game.saveGame();
+        
+        const langNames = {
+            'ru': 'Русский',
+            'en': 'English',
+            'tr': 'Türkçe',
+            'es': 'Español'
+        };
+        
+        this.showToast(`✅ Язык изменен на ${langNames[lang] || lang}`, 'success');
+    }
+
+    exportData() {
+        const dataStr = JSON.stringify(this.game.userData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        
+        const date = new Date();
+        const fileName = `dilic_clicker_backup_${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}.json`;
+        
+        const link = document.createElement('a');
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', fileName);
+        link.click();
+        
+        this.showToast('✅ Данные экспортированы', 'success');
+    }
+
+    importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = async (event) => {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    
+                    // Сохраняем логин и пароль
+                    importedData.username = this.game.userData.username;
+                    importedData.password = this.game.userData.password;
+                    
+                    this.game.userData = importedData;
+                    await this.game.saveGame();
+                    
+                    this.updateUI();
+                    this.game.updateUI();
+                    this.game.updateInventory();
+                    this.game.updateShopStatus();
+                    this.game.updateUpgradePrices();
+                    
+                    this.showToast('✅ Данные импортированы', 'success');
+                } catch (error) {
+                    this.showToast('❌ Ошибка импорта: неверный формат файла', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+
+    confirmResetProgress() {
+        this.showModal(
+            '🔄 Сброс прогресса',
+            'Вы уверены, что хотите сбросить весь прогресс? Все клики, деньги и дилики будут обнулены. Это действие нельзя отменить.',
+            () => this.resetProgress()
+        );
+    }
+
+    async resetProgress() {
+        // Сохраняем логин и пароль
+        const username = this.game.userData.username;
+        const password = this.game.userData.password;
+        
+        const resetData = {
+            clicks: 0,
+            money: 1000,
+            dilicks: 500,
+            clickPower: 1,
+            autoClickerLevel: 0,
+            critChance: 5,
+            inventory: ['classic'],
+            currentSkin: 'classic',
+            seasonLevel: 1,
+            seasonExp: 0,
+            playtime: 0,
+            premiumPass: false,
+            completedAchievements: [],
+            activatedPromocodes: [],
+            promocodesHistory: [],
+            settings: this.game.userData.settings, // Сохраняем настройки
+            lastSave: Date.now(),
+            username: username,
+            password: password
+        };
+        
+        this.game.userData = resetData;
+        await this.game.saveGame();
+        
+        this.game.updateUI();
+        this.game.updateInventory();
+        this.game.updateShopStatus();
+        this.game.updateUpgradePrices();
+        this.updateUI();
+        
+        this.showToast('✅ Прогресс сброшен', 'success');
+    }
+
+    confirmDeleteAccount() {
+        this.showModal(
+            '🗑️ Удаление аккаунта',
+            'Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить. Все данные будут потеряны навсегда.',
+            () => this.deleteAccount()
+        );
+    }
+
+    async deleteAccount() {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            await firebase.database().ref('users/' + userId).remove();
+        }
+        
+        // Останавливаем все интервалы
+        if (this.game.bubbleFrame) {
+            cancelAnimationFrame(this.game.bubbleFrame);
+        }
+        if (this.game.autoClickerInterval) {
+            clearInterval(this.game.autoClickerInterval);
+        }
+        if (this.game.playtimeInterval) {
+            clearInterval(this.game.playtimeInterval);
+        }
+        
+        localStorage.clear();
+        window.location.href = 'register.html';
+    }
+
+    checkUpdates() {
+        this.showToast('🔄 Установлена последняя версия 2.0.0', 'info');
+    }
+
+    showToast(message, type = 'info') {
+        // Удаляем старый тост, если есть
+        const oldToast = document.querySelector('.settings-toast');
+        if (oldToast) oldToast.remove();
+        
+        const toast = document.createElement('div');
+        toast.className = `settings-toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    showModal(title, message, onConfirm) {
+        // Удаляем старую модалку, если есть
+        const oldModal = document.querySelector('.modal-overlay');
+        if (oldModal) oldModal.remove();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm">Да, подтверждаю</button>
+                    <button class="modal-btn cancel">Отмена</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        setTimeout(() => modal.classList.add('active'), 10);
+        
+        modal.querySelector('.confirm').addEventListener('click', () => {
+            onConfirm();
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+        });
+        
+        modal.querySelector('.cancel').addEventListener('click', () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+        });
+    }
+}
