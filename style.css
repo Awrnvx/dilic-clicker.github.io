@@ -95,7 +95,7 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-/* Навигация - ПК версия (КАК БЫЛО В НАЧАЛЕ) */
+/* Навигация - ПК версия */
 .glass-nav {
     background: rgba(15, 18, 25, 0.6);
     backdrop-filter: blur(10px);
@@ -182,7 +182,7 @@ a {
     transform: rotate(180deg);
 }
 
-/* USER-INFO - ПК версия (КАК БЫЛО В НАЧАЛЕ) */
+/* USER-INFO - ПК версия */
 .user-info {
     display: flex;
     gap: 20px;
@@ -1865,17 +1865,21 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ (ТВОЯ СТРУКТУРА) ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ - С КНОПКОЙ ◀ И БЕЗ ЗОЛОТА ===== */
 @media (max-width: 768px) {
     .glass-nav {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         padding: 10px;
+        position: relative;
     }
     
+    /* Кнопка ◀ видна и слева */
     .nav-toggle-btn {
         order: 1;
+        display: flex !important;
+        margin-right: 0;
     }
     
     .user-info {
@@ -1906,7 +1910,7 @@ a {
     .nav-links {
         order: 3;
         width: 100%;
-        display: flex;
+        display: flex !important;
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
@@ -1924,26 +1928,60 @@ a {
         border-radius: 50% !important;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: transform 0.1s ease;
     }
     
     .nav-btn .nav-text {
         display: none;
     }
     
-    .nav-btn[data-tab="main"]::before { content: "🏠"; font-size: 24px; }
-    .nav-btn[data-tab="shop"]::before { content: "🛒"; font-size: 24px; }
-    .nav-btn[data-tab="inventory"]::before { content: "📦"; font-size: 24px; }
-    .nav-btn[data-tab="upgrades"]::before { content: "⚡"; font-size: 24px; }
-    .nav-btn[data-tab="profile"]::before { content: "👤"; font-size: 24px; }
-    .nav-btn[data-tab="settings"]::before { content: "⚙️"; font-size: 24px; }
-    .nav-btn[data-tab="season"]::before { content: "🎫"; font-size: 24px; }
-    .nav-btn[data-tab="promocodes"]::before { content: "🎁"; font-size: 24px; }
-    .nav-btn[data-tab="leaderboard"]::before { content: "🏆"; font-size: 24px; }
+    .nav-btn[data-tab="main"]::before {
+        content: "🏠";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="shop"]::before {
+        content: "🛒";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="inventory"]::before {
+        content: "📦";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="upgrades"]::before {
+        content: "⚡";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="profile"]::before {
+        content: "👤";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="settings"]::before {
+        content: "⚙️";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="season"]::before {
+        content: "🎫";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="promocodes"]::before {
+        content: "🎁";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="leaderboard"]::before {
+        content: "🏆";
+        font-size: 24px;
+    }
     
+    /* Убираем золотой фон, оставляем только эффект нажатия */
     .nav-btn.active {
-        background: rgba(255, 215, 0, 0.3);
-        border-color: gold;
-        box-shadow: 0 0 15px gold;
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+    
+    /* Эффект нажатия на кнопку (без золота) */
+    .nav-btn:active {
+        transform: scale(0.9);
+        background: rgba(255, 255, 255, 0.2);
     }
     
     /* Адаптация контента */
