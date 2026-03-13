@@ -1859,147 +1859,6 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .glass-nav {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 10px;
-        padding: 12px;
-    }
-    
-    .nav-links {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        margin-top: 10px;
-    }
-    
-    .nav-toggle-btn {
-        order: 1;
-    }
-    
-    .user-info {
-        order: 2;
-        flex: 1;
-        justify-content: flex-end;
-    }
-    
-    .click-btn {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .shop-grid, .upgrades-grid, .inventory-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .section-title {
-        font-size: 26px;
-    }
-    
-    .currency-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .price-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-        padding: 20px;
-    }
-    
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-    }
-    
-    .profile-info h2 {
-        font-size: 28px;
-    }
-    
-    .profile-stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-value {
-        font-size: 20px;
-    }
-    
-    .achievements-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .promocode-input-wrapper {
-        flex-direction: column;
-    }
-    
-    .promocode-activate-btn {
-        width: 100%;
-    }
-    
-    .promocodes-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .history-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .settings-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .settings-input-group {
-        flex-direction: column;
-    }
-    
-    .settings-save-btn {
-        width: 100%;
-    }
-    
-    .settings-warning-btn,
-    .settings-danger-btn {
-        width: 100%;
-        margin-right: 0;
-    }
-    
-    .modal-buttons {
-        flex-direction: column;
-    }
-}
-
-@media (max-width: 500px) {
-    .profile-header {
-        padding: 15px;
-    }
-    
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .skin-stats {
-        padding: 20px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
 /* ===== МОБИЛЬНАЯ ВЕРСИЯ ДЛЯ TELEGRAM ===== */
 @media (max-width: 768px) {
     /* Убираем текст с кнопок, оставляем только эмодзи */
@@ -2246,13 +2105,35 @@ a {
     }
 }
 
-/* Убираем задержку при нажатии на мобильных */
+@media (max-width: 500px) {
+    .profile-header {
+        padding: 15px;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .skin-stats {
+        padding: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== УЛУЧШЕНИЯ ДЛЯ СЕНСОРНЫХ ЭКРАНОВ ===== */
 * {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
 }
 
-/* Улучшаем отзывчивость кнопок */
 .nav-btn,
 .glass-btn,
 .buy-btn,
