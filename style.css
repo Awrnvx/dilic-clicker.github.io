@@ -2141,3 +2141,52 @@ a {
         order: 1;
     }
 }
+
+/* ФИНАЛЬНАЯ СТРУКТУРА ДЛЯ ТЕЛЕФОНА */
+@media (max-width: 768px) {
+    .glass-nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 10px;
+    }
+    
+    .nav-toggle-btn {
+        order: 1;
+    }
+    
+    .user-info {
+        order: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+    }
+    
+    .user-info-top {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .user-info-bottom {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    #logoutBtn {
+        margin: 0;
+    }
+    
+    .nav-links {
+        order: 3;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+}
