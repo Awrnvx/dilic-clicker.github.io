@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dilic Clicker - Игра с кликерами</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Telegram Web App скрипт -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // Инициализация Telegram Mini App
+        const telegram = window.Telegram.WebApp;
+        telegram.ready();
+        telegram.expand(); // Растягиваем на весь экран
+        
+        // Настройка основной кнопки (опционально)
+        telegram.MainButton.setText('Закрыть').hide();
+    </script>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Навигация -->
+        <nav class="glass-nav">
+            <div class="nav-links">
+                <button class="nav-btn active" data-tab="main">Главная</button>
+                <button class="nav-btn" data-tab="shop">Магазин</button>
+                <button class="nav-btn" data-tab="inventory">Инвентарь</button>
+                <button class="nav-btn" data-tab="upgrades">Улучшения</button>
+                <button class="nav-btn" data-tab="profile">Профиль</button>
+                <button class="nav-btn" data-tab="season">Сезонный пропуск</button>
+                <button class="nav-btn" data-tab="promocodes">Промокоды</button>
+                <button class="nav-btn" data-tab="leaderboard">Лидеры</button>
+            </div>
+            <div class="user-info">
+                <span id="usernameDisplay"></span>
+                <span class="currency">
+                    <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" alt="Money" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
+                    <span id="money">0</span>
+                </span>
+                <span class="dilic">
+                    <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
+                    <span id="dilicks">0</span>
+                </span>
+                <button id="logoutBtn" class="glass-btn small">Выйти</button>
+            </div>
+        </nav>
+
+        <!-- Основной контент -->
+        <div class="content">
+            <!-- Главная вкладка -->
+            <div id="main" class="tab active">
+                <div class="clicker-section">
+                    <div class="glass-card clicker-card">
+                        <h1>Dilic Clicker</h1>
+                        <div class="click-effects" id="clickEffects"></div>
+                        <button id="clickButton" class="click-btn glass-effect">
+                            <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Click" id="clickIcon">
+                        </button>
+                        <div class="stats">
+                            <p>Кликов: <span id="clicks">0</span></p>
+                            <p>Сила клика: <span id="clickPower">1</span></p>
+                            <p>Время в игре: <span id="playtime">00:00:00</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Магазин -->
+            <div id="shop" class="tab">
+                <h2 class="section-title">Магазин скинов</h2>
+                <div class="shop-grid">
+                    <div class="glass-card shop-item" data-item="classic" data-skin="classic">
+                        <div class="skin-preview">
+                            <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Classic Skin">
+                        </div>
+                        <h3>Классический скин</h3>
+                        <p class="skin-description">Стандартный курсор</p>
+                        <p class="skin-price">
+                            <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" alt="Money" class="price-icon">
+                            <span class="price-value">0</span>
+                        </p>
+                        <p class="skin-status" id="status-classic">В инвентаре</p>
+                        <button class="glass-btn buy-btn disabled" data-item="classic" data-price="0" data-currency="money" disabled>Куплено</button>
+                    </div>
+                    
+                    <div class="glass-card shop-item" data-item="neon" data-skin="neon">
+                        <div class="skin-preview">
+                            <img src="https://img.freepik.com/premium-photo/neon-style-computer-cursor-arrow-design-vector_1018059-4.jpg?semt=ais_hybrid&w=740" alt="Neon Skin">
+                        </div>
+                        <h3>Неоновый скин</h3>
+                        <p class="skin-description">Яркий неоновый курсор</p>
+                        <p class="skin-price">
+                            <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" alt="Money" class="price-icon">
+                            <span class="price-value">1000</span>
+                        </p>
+                        <p class="skin-status" id="status-neon">Не куплено</p>
+                        <button class="glass-btn buy-btn" data-item="neon" data-price="1000" data-currency="money">Купить</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Инвентарь -->
+            <div id="inventory" class="tab">
+                <h2 class="section-title">Инвентарь скинов</h2>
+                <div class="inventory-grid" id="inventoryGrid">
+                    <!-- Сюда будут добавляться скины через JavaScript -->
+                </div>
+            </div>
+
+            <!-- Улучшения -->
+            <div id="upgrades" class="tab">
+                <h2 class="section-title">Улучшения</h2>
+                <div class="upgrades-grid">
+                    <div class="glass-card upgrade-item" data-upgrade="clickPower">
+                        <h3>Усилитель клика</h3>
+                        <p>Уровень: <span class="upgrade-level">1</span></p>
+                        <p>Сила: +1 к клику</p>
+                        <p class="upgrade-price">
+                            <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
+                            <span class="price-value">50</span>
+                        </p>
+                        <button class="glass-btn upgrade-btn" data-upgrade="clickPower" data-currency="dilicks">Улучшить</button>
+                    </div>
+                    <div class="glass-card upgrade-item" data-upgrade="autoClicker">
+                        <h3>Автокликер</h3>
+                        <p>Уровень: <span class="upgrade-level">0</span></p>
+                        <p>+1 клик/сек</p>
+                        <p class="upgrade-price">
+                            <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
+                            <span class="price-value">100</span>
+                        </p>
+                        <button class="glass-btn upgrade-btn" data-upgrade="autoClicker" data-currency="dilicks">Купить</button>
+                    </div>
+                    <div class="glass-card upgrade-item" data-upgrade="critChance">
+                        <h3>Критический удар</h3>
+                        <p>Шанс: <span class="upgrade-level">5%</span></p>
+                        <p>Множитель: x2</p>
+                        <p class="upgrade-price">
+                            <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
+                            <span class="price-value">200</span>
+                        </p>
+                        <button class="glass-btn upgrade-btn" data-upgrade="critChance" data-currency="dilicks">Улучшить</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Профиль игрока с ачивками -->
+            <div id="profile" class="tab">
+                <div class="profile-container">
+                    <!-- Верхняя часть с аватаром и статистикой -->
+                    <div class="profile-header glass-card">
+                        <div class="profile-avatar">
+                            <div class="avatar-ring">
+                                <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Avatar" id="profileAvatar">
+                            </div>
+                            <div class="avatar-glow"></div>
+                        </div>
+                        
+                        <div class="profile-info">
+                            <h2 id="profileUsername">Игрок</h2>
+                            <p class="profile-level">Уровень: <span id="profileLevel">1</span></p>
+                            <div class="profile-stats-grid">
+                                <div class="profile-stat-item">
+                                    <span class="stat-label">Всего кликов</span>
+                                    <span class="stat-value" id="profileClicks">0</span>
+                                </div>
+                                <div class="profile-stat-item">
+                                    <span class="stat-label">Заработано денег</span>
+                                    <span class="stat-value" id="profileMoney">0</span>
+                                </div>
+                                <div class="profile-stat-item">
+                                    <span class="stat-label">Диликов</span>
+                                    <span class="stat-value" id="profileDilicks">0</span>
+                                </div>
+                                <div class="profile-stat-item">
+                                    <span class="stat-label">В игре</span>
+                                    <span class="stat-value" id="profilePlaytime">00:00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Достижения (ачивки) -->
+                    <h2 class="section-title">Достижения</h2>
+                    <div class="achievements-grid" id="achievementsGrid">
+                        <!-- Ачивки будут добавляться через JavaScript -->
+                    </div>
+
+                    <!-- Статистика скинов -->
+                    <div class="skin-stats glass-card">
+                        <h3>Коллекция скинов</h3>
+                        <div class="skin-progress">
+                            <div class="skin-progress-bar">
+                                <div class="skin-progress-fill" id="skinProgressFill"></div>
+                            </div>
+                            <p><span id="ownedSkins">1</span> / <span id="totalSkins">3</span> скинов</p>
+                        </div>
+                        <div class="owned-skins-list" id="ownedSkinsList">
+                            <!-- Список скинов будет добавляться через JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Сезонный пропуск -->
+            <div id="season" class="tab">
+                <div class="season-pass glass-card">
+                    <h2>Сезонный пропуск</h2>
+                    <div class="season-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="seasonProgress"></div>
+                        </div>
+                        <p>Уровень: <span id="seasonLevel">1</span>/50</p>
+                    </div>
+                    <div class="season-rewards">
+                        <div class="reward-tier glass-card">
+                            <h3>Бесплатный уровень</h3>
+                            <p class="reward-price">
+                                <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" alt="Money" class="price-icon">
+                                <span>100</span>
+                            </p>
+                        </div>
+                        <div class="reward-tier glass-card premium">
+                            <h3>Премиум уровень</h3>
+                            <p>Награда: Скин "Сезонный"</p>
+                            <p class="reward-price">
+                                <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
+                                <span>500</span>
+                            </p>
+                            <button class="glass-btn" id="buyPremiumBtn" data-currency="dilicks">Купить премиум</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Промокоды -->
+            <div id="promocodes" class="tab">
+                <div class="promocodes-container">
+                    <div class="promocodes-header glass-card">
+                        <h2 class="section-title">Промокоды</h2>
+                        <p class="promocodes-subtitle">Вводи промокоды и получай бонусы!</p>
+                    </div>
+                    
+                    <!-- Поле ввода промокода -->
+                    <div class="promocode-input-section glass-card">
+                        <div class="promocode-input-wrapper">
+                            <input type="text" id="promocodeInput" class="glass-input promocode-input" placeholder="ВВЕДИ ПРОМОКОД" maxlength="20">
+                            <button class="glass-btn promocode-activate-btn" id="activatePromocodeBtn">
+                                <span class="btn-text">Активировать</span>
+                            </button>
+                        </div>
+                        <div id="promocodeMessage" class="promocode-message"></div>
+                    </div>
+                    
+                    <!-- Список активных промокодов -->
+                    <div class="active-promocodes glass-card">
+                        <h3>Доступные промокоды</h3>
+                        <div class="promocodes-list" id="promocodesList">
+                            <!-- Промокоды будут добавляться через JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- История активированных промокодов -->
+                    <div class="promocodes-history glass-card">
+                        <h3>История активаций</h3>
+                        <div class="history-list" id="promocodesHistory">
+                            <!-- История будет добавляться через JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Лидерборд -->
+            <div id="leaderboard" class="tab">
+                <div class="leaderboard-container glass-card">
+                    <h2>Таблица лидеров</h2>
+                    <div class="leaderboard-tabs">
+                        <button class="glass-btn small active" data-leaderboard="clicks">По кликам</button>
+                        <button class="glass-btn small" data-leaderboard="money">По деньгам</button>
+                        <button class="glass-btn small" data-leaderboard="playtime">По времени</button>
+                    </div>
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Место</th>
+                                <th>Игрок</th>
+                                <th>Показатель</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

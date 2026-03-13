@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Dilic Clicker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="glass-card auth-card">
+            <h1>Dilic Clicker</h1>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab">Вход</button>
+                <button class="auth-tab" id="registerTab">Регистрация</button>
+            </div>
+            
+            <!-- Форма входа -->
+            <form id="loginForm" class="auth-form active">
+                <div class="input-group">
+                    <label for="loginUsername">Логин</label>
+                    <input type="text" id="loginUsername" class="glass-input" required>
+                </div>
+                <div class="input-group">
+                    <label for="loginPassword">Пароль</label>
+                    <input type="password" id="loginPassword" class="glass-input" required>
+                </div>
+                <button type="submit" class="glass-btn auth-btn">Войти</button>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="registerForm" class="auth-form">
+                <div class="input-group">
+                    <label for="regUsername">Логин</label>
+                    <input type="text" id="regUsername" class="glass-input" required>
+                </div>
+                <div class="input-group">
+                    <label for="regPassword">Пароль</label>
+                    <input type="password" id="regPassword" class="glass-input" required>
+                </div>
+                <div class="input-group">
+                    <label for="regConfirmPassword">Подтвердите пароль</label>
+                    <input type="password" id="regConfirmPassword" class="glass-input" required>
+                </div>
+                <button type="submit" class="glass-btn auth-btn">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+    <script src="register.js"></script>
+</body>
+</html>
