@@ -1,11 +1,10 @@
 // firebase-config.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, get, child, update, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+// Подключаем Firebase (простая рабочая версия)
 
-// Твой конфиг из консоли Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyBHcptZefbC53BR6wMPEtyIF9GCx2y7xjw",
     authDomain: "dilic-clicker.firebaseapp.com",
+    databaseURL: "https://dilic-clicker-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "dilic-clicker",
     storageBucket: "dilic-clicker.firebasestorage.app",
     messagingSenderId: "651188156647",
@@ -13,8 +12,5 @@ const firebaseConfig = {
 };
 
 // Инициализация Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
-// Экспортируем для использования в script.js
-export { database, ref, set, get, child, update, query, orderByChild, limitToLast };
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();

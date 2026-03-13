@@ -1,5 +1,4 @@
 // script.js
-import { database, ref, set, get, child, update, query, orderByChild, limitToLast } from './firebase-config.js';
 
 class ClickerGame {
     constructor() {
@@ -35,7 +34,6 @@ class ClickerGame {
             }
         };
         
-        // Достижения (ачивки)
         this.achievementsData = [
             {
                 id: 'firstClick',
@@ -103,7 +101,6 @@ class ClickerGame {
             }
         ];
         
-        // Промокоды
         this.promocodesData = {
             'WELCOME': {
                 code: 'WELCOME',
@@ -188,7 +185,6 @@ class ClickerGame {
         this.updatePromocodesList();
         this.updatePromocodesHistory();
         
-        // Загружаем лидерборд сразу
         this.updateLeaderboard('clicks');
     }
 
@@ -196,23 +192,19 @@ class ClickerGame {
         const username = this.userManager.currentUser;
         
         try {
-            const userRef = ref(database, 'users/' + username);
-            const snapshot = await get(userRef);
+            const userRef = firebase.database().ref('users/' + username);
+            const snapshot = await userRef.once('value');
             
             if (snapshot.exists()) {
-                // Данные есть в Firebase
                 this.userData = snapshot.val();
                 console.log('✅ Данные загружены из Firebase');
             } else {
-                // Нет данных - создаем новые
                 this.userData = this.createDefaultData();
-                // Сохраняем в Firebase
                 await this.saveUserDataToFirebase();
-                console.log('✅ Новые данные созданы и сохранены в Firebase');
+                console.log('✅ Новые данные созданы');
             }
         } catch (error) {
             console.error('❌ Ошибка загрузки из Firebase:', error);
-            // Если Firebase недоступен, грузим из localStorage
             this.userData = this.userManager.loadUserData();
             if (!this.userData) {
                 this.userData = this.createDefaultData();
@@ -224,8 +216,8 @@ class ClickerGame {
         const username = this.userManager.currentUser;
         
         try {
-            const userRef = ref(database, 'users/' + username);
-            await set(userRef, this.userData);
+            const userRef = firebase.database().ref('users/' + username);
+            await userRef.set(this.userData);
             console.log('✅ Данные сохранены в Firebase');
         } catch (error) {
             console.error('❌ Ошибка сохранения в Firebase:', error);
@@ -279,7 +271,6 @@ class ClickerGame {
         
         this.inventoryGrid = document.getElementById('inventoryGrid');
         
-        // Элементы профиля
         this.profileUsername = document.getElementById('profileUsername');
         this.profileLevel = document.getElementById('profileLevel');
         this.profileClicks = document.getElementById('profileClicks');
@@ -293,7 +284,6 @@ class ClickerGame {
         this.ownedSkins = document.getElementById('ownedSkins');
         this.totalSkins = document.getElementById('totalSkins');
         
-        // Элементы промокодов
         this.promocodeInput = document.getElementById('promocodeInput');
         this.activatePromocodeBtn = document.getElementById('activatePromocodeBtn');
         this.promocodeMessage = document.getElementById('promocodeMessage');
@@ -735,12 +725,10 @@ class ClickerGame {
         if (!this.leaderboardBody) return;
         
         try {
-            // Показываем загрузку
             this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
             
-            // Получаем всех пользователей из Firebase
-            const usersRef = ref(database, 'users');
-            const snapshot = await get(usersRef);
+            const usersRef = firebase.database().ref('users');
+            const snapshot = await usersRef.once('value');
             
             if (!snapshot.exists()) {
                 this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Нет данных</td></tr>';
@@ -767,10 +755,8 @@ class ClickerGame {
                 leaderboard.push({ username, value });
             }
             
-            // Сортировка по убыванию
             leaderboard.sort((a, b) => b.value - a.value);
             
-            // Берем топ-50
             const topPlayers = leaderboard.slice(0, 50);
             
             this.leaderboardBody.innerHTML = '';
@@ -793,7 +779,6 @@ class ClickerGame {
                     <td>${this.formatLeaderboardValue(entry.value, type)}</td>
                 `;
                 
-                // Выделяем текущего игрока
                 if (entry.username === this.userManager.currentUser) {
                     row.style.background = 'rgba(255, 215, 0, 0.1)';
                     row.style.border = '1px solid gold';
@@ -850,9 +835,7 @@ class ClickerGame {
     }
 
     async saveGame() {
-        // Сохраняем в localStorage
         this.userManager.saveUserData(this.userData);
-        // Сохраняем в Firebase
         await this.saveUserDataToFirebase();
     }
 
@@ -908,8 +891,6 @@ class ClickerGame {
         
         this.bubbleFrame = requestAnimationFrame(createBubbleOptimized);
     }
-
-    // МЕТОДЫ ДЛЯ ПРОФИЛЯ И АЧИВОК
 
     checkAchievements() {
         if (!this.userData.completedAchievements) {
@@ -1081,8 +1062,6 @@ class ClickerGame {
         });
     }
 
-    // МЕТОДЫ ДЛЯ ПРОМОКОДОВ
-
     activatePromocode() {
         if (!this.promocodeInput) return;
         
@@ -1100,34 +1079,28 @@ class ClickerGame {
             return;
         }
         
-        // Проверка на срок действия
         if (promocode.expiryDate && Date.now() > promocode.expiryDate) {
             this.showPromocodeMessage('Срок действия промокода истек', 'error');
             return;
         }
         
-        // Проверка на уже активированный
         if (this.userData.activatedPromocodes && this.userData.activatedPromocodes.includes(code)) {
             this.showPromocodeMessage('Вы уже активировали этот промокод', 'error');
             return;
         }
         
-        // Активация промокода (выдача наград)
         let rewardMessage = '';
         
-        // Выдаем деньги, если есть
         if (promocode.reward.money > 0) {
             this.userData.money += promocode.reward.money;
             rewardMessage += `+${promocode.reward.money}💰 `;
         }
         
-        // Выдаем дилики, если есть
         if (promocode.reward.dilicks > 0) {
             this.userData.dilicks += promocode.reward.dilicks;
             rewardMessage += `+${promocode.reward.dilicks}💎 `;
         }
         
-        // Выдаем скин, если есть
         if (promocode.reward.skin) {
             const skinId = promocode.reward.skin;
             if (this.skinsData[skinId] && !this.userData.inventory.includes(skinId)) {
@@ -1146,13 +1119,11 @@ class ClickerGame {
             }
         }
         
-        // Сохраняем активацию
         if (!this.userData.activatedPromocodes) {
             this.userData.activatedPromocodes = [];
         }
         this.userData.activatedPromocodes.push(code);
         
-        // Добавляем в историю
         if (!this.userData.promocodesHistory) {
             this.userData.promocodesHistory = [];
         }
