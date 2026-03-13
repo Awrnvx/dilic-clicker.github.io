@@ -43,7 +43,7 @@ a {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Простой стеклянный эффект */
+/* Простой стеклянный эффект без анимаций и штриховки */
 .glass-effect {
     position: relative;
     background: rgba(255, 255, 255, 0.02);
@@ -57,6 +57,7 @@ a {
     overflow: hidden;
 }
 
+/* Только легкий блик */
 .glass-effect::before {
     content: '';
     position: absolute;
@@ -70,6 +71,7 @@ a {
     mix-blend-mode: overlay;
 }
 
+/* Glass Card Premium */
 .glass-card {
     position: relative;
     background: rgba(255, 255, 255, 0.02);
@@ -93,7 +95,7 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-/* Навигация - ПК версия */
+/* Навигация */
 .glass-nav {
     background: rgba(15, 18, 25, 0.6);
     backdrop-filter: blur(10px);
@@ -137,6 +139,8 @@ a {
     -webkit-backdrop-filter: blur(8px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
 }
 
 .nav-btn:hover, .nav-btn.active {
@@ -180,7 +184,6 @@ a {
     transform: rotate(180deg);
 }
 
-/* USER-INFO - ПК версия */
 .user-info {
     display: flex;
     gap: 20px;
@@ -205,6 +208,8 @@ a {
     align-items: center;
     gap: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
 }
 
 .currency-icon {
@@ -254,6 +259,8 @@ a {
     cursor: pointer;
     margin: 30px 0;
     transition: transform 0.1s ease;
+    position: relative;
+    overflow: hidden;
     background: rgba(255, 255, 255, 0.04);
     box-shadow: 
         0 25px 40px -12px rgba(0, 0, 0, 0.6),
@@ -316,6 +323,8 @@ a {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
 }
 
 .inventory-grid {
@@ -337,6 +346,7 @@ a {
     border-radius: 24px;
     box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.4);
     overflow: hidden;
+    position: relative;
 }
 
 .inventory-item:hover {
@@ -360,6 +370,7 @@ a {
     border: 2px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease;
+    position: relative;
     z-index: 2;
 }
 
@@ -383,6 +394,7 @@ a {
     font-size: 14px;
     opacity: 0.8;
     margin: 10px 0;
+    position: relative;
     z-index: 2;
 }
 
@@ -392,6 +404,8 @@ a {
     margin: 10px 0;
     font-size: 16px;
     text-shadow: 0 0 12px gold;
+    position: relative;
+    z-index: 2;
 }
 
 .section-title {
@@ -421,6 +435,7 @@ a {
     border-radius: 24px;
     box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.4);
     overflow: hidden;
+    position: relative;
 }
 
 .shop-item:hover {
@@ -476,6 +491,7 @@ a {
     border-radius: 24px;
     box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.4);
     overflow: hidden;
+    position: relative;
 }
 
 .upgrade-level {
@@ -502,6 +518,8 @@ a {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
 }
 
 .glass-btn:hover {
@@ -546,10 +564,12 @@ a {
     border-radius: 28px;
     box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.5);
     overflow: hidden;
+    position: relative;
 }
 
 .season-progress {
     margin: 20px 0;
+    position: relative;
     z-index: 2;
 }
 
@@ -581,6 +601,7 @@ a {
     -webkit-backdrop-filter: blur(8px);
     border-radius: 20px;
     overflow: hidden;
+    position: relative;
     z-index: 2;
 }
 
@@ -603,6 +624,7 @@ a {
     -webkit-backdrop-filter: blur(20px);
     border-radius: 40px;
     padding: 30px;
+    position: relative;
     overflow: hidden;
 }
 
@@ -610,6 +632,7 @@ a {
     color: rgba(255, 255, 255, 0.8);
     font-size: 18px;
     margin-top: 10px;
+    position: relative;
     z-index: 2;
 }
 
@@ -620,12 +643,14 @@ a {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 32px;
+    position: relative;
     overflow: hidden;
 }
 
 .promocode-input-wrapper {
     display: flex;
     gap: 15px;
+    position: relative;
     z-index: 2;
 }
 
@@ -690,6 +715,8 @@ a {
     font-weight: 600;
     text-align: center;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .promocode-message.success {
@@ -720,6 +747,7 @@ a {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 32px;
+    position: relative;
     overflow: hidden;
 }
 
@@ -728,6 +756,7 @@ a {
     margin-bottom: 20px;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
     z-index: 2;
 }
 
@@ -735,6 +764,7 @@ a {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
+    position: relative;
     z-index: 2;
 }
 
@@ -748,6 +778,7 @@ a {
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
+    position: relative;
     overflow: hidden;
 }
 
@@ -794,6 +825,7 @@ a {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 32px;
+    position: relative;
     overflow: hidden;
 }
 
@@ -802,6 +834,7 @@ a {
     margin-bottom: 20px;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
     z-index: 2;
 }
 
@@ -809,6 +842,7 @@ a {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    position: relative;
     z-index: 2;
     max-height: 300px;
     overflow-y: auto;
@@ -889,7 +923,7 @@ a {
     font-style: italic;
 }
 
-/* ЛИДЕРБОРД */
+/* ЛИДЕРБОРД С КРАСИВЫМ СКРОЛЛОМ */
 .leaderboard-container {
     color: white;
     max-width: 800px;
@@ -906,6 +940,7 @@ a {
     overflow-x: hidden;
 }
 
+/* Красивый скролл для лидерборда */
 .leaderboard-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -933,6 +968,7 @@ a {
     justify-content: center;
     gap: 12px;
     margin: 20px 0;
+    position: relative;
     z-index: 2;
     flex-wrap: wrap;
 }
@@ -951,6 +987,7 @@ a {
 .leaderboard-table {
     width: 100%;
     border-collapse: collapse;
+    position: relative;
     z-index: 2;
 }
 
@@ -990,6 +1027,33 @@ a {
     width: 60px;
 }
 
+/* Адаптивность для лидерборда */
+@media (max-width: 768px) {
+    .leaderboard-container {
+        max-height: 400px;
+        padding: 15px;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+    
+    .leaderboard-table th {
+        font-size: 14px;
+    }
+    
+    .leaderboard-table td:first-child {
+        width: 40px;
+    }
+    
+    .leaderboard-tabs .glass-btn.small {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+
 .auth-container {
     min-height: 100vh;
     display: flex;
@@ -1009,12 +1073,14 @@ a {
     border-radius: 32px;
     box-shadow: 0 30px 45px -15px rgba(0, 0, 0, 0.6);
     overflow: hidden;
+    position: relative;
 }
 
 .auth-tabs {
     display: flex;
     gap: 12px;
     margin: 25px 0;
+    position: relative;
     z-index: 2;
 }
 
@@ -1044,6 +1110,7 @@ a {
 
 .auth-form {
     display: none;
+    position: relative;
     z-index: 2;
 }
 
@@ -1108,6 +1175,7 @@ a {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    position: relative;
     overflow: hidden;
 }
 
@@ -1117,6 +1185,7 @@ a {
     box-shadow: 0 15px 28px rgba(0, 0, 0, 0.35);
 }
 
+/* Эффект пузырьков - легкий */
 .bubble {
     position: fixed;
     background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
@@ -1154,6 +1223,7 @@ a {
     border-radius: 40px;
     border: 0.5px solid rgba(255, 255, 255, 0.08);
     padding: 30px;
+    position: relative;
     overflow: hidden;
 }
 
@@ -1178,6 +1248,7 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     overflow: hidden;
     animation: avatarFloat 3s ease-in-out infinite;
+    position: relative;
 }
 
 @keyframes avatarFloat {
@@ -1198,6 +1269,7 @@ a {
 
 .profile-info {
     flex: 1;
+    position: relative;
     z-index: 2;
 }
 
@@ -1239,6 +1311,7 @@ a {
     padding: 15px;
     text-align: center;
     transition: transform 0.2s ease;
+    position: relative;
     overflow: hidden;
 }
 
@@ -1279,6 +1352,7 @@ a {
     border-radius: 28px;
     padding: 25px;
     text-align: center;
+    position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -1297,6 +1371,7 @@ a {
     width: 80px;
     height: 80px;
     margin: 0 auto 15px;
+    position: relative;
     z-index: 2;
 }
 
@@ -1316,6 +1391,7 @@ a {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 10px;
+    position: relative;
     z-index: 2;
     color: white;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
@@ -1325,10 +1401,12 @@ a {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.7);
     margin-bottom: 15px;
+    position: relative;
     z-index: 2;
 }
 
 .achievement-progress {
+    position: relative;
     z-index: 2;
 }
 
@@ -1363,12 +1441,14 @@ a {
     border-radius: 32px;
     padding: 30px;
     margin-top: 30px;
+    position: relative;
     overflow: hidden;
 }
 
 .skin-stats h3 {
     font-size: 24px;
     margin-bottom: 20px;
+    position: relative;
     z-index: 2;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -1376,6 +1456,7 @@ a {
 
 .skin-progress {
     margin-bottom: 25px;
+    position: relative;
     z-index: 2;
 }
 
@@ -1402,6 +1483,7 @@ a {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    position: relative;
     z-index: 2;
 }
 
@@ -1469,6 +1551,7 @@ a {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid gold;
     overflow: hidden;
+    position: relative;
     z-index: 2;
 }
 
@@ -1479,6 +1562,7 @@ a {
 }
 
 .notification-content {
+    position: relative;
     z-index: 2;
 }
 
@@ -1502,6 +1586,7 @@ a {
     text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
 
+/* ===== НАСТРОЙКИ ПРОФИЛЯ ===== */
 .settings-container {
     max-width: 1000px;
     margin: 0 auto;
@@ -1521,6 +1606,7 @@ a {
     -webkit-backdrop-filter: blur(15px);
     border-radius: 24px;
     padding: 25px;
+    position: relative;
     overflow: hidden;
     transition: transform 0.2s ease;
 }
@@ -1534,6 +1620,7 @@ a {
     margin-bottom: 20px;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
     z-index: 2;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
@@ -1541,6 +1628,7 @@ a {
 
 .settings-field {
     margin-bottom: 25px;
+    position: relative;
     z-index: 2;
 }
 
@@ -1644,6 +1732,7 @@ a {
     color: white;
 }
 
+/* Модальное окно подтверждения */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1732,6 +1821,7 @@ a {
     transform: scale(1.05);
 }
 
+/* Уведомления */
 .settings-toast {
     position: fixed;
     bottom: 30px;
@@ -1769,7 +1859,306 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ - ТВОЯ СТРУКТУРА ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ДЛЯ TELEGRAM ===== */
+@media (max-width: 768px) {
+    /* Убираем текст с кнопок, оставляем только эмодзи */
+    .nav-btn[data-tab="main"] span,
+    .nav-btn[data-tab="shop"] span,
+    .nav-btn[data-tab="inventory"] span,
+    .nav-btn[data-tab="upgrades"] span,
+    .nav-btn[data-tab="profile"] span,
+    .nav-btn[data-tab="settings"] span,
+    .nav-btn[data-tab="season"] span,
+    .nav-btn[data-tab="promocodes"] span,
+    .nav-btn[data-tab="leaderboard"] span {
+        display: none;
+    }
+    
+    /* Добавляем эмодзи через псевдоэлементы */
+    .nav-btn[data-tab="main"]::before {
+        content: "🏠";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="shop"]::before {
+        content: "🛒";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="inventory"]::before {
+        content: "📦";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="upgrades"]::before {
+        content: "⚡";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="profile"]::before {
+        content: "👤";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="settings"]::before {
+        content: "⚙️";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="season"]::before {
+        content: "🎫";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="promocodes"]::before {
+        content: "🎁";
+        font-size: 24px;
+    }
+    .nav-btn[data-tab="leaderboard"]::before {
+        content: "🏆";
+        font-size: 24px;
+    }
+    
+    /* Делаем кнопки круглыми и компактными */
+    .nav-btn {
+        width: 50px;
+        height: 50px;
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Эффект при нажатии */
+    .nav-btn:active {
+        transform: scale(0.9);
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Активная кнопка подсвечивается */
+    .nav-btn.active {
+        background: rgba(255, 215, 0, 0.3);
+        border-color: gold;
+        box-shadow: 0 0 15px gold;
+    }
+    
+    /* Скрываем кнопку сворачивания на мобилках */
+    .nav-toggle-btn {
+        display: none;
+    }
+    
+    /* Навигация всегда видна */
+    .nav-links {
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        padding: 10px 0;
+        width: 100%;
+    }
+    
+    /* Адаптируем шапку */
+    .glass-nav {
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .user-info {
+        width: 100%;
+        justify-content: center;
+        margin-top: 5px;
+    }
+    
+    .currency, .dilic {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+    
+    .currency-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Контент с отступами */
+    .content {
+        padding: 15px;
+    }
+    
+    /* Уменьшаем заголовки */
+    .section-title {
+        font-size: 24px;
+        margin: 15px 0;
+    }
+    
+    /* Адаптируем кликер */
+    .click-btn {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .stats {
+        font-size: 16px;
+        padding: 12px;
+    }
+    
+    /* Сетки в один столбец */
+    .shop-grid,
+    .upgrades-grid,
+    .inventory-grid,
+    .achievements-grid,
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* Карточки с меньшими отступами */
+    .glass-card {
+        padding: 15px;
+    }
+    
+    /* Профиль */
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .profile-info h2 {
+        font-size: 24px;
+    }
+    
+    .profile-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    /* Лидерборд */
+    .leaderboard-container {
+        max-height: 400px;
+        padding: 15px;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 8px 6px;
+        font-size: 13px;
+    }
+    
+    .leaderboard-table th {
+        font-size: 13px;
+    }
+    
+    .leaderboard-tabs {
+        gap: 8px;
+    }
+    
+    .leaderboard-tabs .glass-btn.small {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    /* Промокоды */
+    .promocode-input-wrapper {
+        flex-direction: column;
+    }
+    
+    .promocode-input {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+    
+    .promocode-activate-btn {
+        width: 100%;
+        padding: 14px;
+    }
+    
+    /* Настройки */
+    .settings-input-group {
+        flex-direction: column;
+    }
+    
+    .settings-save-btn {
+        width: 100%;
+    }
+    
+    .settings-warning-btn,
+    .settings-danger-btn {
+        width: 100%;
+        margin-right: 0;
+    }
+    
+    /* Модалки */
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 500px) {
+    .profile-header {
+        padding: 15px;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .skin-stats {
+        padding: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== УЛУЧШЕНИЯ ДЛЯ СЕНСОРНЫХ ЭКРАНОВ ===== */
+* {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.nav-btn,
+.glass-btn,
+.buy-btn,
+.upgrade-btn,
+.equip-btn {
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.nav-btn:active,
+.glass-btn:active,
+.buy-btn:active,
+.upgrade-btn:active,
+.equip-btn:active {
+    transform: scale(0.95);
+}
+
+/* Скрываем текст на мобилках, оставляем эмодзи */
+@media (max-width: 768px) {
+    .nav-btn .nav-text {
+        display: none;
+    }
+}
+
+/* ФИНАЛЬНАЯ СТРУКТУРА ДЛЯ ТЕЛЕФОНА */
 @media (max-width: 768px) {
     .glass-nav {
         display: flex;
@@ -1815,53 +2204,5 @@ a {
         justify-content: center;
         gap: 8px;
         margin-top: 10px;
-    }
-    
-    /* Эмодзи для мобилок */
-    .nav-btn {
-        width: 45px;
-        height: 45px;
-        padding: 0 !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50% !important;
-    }
-    
-    .nav-btn .nav-text {
-        display: none;
-    }
-    
-    .nav-btn[data-tab="main"]::before { content: "🏠"; font-size: 22px; }
-    .nav-btn[data-tab="shop"]::before { content: "🛒"; font-size: 22px; }
-    .nav-btn[data-tab="inventory"]::before { content: "📦"; font-size: 22px; }
-    .nav-btn[data-tab="upgrades"]::before { content: "⚡"; font-size: 22px; }
-    .nav-btn[data-tab="profile"]::before { content: "👤"; font-size: 22px; }
-    .nav-btn[data-tab="settings"]::before { content: "⚙️"; font-size: 22px; }
-    .nav-btn[data-tab="season"]::before { content: "🎫"; font-size: 22px; }
-    .nav-btn[data-tab="promocodes"]::before { content: "🎁"; font-size: 22px; }
-    .nav-btn[data-tab="leaderboard"]::before { content: "🏆"; font-size: 22px; }
-}
-
-@media (max-width: 500px) {
-    .profile-header {
-        padding: 15px;
-    }
-    
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .skin-stats {
-        padding: 20px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
     }
 }
