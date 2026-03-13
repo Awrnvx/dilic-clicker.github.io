@@ -1861,6 +1861,12 @@ a {
 
 /* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
 @media (max-width: 768px) {
+    /* Кнопка скрытия НЕ скрывается */
+    .nav-toggle-btn {
+        display: flex !important;
+        order: 1;
+    }
+    
     /* Скрываем текст на кнопках */
     .nav-btn .nav-text {
         display: none;
@@ -1915,20 +1921,19 @@ a {
         border-radius: 50% !important;
     }
     
-    /* Кнопка скрытия НЕ скрывается */
-    .nav-toggle-btn {
-        display: flex !important;
-    }
-    
     /* Навигация адаптируется */
     .glass-nav {
-        flex-direction: row;
+        display: flex;
         flex-wrap: wrap;
+        align-items: center;
         padding: 10px;
+        gap: 10px;
     }
     
     .nav-links {
+        display: flex;
         flex-wrap: wrap;
+        gap: 8px;
         justify-content: center;
         width: 100%;
         order: 3;
@@ -1937,6 +1942,8 @@ a {
     
     .user-info {
         order: 2;
+        flex: 1;
+        justify-content: flex-end;
     }
     
     /* Остальные адаптивные стили... */
