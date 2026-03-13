@@ -1,3 +1,8 @@
+// Очищаем старые данные при загрузке
+localStorage.removeItem('currentUser');
+localStorage.removeItem('userId');
+localStorage.removeItem('userPassword');
+
 class UserManager {
     constructor() {
         this.currentUser = null;
@@ -45,7 +50,7 @@ class UserManager {
             this.currentUser = username;
             localStorage.setItem('currentUser', username);
             localStorage.setItem('userId', userId);
-            localStorage.setItem('userPassword', password); // Сохраняем пароль для проверки
+            localStorage.setItem('userPassword', password);
             
             return { success: true, message: 'Вход выполнен' };
         } catch (error) {

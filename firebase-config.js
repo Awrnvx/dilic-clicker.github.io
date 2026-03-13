@@ -1,4 +1,3 @@
-// firebase-config.js
 const firebaseConfig = {
     apiKey: "AIzaSyBHcptZefbC53BR6wMPEtyIF9GCx2y7xjw",
     authDomain: "dilic-clicker.firebaseapp.com",

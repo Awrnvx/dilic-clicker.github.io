@@ -156,31 +156,31 @@ class ClickerGame {
 
     async init() {
         const currentUser = localStorage.getItem('currentUser');
-        if (!currentUser) {
+        const userId = localStorage.getItem('userId');
+        
+        if (!currentUser || !userId) {
             window.location.href = 'register.html';
             return;
         }
         
         this.userManager.currentUser = currentUser;
         
-        const userId = localStorage.getItem('userId');
-        if (userId) {
-            try {
-                const snapshot = await firebase.database().ref('users/' + userId).once('value');
-                if (snapshot.exists()) {
-                    this.userData = snapshot.val();
-                    console.log('✅ Данные загружены из Firebase:', this.userData);
-                } else {
-                    console.log('❌ Пользователь не найден в Firebase');
-                    this.userData = this.createDefaultData();
-                    await firebase.database().ref('users/' + userId).set(this.userData);
-                }
-            } catch (error) {
-                console.error('❌ Ошибка загрузки из Firebase:', error);
-                this.userData = this.createDefaultData();
+        try {
+            const snapshot = await firebase.database().ref('users/' + userId).once('value');
+            if (snapshot.exists()) {
+                this.userData = snapshot.val();
+                console.log('✅ Данные загружены из Firebase');
+            } else {
+                console.log('❌ Пользователь не найден');
+                localStorage.clear();
+                window.location.href = 'register.html';
+                return;
             }
-        } else {
-            this.userData = this.createDefaultData();
+        } catch (error) {
+            console.error('❌ Ошибка загрузки:', error);
+            localStorage.clear();
+            window.location.href = 'register.html';
+            return;
         }
         
         this.loadElements();
@@ -249,7 +249,6 @@ class ClickerGame {
         
         this.inventoryGrid = document.getElementById('inventoryGrid');
         
-        // Элементы профиля
         this.profileUsername = document.getElementById('profileUsername');
         this.profileLevel = document.getElementById('profileLevel');
         this.profileClicks = document.getElementById('profileClicks');
@@ -263,7 +262,6 @@ class ClickerGame {
         this.ownedSkins = document.getElementById('ownedSkins');
         this.totalSkins = document.getElementById('totalSkins');
         
-        // Элементы промокодов
         this.promocodeInput = document.getElementById('promocodeInput');
         this.activatePromocodeBtn = document.getElementById('activatePromocodeBtn');
         this.promocodeMessage = document.getElementById('promocodeMessage');
@@ -802,7 +800,6 @@ class ClickerGame {
         if (userId) {
             try {
                 await firebase.database().ref('users/' + userId).update(this.userData);
-                console.log('✅ Данные сохранены в Firebase');
             } catch (error) {
                 console.error('❌ Ошибка сохранения:', error);
             }
@@ -819,6 +816,11 @@ class ClickerGame {
         if (this.playtimeInterval) {
             clearInterval(this.playtimeInterval);
         }
+        
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userPassword');
+        
         window.location.href = 'register.html';
     }
 
@@ -860,8 +862,6 @@ class ClickerGame {
         
         this.bubbleFrame = requestAnimationFrame(createBubbleOptimized);
     }
-
-    // МЕТОДЫ ДЛЯ ПРОФИЛЯ И АЧИВОК
 
     checkAchievements() {
         if (!this.userData.completedAchievements) {
@@ -1029,8 +1029,6 @@ class ClickerGame {
             }
         });
     }
-
-    // МЕТОДЫ ДЛЯ ПРОМОКОДОВ
 
     activatePromocode() {
         if (!this.promocodeInput) return;
