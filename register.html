@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация - Dilic Clicker</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="firebase-config.js"></script>
@@ -19,6 +19,7 @@
                 <button class="auth-tab" id="registerTab">Регистрация</button>
             </div>
             
+            <!-- Форма входа -->
             <form id="loginForm" class="auth-form active">
                 <div class="input-group">
                     <label for="loginUsername">Логин</label>
@@ -31,6 +32,7 @@
                 <button type="submit" class="glass-btn auth-btn">Войти</button>
             </form>
 
+            <!-- Форма регистрации -->
             <form id="registerForm" class="auth-form">
                 <div class="input-group">
                     <label for="regUsername">Логин</label>

@@ -1,3 +1,4 @@
+// firebase-config.js
 const firebaseConfig = {
     apiKey: "AIzaSyBHcptZefbC53BR6wMPEtyIF9GCx2y7xjw",
     authDomain: "dilic-clicker.firebaseapp.com",
@@ -8,9 +9,6 @@ const firebaseConfig = {
     appId: "1:651188156647:web:7ef858931f7fb4526b8a42"
 };
 
-// Добавляем обработку ошибок CORS
+// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
-
-// Принудительно включаем сохранение
-database.goOnline();

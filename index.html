@@ -9,12 +9,13 @@
     <!-- Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Firebase -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="firebase-config.js"></script>
     
     <script>
+        // Инициализация Telegram Mini App
         const telegram = window.Telegram.WebApp;
         telegram.ready();
         telegram.expand();
@@ -22,7 +23,13 @@
 </head>
 <body>
     <div class="game-container">
+        <!-- Навигация -->
         <nav class="glass-nav">
+            <!-- Кнопка скрытия/показа навигации -->
+            <button class="nav-toggle-btn" id="navToggleBtn">
+                <span class="toggle-icon">◀</span>
+            </button>
+            
             <div class="nav-links">
                 <button class="nav-btn active" data-tab="main">Главная</button>
                 <button class="nav-btn" data-tab="shop">Магазин</button>
@@ -47,7 +54,9 @@
             </div>
         </nav>
 
+        <!-- Основной контент -->
         <div class="content">
+            <!-- Главная вкладка -->
             <div id="main" class="tab active">
                 <div class="clicker-section">
                     <div class="glass-card clicker-card">
@@ -65,6 +74,7 @@
                 </div>
             </div>
 
+            <!-- Магазин -->
             <div id="shop" class="tab">
                 <h2 class="section-title">Магазин скинов</h2>
                 <div class="shop-grid">
@@ -98,11 +108,13 @@
                 </div>
             </div>
 
+            <!-- Инвентарь -->
             <div id="inventory" class="tab">
                 <h2 class="section-title">Инвентарь скинов</h2>
                 <div class="inventory-grid" id="inventoryGrid"></div>
             </div>
 
+            <!-- Улучшения -->
             <div id="upgrades" class="tab">
                 <h2 class="section-title">Улучшения</h2>
                 <div class="upgrades-grid">
@@ -114,7 +126,7 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">50</span>
                         </p>
-                        <button class="glass-btn upgrade-btn">Улучшить</button>
+                        <button class="glass-btn upgrade-btn" data-upgrade="clickPower">Улучшить</button>
                     </div>
                     <div class="glass-card upgrade-item" data-upgrade="autoClicker">
                         <h3>Автокликер</h3>
@@ -124,7 +136,7 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">100</span>
                         </p>
-                        <button class="glass-btn upgrade-btn">Купить</button>
+                        <button class="glass-btn upgrade-btn" data-upgrade="autoClicker">Купить</button>
                     </div>
                     <div class="glass-card upgrade-item" data-upgrade="critChance">
                         <h3>Критический удар</h3>
@@ -134,11 +146,12 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">200</span>
                         </p>
-                        <button class="glass-btn upgrade-btn">Улучшить</button>
+                        <button class="glass-btn upgrade-btn" data-upgrade="critChance">Улучшить</button>
                     </div>
                 </div>
             </div>
 
+            <!-- Профиль игрока -->
             <div id="profile" class="tab">
                 <div class="profile-container">
                     <div class="profile-header glass-card">
@@ -146,9 +159,7 @@
                             <div class="avatar-ring">
                                 <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Avatar" id="profileAvatar">
                             </div>
-                            <div class="avatar-glow"></div>
                         </div>
-                        
                         <div class="profile-info">
                             <h2 id="profileUsername">Игрок</h2>
                             <p class="profile-level">Уровень: <span id="profileLevel">1</span></p>
@@ -158,7 +169,7 @@
                                     <span class="stat-value" id="profileClicks">0</span>
                                 </div>
                                 <div class="profile-stat-item">
-                                    <span class="stat-label">Заработано денег</span>
+                                    <span class="stat-label">Денег</span>
                                     <span class="stat-value" id="profileMoney">0</span>
                                 </div>
                                 <div class="profile-stat-item">
@@ -189,6 +200,7 @@
                 </div>
             </div>
 
+            <!-- Сезонный пропуск -->
             <div id="season" class="tab">
                 <div class="season-pass glass-card">
                     <h2>Сезонный пропуск</h2>
@@ -219,6 +231,7 @@
                 </div>
             </div>
 
+            <!-- Промокоды -->
             <div id="promocodes" class="tab">
                 <div class="promocodes-container">
                     <div class="promocodes-header glass-card">
@@ -248,6 +261,7 @@
                 </div>
             </div>
 
+            <!-- Лидерборд -->
             <div id="leaderboard" class="tab">
                 <div class="leaderboard-container glass-card">
                     <h2>Таблица лидеров</h2>

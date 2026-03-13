@@ -1,7 +1,8 @@
-// Очищаем старые данные при загрузке
+// register.js - Полная версия
+
+// Очищаем localStorage при загрузке страницы
 localStorage.removeItem('currentUser');
 localStorage.removeItem('userId');
-localStorage.removeItem('userPassword');
 
 class UserManager {
     constructor() {
@@ -10,16 +11,38 @@ class UserManager {
 
     async register(username, password) {
         try {
-            const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
+            // Проверяем, существует ли уже такой пользователь
+            const usersRef = firebase.database().ref('users');
+            const snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
             
             if (snapshot.exists()) {
                 return { success: false, message: 'Пользователь уже существует' };
             }
             
-            const newUserRef = firebase.database().ref('users').push();
-            const userData = this.createDefaultData(username, password);
-            await newUserRef.set(userData);
+            // Создаем нового пользователя
+            const newUserRef = usersRef.push();
+            const userData = {
+                username: username,
+                password: password,
+                clicks: 0,
+                money: 1000,
+                dilicks: 500,
+                clickPower: 1,
+                autoClickerLevel: 0,
+                critChance: 5,
+                inventory: ['classic'],
+                currentSkin: 'classic',
+                seasonLevel: 1,
+                seasonExp: 0,
+                playtime: 0,
+                premiumPass: false,
+                completedAchievements: [],
+                activatedPromocodes: [],
+                promocodesHistory: [],
+                lastSave: Date.now()
+            };
             
+            await newUserRef.set(userData);
             return { success: true, message: 'Регистрация успешна' };
         } catch (error) {
             console.error('Ошибка регистрации:', error);
@@ -29,12 +52,15 @@ class UserManager {
 
     async login(username, password) {
         try {
-            const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
+            // Ищем пользователя по имени
+            const usersRef = firebase.database().ref('users');
+            const snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
             
             if (!snapshot.exists()) {
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
+            // Получаем данные пользователя
             let userData = null;
             let userId = null;
             
@@ -43,14 +69,15 @@ class UserManager {
                 userId = child.key;
             });
             
+            // Проверяем пароль
             if (userData.password !== password) {
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
+            // Сохраняем данные в localStorage
             this.currentUser = username;
             localStorage.setItem('currentUser', username);
             localStorage.setItem('userId', userId);
-            localStorage.setItem('userPassword', password);
             
             return { success: true, message: 'Вход выполнен' };
         } catch (error) {
@@ -63,49 +90,10 @@ class UserManager {
         this.currentUser = null;
         localStorage.removeItem('currentUser');
         localStorage.removeItem('userId');
-        localStorage.removeItem('userPassword');
-    }
-
-    createDefaultData(username, password) {
-        return {
-            username: username,
-            password: password,
-            clicks: 0,
-            money: 1000,
-            dilicks: 500,
-            clickPower: 1,
-            autoClickerLevel: 0,
-            critChance: 5,
-            inventory: ['classic'],
-            currentSkin: 'classic',
-            seasonLevel: 1,
-            seasonExp: 0,
-            playtime: 0,
-            premiumPass: false,
-            completedAchievements: [],
-            activatedPromocodes: [],
-            promocodesHistory: [],
-            lastSave: Date.now()
-        };
-    }
-
-    async saveUserData(userData) {
-        const userId = localStorage.getItem('userId');
-        if (userId) {
-            await firebase.database().ref('users/' + userId).update(userData);
-        }
-    }
-
-    async loadUserData() {
-        const userId = localStorage.getItem('userId');
-        if (userId) {
-            const snapshot = await firebase.database().ref('users/' + userId).once('value');
-            return snapshot.val();
-        }
-        return null;
     }
 }
 
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     const userManager = new UserManager();
     
@@ -114,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     
+    // Переключение между вкладками
     loginTab.addEventListener('click', () => {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
@@ -128,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.classList.remove('active');
     });
     
+    // Обработка регистрации
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -150,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Обработка входа
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -165,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Если пользователь уже вошел - перенаправляем
     if (localStorage.getItem('currentUser')) {
         window.location.href = 'index.html';
     }
