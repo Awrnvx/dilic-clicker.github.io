@@ -20,17 +20,64 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative;
+    -webkit-tap-highlight-color: transparent !important;
+    tap-highlight-color: transparent !important;
 }
 
+/* Убираем желтый фон при нажатии в Telegram WebApp */
 button, 
 .glass-btn, 
 .nav-btn, 
 .buy-btn, 
 .upgrade-btn, 
 .equip-btn,
-.click-btn {
+.click-btn,
+.promocode-activate-btn,
+.settings-save-btn,
+.settings-warning-btn,
+.settings-danger-btn,
+.auth-btn,
+.auth-tab,
+.nav-toggle-btn,
+.leaderboard-tabs .glass-btn,
+.promocode-item,
+.skin-tag,
+.history-item,
+.modal-btn,
+.nav-links .nav-btn,
+.user-info button,
+.glass-card button,
+.profile-stat-item,
+.achievement-card,
+.shop-item,
+.upgrade-item,
+.inventory-item,
+.season-rewards .glass-btn,
+.promocode-input-wrapper button,
+.settings-field button,
+.modal-buttons button,
+.glass-input,
+select,
+input[type="checkbox"],
+input[type="text"],
+input[type="password"],
+input[type="email"] {
     -webkit-tap-highlight-color: transparent !important;
+    tap-highlight-color: transparent !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
     -webkit-focus-ring-color: transparent !important;
+    outline: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Убираем любой стандартный фон при нажатии в Telegram */
+*:active,
+*:focus,
+*:hover {
+    -webkit-tap-highlight-color: transparent !important;
+    tap-highlight-color: transparent !important;
     outline: none !important;
 }
 
@@ -524,8 +571,6 @@ a {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-    position: relative;
-    overflow: hidden;
 }
 
 .glass-btn:hover {
@@ -946,7 +991,6 @@ a {
     overflow-x: hidden;
 }
 
-/* Красивый скролл для лидерборда */
 .leaderboard-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -1865,7 +1909,7 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ - С КНОПКОЙ ◀ И БЕЗ ЗОЛОТА ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ - ИСПРАВЛЕННАЯ ===== */
 @media (max-width: 768px) {
     .glass-nav {
         display: flex;
@@ -1910,11 +1954,20 @@ a {
     .nav-links {
         order: 3;
         width: 100%;
-        display: flex !important;
+        display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
         margin-top: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-links.hidden {
+        display: none !important;
+    }
+    
+    .nav-toggle-btn.hidden .toggle-icon {
+        transform: rotate(180deg);
     }
     
     /* Эмодзи для мобилок */
@@ -1929,6 +1982,9 @@ a {
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.15);
         transition: transform 0.1s ease;
+        -webkit-tap-highlight-color: transparent !important;
+        tap-highlight-color: transparent !important;
+        margin: 0;
     }
     
     .nav-btn .nav-text {
@@ -1972,36 +2028,60 @@ a {
         font-size: 24px;
     }
     
-    /* Убираем золотой фон, оставляем только эффект нажатия */
-    .nav-btn.active {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.25);
+    /* Убираем желтый фон полностью */
+    .nav-btn.active,
+    .nav-btn:active,
+    .nav-btn:focus,
+    .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
+        -webkit-tap-highlight-color: transparent !important;
+        tap-highlight-color: transparent !important;
     }
     
-    /* Эффект нажатия на кнопку (без золота) */
+    /* Эффект нажатия на кнопку (без желтого) */
     .nav-btn:active {
         transform: scale(0.9);
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.2) !important;
     }
     
-    /* Адаптация контента */
+    /* Для всех кнопок на мобилках */
+    button, 
+    .glass-btn, 
+    .buy-btn, 
+    .upgrade-btn, 
+    .equip-btn,
+    .click-btn,
+    .promocode-activate-btn,
+    .settings-save-btn,
+    .settings-warning-btn,
+    .settings-danger-btn,
+    .auth-btn,
+    .auth-tab,
+    .leaderboard-tabs .glass-btn,
+    .promocode-item,
+    .skin-tag,
+    .history-item,
+    .modal-btn {
+        -webkit-tap-highlight-color: transparent !important;
+        tap-highlight-color: transparent !important;
+        -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+    }
+    
+    /* Принудительно убираем любой фон при нажатии */
+    *:active {
+        -webkit-tap-highlight-color: transparent !important;
+        tap-highlight-color: transparent !important;
+    }
+    
+    /* Убираем все отступы */
     .content {
+        padding: 10px;
+    }
+    
+    .glass-card {
         padding: 15px;
-    }
-    
-    .section-title {
-        font-size: 24px;
-        margin: 15px 0;
-    }
-    
-    .click-btn {
-        width: 180px;
-        height: 180px;
-    }
-    
-    .stats {
-        font-size: 16px;
-        padding: 12px;
+        margin: 0;
     }
     
     .shop-grid,
@@ -2009,113 +2089,114 @@ a {
     .inventory-grid,
     .achievements-grid,
     .settings-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .glass-card {
-        padding: 15px;
+        gap: 10px;
+        padding: 0;
     }
     
     .profile-header {
-        flex-direction: column;
-        text-align: center;
         padding: 15px;
         gap: 15px;
+        margin: 0;
     }
     
     .profile-avatar {
         width: 100px;
         height: 100px;
-    }
-    
-    .profile-info h2 {
-        font-size: 24px;
+        margin: 0;
     }
     
     .profile-stats-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .stat-value {
-        font-size: 20px;
-    }
-    
-    .leaderboard-container {
-        max-height: 400px;
-        padding: 15px;
-    }
-    
-    .leaderboard-table th,
-    .leaderboard-table td {
-        padding: 8px 6px;
-        font-size: 13px;
-    }
-    
-    .leaderboard-table th {
-        font-size: 13px;
-    }
-    
-    .leaderboard-tabs {
         gap: 8px;
     }
     
-    .leaderboard-tabs .glass-btn.small {
-        padding: 6px 10px;
-        font-size: 12px;
+    .profile-stat-item {
+        padding: 10px;
     }
     
-    .promocode-input-wrapper {
-        flex-direction: column;
+    .leaderboard-container {
+        padding: 15px;
+        margin: 0;
+    }
+    
+    .promocodes-container {
+        padding: 10px;
+    }
+    
+    .promocodes-header,
+    .promocode-input-section,
+    .active-promocodes,
+    .promocodes-history {
+        padding: 15px;
+        margin-bottom: 15px;
     }
     
     .promocode-input {
-        padding: 14px 20px;
-        font-size: 16px;
+        padding: 12px 15px;
     }
     
     .promocode-activate-btn {
-        width: 100%;
-        padding: 14px;
+        padding: 12px 20px;
+    }
+    
+    .settings-container {
+        padding: 10px;
+    }
+    
+    .settings-card {
+        padding: 15px;
+        margin: 0;
+    }
+    
+    .settings-field {
+        margin-bottom: 15px;
     }
     
     .settings-input-group {
-        flex-direction: column;
-    }
-    
-    .settings-save-btn {
-        width: 100%;
-    }
-    
-    .settings-warning-btn,
-    .settings-danger-btn {
-        width: 100%;
-        margin-right: 0;
+        gap: 8px;
     }
     
     .modal-content {
-        width: 95%;
         padding: 20px;
     }
     
     .modal-buttons {
-        flex-direction: column;
+        gap: 10px;
     }
 }
 
 @media (max-width: 500px) {
     .profile-header {
-        padding: 15px;
+        padding: 12px;
     }
     
     .profile-avatar {
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
+    }
+    
+    .profile-info h2 {
+        font-size: 20px;
+    }
+    
+    .profile-level {
+        font-size: 14px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
     }
     
     .skin-stats {
-        padding: 20px;
+        padding: 15px;
+    }
+    
+    .skin-tag {
+        padding: 6px 12px;
+        font-size: 12px;
     }
 }
 
