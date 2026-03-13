@@ -43,6 +43,7 @@ a {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* iOS 26 Premium Liquid Glass Water Effect - ОПТИМИЗИРОВАННЫЙ (без движущихся полосок) */
 .glass-effect {
     position: relative;
     background: rgba(255, 255, 255, 0.02);
@@ -56,6 +57,7 @@ a {
     overflow: hidden;
 }
 
+/* Слой глубины воды (статичный) */
 .glass-effect::before {
     content: '';
     position: absolute;
@@ -67,20 +69,13 @@ a {
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.2) 0%, transparent 35%),
         radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-        repeating-linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.02) 0px,
-            rgba(255, 255, 255, 0.02) 4px,
-            rgba(255, 255, 255, 0.04) 4px,
-            rgba(255, 255, 255, 0.04) 8px,
-            transparent 8px,
-            transparent 16px);
-    animation: waterMove 12s linear infinite;
+        radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
     pointer-events: none;
     opacity: 0.7;
     mix-blend-mode: overlay;
 }
 
+/* Слой водной ряби (статичный) */
 .glass-effect::after {
     content: '';
     position: absolute;
@@ -90,53 +85,13 @@ a {
     height: 200%;
     background: 
         radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-        repeating-linear-gradient(-45deg,
-            rgba(255, 255, 255, 0.01) 0px,
-            rgba(255, 255, 255, 0.01) 6px,
-            rgba(255, 255, 255, 0.03) 6px,
-            rgba(255, 255, 255, 0.03) 12px,
-            transparent 12px,
-            transparent 24px);
-    animation: waterRipple 15s linear infinite;
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
     pointer-events: none;
     opacity: 0.5;
     mix-blend-mode: soft-light;
 }
 
-@keyframes waterMove {
-    0% {
-        transform: translate(0, 0) rotate(0deg);
-    }
-    25% {
-        transform: translate(2%, 1%) rotate(1deg);
-    }
-    50% {
-        transform: translate(-1%, 2%) rotate(-1deg);
-    }
-    75% {
-        transform: translate(1%, -1%) rotate(0.5deg);
-    }
-    100% {
-        transform: translate(0, 0) rotate(0deg);
-    }
-}
-
-@keyframes waterRipple {
-    0% {
-        transform: scale(1);
-        background-position: 0% 0%;
-    }
-    50% {
-        transform: scale(1.05);
-        background-position: 50% 50%;
-    }
-    100% {
-        transform: scale(1);
-        background-position: 100% 100%;
-    }
-}
-
+/* Glass Card Premium */
 .glass-card {
     position: relative;
     background: rgba(255, 255, 255, 0.02);
@@ -162,15 +117,7 @@ a {
     height: 200%;
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
-        repeating-linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.02) 0px,
-            rgba(255, 255, 255, 0.02) 5px,
-            rgba(255, 255, 255, 0.03) 5px,
-            rgba(255, 255, 255, 0.03) 10px,
-            transparent 10px,
-            transparent 20px);
-    animation: waterMove 10s linear infinite;
+        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.12) 0%, transparent 45%);
     pointer-events: none;
     opacity: 0.6;
     mix-blend-mode: overlay;
@@ -184,7 +131,6 @@ a {
     width: 150%;
     height: 150%;
     background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: waterRipple 12s linear infinite;
     pointer-events: none;
     opacity: 0.4;
     mix-blend-mode: soft-light;
@@ -197,6 +143,7 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
+/* Навигация с водяным стеклом */
 .glass-nav {
     background: rgba(15, 18, 25, 0.6);
     backdrop-filter: blur(25px) saturate(200%);
@@ -211,7 +158,7 @@ a {
     z-index: 1000;
     box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.4);
     transform: translateZ(0);
-    overflow: visible;
+    overflow: hidden;
 }
 
 .glass-nav::before {
@@ -223,15 +170,7 @@ a {
     height: 200%;
     background: 
         radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
-        repeating-linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.02) 0px,
-            rgba(255, 255, 255, 0.02) 6px,
-            rgba(255, 255, 255, 0.03) 6px,
-            rgba(255, 255, 255, 0.03) 12px,
-            transparent 12px,
-            transparent 24px);
-    animation: waterMove 14s linear infinite;
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.12) 0%, transparent 45%);
     pointer-events: none;
     opacity: 0.6;
     mix-blend-mode: overlay;
@@ -268,24 +207,6 @@ a {
     overflow: hidden;
 }
 
-.nav-btn::before {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: -100%;
-    width: 300%;
-    height: 300%;
-    background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: waterMove 8s linear infinite;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.nav-btn:hover::before {
-    opacity: 0.5;
-}
-
 .nav-btn:hover, .nav-btn.active {
     background: rgba(255, 255, 255, 0.1);
     transform: scale(1.02);
@@ -293,7 +214,6 @@ a {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
 }
 
-/* КНОПКА СКРЫТИЯ/ПОКАЗА НАВИГАЦИИ */
 .nav-toggle-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -364,7 +284,6 @@ a {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: waterMove 12s linear infinite;
     pointer-events: none;
     opacity: 0.3;
 }
@@ -435,15 +354,7 @@ a {
     height: 200%;
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.18) 0%, transparent 40%),
-        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
-        repeating-linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.02) 0px,
-            rgba(255, 255, 255, 0.02) 4px,
-            rgba(255, 255, 255, 0.03) 4px,
-            rgba(255, 255, 255, 0.03) 8px,
-            transparent 8px,
-            transparent 16px);
-    animation: waterMove 10s linear infinite;
+        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.12) 0%, transparent 45%);
     pointer-events: none;
     opacity: 0.7;
     mix-blend-mode: overlay;
@@ -515,7 +426,6 @@ a {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: waterMove 12s linear infinite;
     pointer-events: none;
     opacity: 0.3;
 }
@@ -551,15 +461,7 @@ a {
     height: 200%;
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-        repeating-linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.01) 0px,
-            rgba(255, 255, 255, 0.01) 6px,
-            rgba(255, 255, 255, 0.02) 6px,
-            rgba(255, 255, 255, 0.02) 12px,
-            transparent 12px,
-            transparent 24px);
-    animation: waterMove 14s linear infinite;
+        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
     pointer-events: none;
     opacity: 0.5;
     mix-blend-mode: overlay;
@@ -664,7 +566,6 @@ a {
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
         radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-    animation: waterMove 14s linear infinite;
     pointer-events: none;
     opacity: 0.5;
     mix-blend-mode: overlay;
@@ -734,7 +635,6 @@ a {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: waterMove 12s linear infinite;
     pointer-events: none;
     opacity: 0.4;
     mix-blend-mode: overlay;
@@ -766,24 +666,6 @@ a {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     position: relative;
     overflow: hidden;
-}
-
-.glass-btn::before {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: -100%;
-    width: 300%;
-    height: 300%;
-    background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
-    animation: waterMove 8s linear infinite;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.glass-btn:hover::before {
-    opacity: 0.5;
 }
 
 .glass-btn:hover {
@@ -841,7 +723,6 @@ a {
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
         radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-    animation: waterMove 16s linear infinite;
     pointer-events: none;
     opacity: 0.5;
     mix-blend-mode: overlay;
@@ -918,7 +799,6 @@ a {
     background: 
         radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 80% 70%, rgba(255, 215, 0, 0.1) 0%, transparent 45%);
-    animation: waterMove 15s linear infinite;
     pointer-events: none;
     opacity: 0.5;
     z-index: 1;
@@ -953,7 +833,6 @@ a {
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 45%),
         radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-    animation: waterMove 14s linear infinite;
     pointer-events: none;
     opacity: 0.4;
     z-index: 1;
@@ -1073,7 +952,6 @@ a {
     background: 
         radial-gradient(circle at 20% 30%, rgba(76, 175, 80, 0.1) 0%, transparent 45%),
         radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.08) 0%, transparent 50%);
-    animation: waterMove 16s linear infinite;
     pointer-events: none;
     opacity: 0.4;
     z-index: 1;
@@ -1108,24 +986,6 @@ a {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-}
-
-.promocode-item::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
-    animation: waterMove 12s linear infinite;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.promocode-item:hover::before {
-    opacity: 0.5;
 }
 
 .promocode-item:hover {
@@ -1185,7 +1045,6 @@ a {
     background: 
         radial-gradient(circle at 30% 40%, rgba(33, 150, 243, 0.1) 0%, transparent 45%),
         radial-gradient(circle at 70% 60%, rgba(33, 150, 243, 0.08) 0%, transparent 50%);
-    animation: waterMove 16s linear infinite;
     pointer-events: none;
     opacity: 0.4;
     z-index: 1;
@@ -1285,6 +1144,7 @@ a {
     font-style: italic;
 }
 
+/* ЛИДЕРБОРД С КРАСИВЫМ СКРОЛЛОМ */
 .leaderboard-container {
     color: white;
     max-width: 800px;
@@ -1293,9 +1153,35 @@ a {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 28px;
+    padding: 25px;
     box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
     position: relative;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Красивый скролл для лидерборда */
+.leaderboard-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.leaderboard-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.leaderboard-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.leaderboard-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #ffaa00, #ffd700);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
 }
 
 .leaderboard-container::before {
@@ -1308,7 +1194,6 @@ a {
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
         radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-    animation: waterMove 16s linear infinite;
     pointer-events: none;
     opacity: 0.5;
     mix-blend-mode: overlay;
@@ -1321,6 +1206,18 @@ a {
     margin: 20px 0;
     position: relative;
     z-index: 2;
+    flex-wrap: wrap;
+}
+
+.leaderboard-tabs .glass-btn.small {
+    padding: 8px 16px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-tabs .glass-btn.small.active {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: gold;
 }
 
 .leaderboard-table {
@@ -1332,27 +1229,65 @@ a {
 
 .leaderboard-table th,
 .leaderboard-table td {
-    padding: 15px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
 }
 
 .leaderboard-table th {
-    font-size: 18px;
+    font-size: 16px;
     color: gold;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    text-shadow: 0 0 12px gold;
+    text-shadow: 0 0 10px gold;
+    position: sticky;
+    top: 0;
+    background: rgba(15, 18, 25, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 5;
+}
+
+.leaderboard-table td {
+    font-size: 15px;
 }
 
 .leaderboard-table tr:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .leaderboard-table td:first-child {
     font-weight: 600;
     color: gold;
+    width: 60px;
+}
+
+/* Адаптивность для лидерборда */
+@media (max-width: 768px) {
+    .leaderboard-container {
+        max-height: 400px;
+        padding: 15px;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+    
+    .leaderboard-table th {
+        font-size: 14px;
+    }
+    
+    .leaderboard-table td:first-child {
+        width: 40px;
+    }
+    
+    .leaderboard-tabs .glass-btn.small {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
 }
 
 .auth-container {
@@ -1386,15 +1321,7 @@ a {
     height: 200%;
     background: 
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
-        repeating-linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.02) 0px,
-            rgba(255, 255, 255, 0.02) 6px,
-            rgba(255, 255, 255, 0.03) 6px,
-            rgba(255, 255, 255, 0.03) 12px,
-            transparent 12px,
-            transparent 24px);
-    animation: waterMove 12s linear infinite;
+        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.12) 0%, transparent 45%);
     pointer-events: none;
     opacity: 0.6;
     mix-blend-mode: overlay;
@@ -1503,30 +1430,13 @@ a {
     overflow: hidden;
 }
 
-.auth-btn::before {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: -100%;
-    width: 300%;
-    height: 300%;
-    background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 50%);
-    animation: waterMove 10s linear infinite;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.auth-btn:hover::before {
-    opacity: 0.4;
-}
-
 .auth-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     transform: translateY(-1px);
     box-shadow: 0 15px 28px rgba(0, 0, 0, 0.35);
 }
 
+/* Эффект пузырьков */
 .bubble {
     position: fixed;
     background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
@@ -1579,7 +1489,6 @@ a {
     background: 
         radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 45%);
-    animation: waterMove 15s linear infinite;
     pointer-events: none;
     opacity: 0.5;
     z-index: 1;
@@ -1681,7 +1590,6 @@ a {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    animation: waterMove 12s linear infinite;
     pointer-events: none;
     opacity: 0.3;
 }
@@ -1736,7 +1644,6 @@ a {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 50%);
-    animation: waterMove 14s linear infinite;
     pointer-events: none;
     opacity: 0.5;
     z-index: 1;
@@ -1840,7 +1747,6 @@ a {
     background: 
         radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
         radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-    animation: waterMove 16s linear infinite;
     pointer-events: none;
     opacity: 0.5;
     z-index: 1;
@@ -1945,19 +1851,6 @@ a {
     transform: translateX(0);
 }
 
-.achievement-notification::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.15) 0%, transparent 50%);
-    animation: waterMove 10s linear infinite;
-    pointer-events: none;
-    opacity: 0.5;
-}
-
 .notification-icon {
     width: 50px;
     height: 50px;
@@ -2000,124 +1893,6 @@ a {
     text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
 
-@media (max-width: 768px) {
-    .glass-nav {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 10px;
-        padding: 12px;
-    }
-    
-    .nav-links {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        margin-top: 10px;
-    }
-    
-    .nav-toggle-btn {
-        order: 1;
-    }
-    
-    .user-info {
-        order: 2;
-        flex: 1;
-        justify-content: flex-end;
-    }
-    
-    .click-btn {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .shop-grid, .upgrades-grid, .inventory-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .section-title {
-        font-size: 26px;
-    }
-    
-    .currency-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .price-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-        padding: 20px;
-    }
-    
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-    }
-    
-    .profile-info h2 {
-        font-size: 28px;
-    }
-    
-    .profile-stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-value {
-        font-size: 20px;
-    }
-    
-    .achievements-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .promocode-input-wrapper {
-        flex-direction: column;
-    }
-    
-    .promocode-activate-btn {
-        width: 100%;
-    }
-    
-    .promocodes-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .history-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-}
-
-@media (max-width: 500px) {
-    .profile-header {
-        padding: 15px;
-    }
-    
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .skin-stats {
-        padding: 20px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
 /* ===== НАСТРОЙКИ ПРОФИЛЯ ===== */
 .settings-container {
     max-width: 1000px;
@@ -2155,7 +1930,6 @@ a {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-    animation: waterMove 14s linear infinite;
     pointer-events: none;
     opacity: 0.3;
     z-index: 1;
@@ -2374,6 +2148,7 @@ a {
     right: 30px;
     background: rgba(20, 25, 35, 0.95);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: 20px;
     padding: 15px 25px;
@@ -2404,8 +2179,101 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* Адаптивность для настроек */
+/* Адаптивность */
 @media (max-width: 768px) {
+    .glass-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px;
+    }
+    
+    .nav-links {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    .nav-toggle-btn {
+        order: 1;
+    }
+    
+    .user-info {
+        order: 2;
+        flex: 1;
+        justify-content: flex-end;
+    }
+    
+    .click-btn {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .shop-grid, .upgrades-grid, .inventory-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .section-title {
+        font-size: 26px;
+    }
+    
+    .currency-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .price-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .profile-info h2 {
+        font-size: 28px;
+    }
+    
+    .profile-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .promocode-input-wrapper {
+        flex-direction: column;
+    }
+    
+    .promocode-activate-btn {
+        width: 100%;
+    }
+    
+    .promocodes-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
     .settings-grid {
         grid-template-columns: 1fr;
     }
@@ -2426,5 +2294,28 @@ a {
     
     .modal-buttons {
         flex-direction: column;
+    }
+}
+
+@media (max-width: 500px) {
+    .profile-header {
+        padding: 15px;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .skin-stats {
+        padding: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
