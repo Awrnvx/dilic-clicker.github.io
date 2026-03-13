@@ -1,4 +1,4 @@
-// script.js - Полная версия игры с кнопкой скрытия навигации
+// script.js - Полная версия игры с кнопкой скрытия навигации и новым скином
 
 class ClickerGame {
     constructor() {
@@ -8,7 +8,7 @@ class ClickerGame {
         this.bubbleFrame = null;
         this.lastBubbleTime = 0;
         
-        // Данные скинов
+        // Данные скинов - ДОБАВЛЕН НОВЫЙ СКИН
         this.skinsData = {
             'classic': {
                 name: 'Классический скин',
@@ -30,6 +30,14 @@ class ClickerGame {
                 image: 'https://avatars.mds.yandex.net/i?id=83ac2b7a91b5b67b7ffb26da4b8b1a2abd4fc83f-8981816-images-thumbs&n=13',
                 description: 'Эксклюзивный скин монстра',
                 currency: 'money'
+            },
+            // 👇 НОВЫЙ СКИН ЗА 15000 ДИЛИКОВ
+            'dragon_skin': {
+                name: 'Драконий скин',
+                price: 15000,
+                image: 'https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13',
+                description: 'Мощный скин дракона',
+                currency: 'dilicks' // Покупается за дилики!
             }
         };
         
@@ -80,7 +88,7 @@ class ClickerGame {
                 name: 'Коллекционер',
                 description: 'Соберите все скины',
                 icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png',
-                condition: (data) => data.inventory && data.inventory.length >= 3,
+                condition: (data) => data.inventory && data.inventory.length >= 4, // 👈 ИЗМЕНЕНО с 3 на 4
                 reward: { money: 3000, dilicks: 300 }
             },
             {
@@ -149,6 +157,14 @@ class ClickerGame {
                 code: 'MONSTERS-SKIN',
                 reward: { money: 0, dilicks: 0, skin: 'monsters_skin' },
                 description: 'Скин монстра в подарок!',
+                maxActivations: 1,
+                expiryDate: null
+            },
+            // 👇 НОВЫЙ ПРОМОКОД ДЛЯ ДРАКОНЬЕГО СКИНА (если хочешь)
+            'DRAGON-SKIN': {
+                code: 'DRAGON-SKIN',
+                reward: { money: 0, dilicks: 0, skin: 'dragon_skin' },
+                description: 'Скин дракона в подарок!',
                 maxActivations: 1,
                 expiryDate: null
             }
@@ -442,30 +458,47 @@ class ClickerGame {
         }, 600);
     }
 
-    // Покупка предмета
+    // Покупка предмета - ИСПРАВЛЕНО ДЛЯ ПОДДЕРЖКИ РАЗНЫХ ВАЛЮТ
     async buyItem(item, price) {
-        if (this.userData.money >= price) {
-            this.userData.money -= price;
-            
-            if (!this.userData.inventory.includes(item)) {
-                this.userData.inventory.push(item);
+        const skinData = this.skinsData[item];
+        
+        // Проверяем, какая валюта нужна для покупки
+        if (skinData.currency === 'dilicks') {
+            // Покупка за дилики
+            if (this.userData.dilicks >= price) {
+                this.userData.dilicks -= price;
+            } else {
+                alert(`Недостаточно диликов! Нужно: ${price}`);
+                return;
             }
-            
-            this.userData.currentSkin = item;
-            if (this.clickIcon) {
-                this.clickIcon.src = this.skinsData[item].image;
-            }
-            
-            this.updateUI();
-            await this.saveGame();
-            this.updateInventory();
-            this.updateShopStatus();
-            this.checkAchievements();
-            
-            alert(`Куплен скин: ${this.skinsData[item].name}`);
         } else {
-            alert('Недостаточно денег!');
+            // Покупка за обычные деньги (по умолчанию)
+            if (this.userData.money >= price) {
+                this.userData.money -= price;
+            } else {
+                alert(`Недостаточно денег! Нужно: ${price}`);
+                return;
+            }
         }
+        
+        // Добавляем скин в инвентарь, если его там еще нет
+        if (!this.userData.inventory.includes(item)) {
+            this.userData.inventory.push(item);
+        }
+        
+        // Автоматически экипируем новый скин
+        this.userData.currentSkin = item;
+        if (this.clickIcon) {
+            this.clickIcon.src = this.skinsData[item].image;
+        }
+        
+        this.updateUI();
+        await this.saveGame();
+        this.updateInventory();
+        this.updateShopStatus();
+        this.checkAchievements();
+        
+        alert(`Куплен скин: ${this.skinsData[item].name}`);
     }
 
     // Покупка улучшения
