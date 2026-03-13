@@ -1,73 +1,102 @@
-// Управление пользователями
 class UserManager {
     constructor() {
-        this.users = JSON.parse(localStorage.getItem('users')) || {};
         this.currentUser = null;
     }
 
-    register(username, password) {
-        if (this.users[username]) {
-            return { success: false, message: 'Пользователь уже существует' };
+    async register(username, password) {
+        try {
+            const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
+            
+            if (snapshot.exists()) {
+                return { success: false, message: 'Пользователь уже существует' };
+            }
+            
+            const newUserRef = firebase.database().ref('users').push();
+            const userData = this.createDefaultData(username, password);
+            await newUserRef.set(userData);
+            
+            return { success: true, message: 'Регистрация успешна' };
+        } catch (error) {
+            return { success: false, message: 'Ошибка при регистрации' };
         }
-        
-        this.users[username] = {
-            password: password,
-            data: this.createDefaultData()
-        };
-        
-        localStorage.setItem('users', JSON.stringify(this.users));
-        return { success: true, message: 'Регистрация успешна' };
     }
 
-    login(username, password) {
-        const user = this.users[username];
-        if (!user || user.password !== password) {
-            return { success: false, message: 'Неверный логин или пароль' };
+    async login(username, password) {
+        try {
+            const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
+            
+            if (!snapshot.exists()) {
+                return { success: false, message: 'Неверный логин или пароль' };
+            }
+            
+            let userData = null;
+            let userId = null;
+            
+            snapshot.forEach(child => {
+                userData = child.val();
+                userId = child.key;
+            });
+            
+            if (userData.password !== password) {
+                return { success: false, message: 'Неверный логин или пароль' };
+            }
+            
+            this.currentUser = username;
+            localStorage.setItem('currentUser', username);
+            localStorage.setItem('userId', userId);
+            
+            return { success: true, message: 'Вход выполнен' };
+        } catch (error) {
+            return { success: false, message: 'Ошибка при входе' };
         }
-        
-        this.currentUser = username;
-        localStorage.setItem('currentUser', username);
-        return { success: true, message: 'Вход выполнен' };
     }
 
     logout() {
         this.currentUser = null;
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('userId');
     }
 
-    createDefaultData() {
+    createDefaultData(username, password) {
         return {
+            username: username,
+            password: password,
             clicks: 0,
-            money: 0,
-            dilicks: 0,
+            money: 1000,
+            dilicks: 500,
             clickPower: 1,
             autoClickerLevel: 0,
             critChance: 5,
-            skins: ['default'],
-            currentSkin: 'default',
+            inventory: ['classic'],
+            currentSkin: 'classic',
             seasonLevel: 1,
             seasonExp: 0,
             playtime: 0,
+            premiumPass: false,
+            completedAchievements: [],
+            activatedPromocodes: [],
+            promocodesHistory: [],
             lastSave: Date.now()
         };
     }
 
-    saveUserData(userData) {
-        if (this.currentUser && this.users[this.currentUser]) {
-            this.users[this.currentUser].data = userData;
-            localStorage.setItem('users', JSON.stringify(this.users));
+    async saveUserData(userData) {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            await firebase.database().ref('users/' + userId).update(userData);
         }
     }
 
-    loadUserData() {
-        if (this.currentUser && this.users[this.currentUser]) {
-            return this.users[this.currentUser].data;
+    async loadUserData() {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            const snapshot = await firebase.database().ref('users/' + userId).once('value');
+            return snapshot.val();
         }
         return null;
     }
 }
 
-// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     const userManager = new UserManager();
     
@@ -76,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     
-    // Переключение между вкладками
     loginTab.addEventListener('click', () => {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
@@ -91,8 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.classList.remove('active');
     });
     
-    // Обработка регистрации
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const username = document.getElementById('regUsername').value;
@@ -104,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const result = userManager.register(username, password);
+        const result = await userManager.register(username, password);
         
         if (result.success) {
             alert('Регистрация успешна! Теперь войдите в систему.');
@@ -114,14 +141,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Обработка входа
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
         
-        const result = userManager.login(username, password);
+        const result = await userManager.login(username, password);
         
         if (result.success) {
             window.location.href = 'index.html';
@@ -130,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Проверка, если пользователь уже вошел
     if (localStorage.getItem('currentUser')) {
         window.location.href = 'index.html';
     }
