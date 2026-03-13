@@ -15,6 +15,7 @@
     <script src="firebase-config.js"></script>
     
     <script>
+        // Инициализация Telegram Mini App
         const telegram = window.Telegram.WebApp;
         telegram.ready();
         telegram.expand();
@@ -24,20 +25,39 @@
     <div class="game-container">
         <!-- Навигация -->
         <nav class="glass-nav">
+            <!-- Кнопка скрытия/показа навигации -->
             <button class="nav-toggle-btn" id="navToggleBtn">
                 <span class="toggle-icon">◀</span>
             </button>
             
             <div class="nav-links">
-                <button class="nav-btn active" data-tab="main">Главная</button>
-                <button class="nav-btn" data-tab="shop">Магазин</button>
-                <button class="nav-btn" data-tab="inventory">Инвентарь</button>
-                <button class="nav-btn" data-tab="upgrades">Улучшения</button>
-                <button class="nav-btn" data-tab="profile">Профиль</button>
-                <button class="nav-btn" data-tab="settings">⚙️</button>
-                <button class="nav-btn" data-tab="season">Сезонный пропуск</button>
-                <button class="nav-btn" data-tab="promocodes">Промокоды</button>
-                <button class="nav-btn" data-tab="leaderboard">Лидеры</button>
+                <button class="nav-btn active" data-tab="main">
+                    <span class="nav-text">Главная</span>
+                </button>
+                <button class="nav-btn" data-tab="shop">
+                    <span class="nav-text">Магазин</span>
+                </button>
+                <button class="nav-btn" data-tab="inventory">
+                    <span class="nav-text">Инвентарь</span>
+                </button>
+                <button class="nav-btn" data-tab="upgrades">
+                    <span class="nav-text">Улучшения</span>
+                </button>
+                <button class="nav-btn" data-tab="profile">
+                    <span class="nav-text">Профиль</span>
+                </button>
+                <button class="nav-btn" data-tab="settings">
+                    <span class="nav-text">Настройки</span>
+                </button>
+                <button class="nav-btn" data-tab="season">
+                    <span class="nav-text">Сезон</span>
+                </button>
+                <button class="nav-btn" data-tab="promocodes">
+                    <span class="nav-text">Промо</span>
+                </button>
+                <button class="nav-btn" data-tab="leaderboard">
+                    <span class="nav-text">Лидеры</span>
+                </button>
             </div>
             <div class="user-info">
                 <span id="usernameDisplay"></span>
@@ -199,7 +219,7 @@
                 </div>
             </div>
 
-            <!-- НАСТРОЙКИ ПРОФИЛЯ -->
+            <!-- Настройки профиля -->
             <div id="settings" class="tab">
                 <div class="settings-container">
                     <h2 class="section-title">⚙️ Настройки профиля</h2>

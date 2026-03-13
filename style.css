@@ -2150,3 +2150,10 @@ a {
 .equip-btn:active {
     transform: scale(0.95);
 }
+
+/* Скрываем текст на мобилках, оставляем эмодзи */
+@media (max-width: 768px) {
+    .nav-btn .nav-text {
+        display: none;
+    }
+}
