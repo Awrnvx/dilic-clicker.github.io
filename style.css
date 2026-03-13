@@ -95,7 +95,7 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-/* Навигация */
+/* Навигация - ПК версия (КАК БЫЛО В НАЧАЛЕ) */
 .glass-nav {
     background: rgba(15, 18, 25, 0.6);
     backdrop-filter: blur(10px);
@@ -139,8 +139,6 @@ a {
     -webkit-backdrop-filter: blur(8px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    position: relative;
-    overflow: hidden;
 }
 
 .nav-btn:hover, .nav-btn.active {
@@ -184,6 +182,7 @@ a {
     transform: rotate(180deg);
 }
 
+/* USER-INFO - ПК версия (КАК БЫЛО В НАЧАЛЕ) */
 .user-info {
     display: flex;
     gap: 20px;
@@ -208,8 +207,6 @@ a {
     align-items: center;
     gap: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    position: relative;
-    overflow: hidden;
 }
 
 .currency-icon {
@@ -218,6 +215,15 @@ a {
     border-radius: 50%;
     object-fit: cover;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+#logoutBtn {
+    margin: 0;
+}
+
+/* На ПК скрываем лишние структуры */
+.user-info-top, .user-info-bottom {
+    display: contents;
 }
 
 .content {
@@ -1859,60 +1865,55 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ ДЛЯ TELEGRAM ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ (ТВОЯ СТРУКТУРА) ===== */
 @media (max-width: 768px) {
-    /* Убираем текст с кнопок, оставляем только эмодзи */
-    .nav-btn[data-tab="main"] span,
-    .nav-btn[data-tab="shop"] span,
-    .nav-btn[data-tab="inventory"] span,
-    .nav-btn[data-tab="upgrades"] span,
-    .nav-btn[data-tab="profile"] span,
-    .nav-btn[data-tab="settings"] span,
-    .nav-btn[data-tab="season"] span,
-    .nav-btn[data-tab="promocodes"] span,
-    .nav-btn[data-tab="leaderboard"] span {
-        display: none;
+    .glass-nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 10px;
     }
     
-    /* Добавляем эмодзи через псевдоэлементы */
-    .nav-btn[data-tab="main"]::before {
-        content: "🏠";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="shop"]::before {
-        content: "🛒";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="inventory"]::before {
-        content: "📦";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="upgrades"]::before {
-        content: "⚡";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="profile"]::before {
-        content: "👤";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="settings"]::before {
-        content: "⚙️";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="season"]::before {
-        content: "🎫";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="promocodes"]::before {
-        content: "🎁";
-        font-size: 24px;
-    }
-    .nav-btn[data-tab="leaderboard"]::before {
-        content: "🏆";
-        font-size: 24px;
+    .nav-toggle-btn {
+        order: 1;
     }
     
-    /* Делаем кнопки круглыми и компактными */
+    .user-info {
+        order: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+    }
+    
+    .user-info-top {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .user-info-bottom {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    #logoutBtn {
+        margin: 0;
+    }
+    
+    .nav-links {
+        order: 3;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    /* Эмодзи для мобилок */
     .nav-btn {
         width: 50px;
         height: 50px;
@@ -1923,71 +1924,38 @@ a {
         border-radius: 50% !important;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
     
-    /* Эффект при нажатии */
-    .nav-btn:active {
-        transform: scale(0.9);
-        background: rgba(255, 255, 255, 0.2);
+    .nav-btn .nav-text {
+        display: none;
     }
     
-    /* Активная кнопка подсвечивается */
+    .nav-btn[data-tab="main"]::before { content: "🏠"; font-size: 24px; }
+    .nav-btn[data-tab="shop"]::before { content: "🛒"; font-size: 24px; }
+    .nav-btn[data-tab="inventory"]::before { content: "📦"; font-size: 24px; }
+    .nav-btn[data-tab="upgrades"]::before { content: "⚡"; font-size: 24px; }
+    .nav-btn[data-tab="profile"]::before { content: "👤"; font-size: 24px; }
+    .nav-btn[data-tab="settings"]::before { content: "⚙️"; font-size: 24px; }
+    .nav-btn[data-tab="season"]::before { content: "🎫"; font-size: 24px; }
+    .nav-btn[data-tab="promocodes"]::before { content: "🎁"; font-size: 24px; }
+    .nav-btn[data-tab="leaderboard"]::before { content: "🏆"; font-size: 24px; }
+    
     .nav-btn.active {
         background: rgba(255, 215, 0, 0.3);
         border-color: gold;
         box-shadow: 0 0 15px gold;
     }
     
-    /* Скрываем кнопку сворачивания на мобилках */
-    .nav-toggle-btn {
-        display: none;
-    }
-    
-    /* Навигация всегда видна */
-    .nav-links {
-        display: flex !important;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-        padding: 10px 0;
-        width: 100%;
-    }
-    
-    /* Адаптируем шапку */
-    .glass-nav {
-        flex-direction: column;
-        padding: 10px;
-    }
-    
-    .user-info {
-        width: 100%;
-        justify-content: center;
-        margin-top: 5px;
-    }
-    
-    .currency, .dilic {
-        padding: 6px 12px;
-        font-size: 14px;
-    }
-    
-    .currency-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    /* Контент с отступами */
+    /* Адаптация контента */
     .content {
         padding: 15px;
     }
     
-    /* Уменьшаем заголовки */
     .section-title {
         font-size: 24px;
         margin: 15px 0;
     }
     
-    /* Адаптируем кликер */
     .click-btn {
         width: 180px;
         height: 180px;
@@ -1998,7 +1966,6 @@ a {
         padding: 12px;
     }
     
-    /* Сетки в один столбец */
     .shop-grid,
     .upgrades-grid,
     .inventory-grid,
@@ -2008,12 +1975,10 @@ a {
         gap: 12px;
     }
     
-    /* Карточки с меньшими отступами */
     .glass-card {
         padding: 15px;
     }
     
-    /* Профиль */
     .profile-header {
         flex-direction: column;
         text-align: center;
@@ -2039,7 +2004,6 @@ a {
         font-size: 20px;
     }
     
-    /* Лидерборд */
     .leaderboard-container {
         max-height: 400px;
         padding: 15px;
@@ -2064,7 +2028,6 @@ a {
         font-size: 12px;
     }
     
-    /* Промокоды */
     .promocode-input-wrapper {
         flex-direction: column;
     }
@@ -2079,7 +2042,6 @@ a {
         padding: 14px;
     }
     
-    /* Настройки */
     .settings-input-group {
         flex-direction: column;
     }
@@ -2094,7 +2056,6 @@ a {
         margin-right: 0;
     }
     
-    /* Модалки */
     .modal-content {
         width: 95%;
         padding: 20px;
@@ -2149,60 +2110,4 @@ a {
 .upgrade-btn:active,
 .equip-btn:active {
     transform: scale(0.95);
-}
-
-/* Скрываем текст на мобилках, оставляем эмодзи */
-@media (max-width: 768px) {
-    .nav-btn .nav-text {
-        display: none;
-    }
-}
-
-/* ФИНАЛЬНАЯ СТРУКТУРА ДЛЯ ТЕЛЕФОНА */
-@media (max-width: 768px) {
-    .glass-nav {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        padding: 10px;
-    }
-    
-    .nav-toggle-btn {
-        order: 1;
-    }
-    
-    .user-info {
-        order: 2;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 5px;
-    }
-    
-    .user-info-top {
-        width: 100%;
-        display: flex;
-        justify-content: flex-end;
-    }
-    
-    .user-info-bottom {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-    
-    #logoutBtn {
-        margin: 0;
-    }
-    
-    .nav-links {
-        order: 3;
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 10px;
-    }
 }
