@@ -1,6 +1,6 @@
-// register.js - Полная версия
+// register.js - ПОЛНАЯ ВЕРСИЯ С ПАРОЛЯМИ
 
-// Очищаем localStorage при загрузке страницы
+// Очищаем localStorage при загрузке
 localStorage.removeItem('currentUser');
 localStorage.removeItem('userId');
 
@@ -11,19 +11,18 @@ class UserManager {
 
     async register(username, password) {
         try {
-            // Проверяем, существует ли уже такой пользователь
-            const usersRef = firebase.database().ref('users');
-            const snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
+            // Проверяем, есть ли уже такой пользователь
+            const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
             
             if (snapshot.exists()) {
                 return { success: false, message: 'Пользователь уже существует' };
             }
             
-            // Создаем нового пользователя
-            const newUserRef = usersRef.push();
+            // Создаем нового пользователя с паролем
+            const newUserRef = firebase.database().ref('users').push();
             const userData = {
                 username: username,
-                password: password,
+                password: password,  // ← ВОТ ТУТ ПАРОЛЬ СОХРАНЯЕТСЯ!
                 clicks: 0,
                 money: 1000,
                 dilicks: 500,
@@ -53,8 +52,7 @@ class UserManager {
     async login(username, password) {
         try {
             // Ищем пользователя по имени
-            const usersRef = firebase.database().ref('users');
-            const snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
+            const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
             
             if (!snapshot.exists()) {
                 return { success: false, message: 'Неверный логин или пароль' };
