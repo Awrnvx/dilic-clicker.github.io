@@ -8,5 +8,9 @@ const firebaseConfig = {
     appId: "1:651188156647:web:7ef858931f7fb4526b8a42"
 };
 
+// Добавляем обработку ошибок CORS
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+
+// Принудительно включаем сохранение
+database.goOnline();
