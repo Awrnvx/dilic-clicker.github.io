@@ -2142,7 +2142,7 @@ a {
     }
 }
 
-/* ФИНАЛЬНАЯ СТРУКТУРА ДЛЯ ТЕЛЕФОНА */
+/* ФИНАЛЬНАЯ СТРУКТУРА ПО ТВОЕЙ СХЕМЕ */
 @media (max-width: 768px) {
     .glass-nav {
         display: flex;
@@ -2160,24 +2160,41 @@ a {
         flex: 1;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: center;
         gap: 5px;
     }
     
     .user-info-top {
         width: 100%;
-        display: flex;
-        justify-content: flex-end;
+        text-align: center;
     }
     
     .user-info-bottom {
         display: flex;
         gap: 10px;
         align-items: center;
+        justify-content: center;
+    }
+    
+    #usernameDisplay {
+        font-weight: bold;
+        font-size: 16px;
     }
     
     #logoutBtn {
         margin: 0;
+        padding: 5px 12px;
+        font-size: 13px;
+    }
+    
+    .currency, .dilic {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+    
+    .currency-icon {
+        width: 16px;
+        height: 16px;
     }
     
     .nav-links {
@@ -2187,6 +2204,57 @@ a {
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
-        margin-top: 10px;
+        margin-top: 15px;
+    }
+    
+    .nav-btn {
+        width: 45px;
+        height: 45px;
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+    }
+    
+    .nav-btn .nav-text {
+        display: none;
+    }
+    
+    .nav-btn[data-tab="main"]::before {
+        content: "🏠";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="shop"]::before {
+        content: "🛒";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="inventory"]::before {
+        content: "📦";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="upgrades"]::before {
+        content: "⚡";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="profile"]::before {
+        content: "👤";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="settings"]::before {
+        content: "⚙️";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="season"]::before {
+        content: "🎫";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="promocodes"]::before {
+        content: "🎁";
+        font-size: 22px;
+    }
+    .nav-btn[data-tab="leaderboard"]::before {
+        content: "🏆";
+        font-size: 22px;
     }
 }
