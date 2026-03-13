@@ -1,4 +1,4 @@
-// script.js - Полная версия игры с кнопкой скрытия навигации и новым скином
+// script.js - Полная версия игры с правильными ценами в улучшениях
 
 class ClickerGame {
     constructor() {
@@ -8,7 +8,7 @@ class ClickerGame {
         this.bubbleFrame = null;
         this.lastBubbleTime = 0;
         
-        // Данные скинов - ДОБАВЛЕН НОВЫЙ СКИН
+        // Данные скинов
         this.skinsData = {
             'classic': {
                 name: 'Классический скин',
@@ -31,13 +31,12 @@ class ClickerGame {
                 description: 'Эксклюзивный скин монстра',
                 currency: 'money'
             },
-            // 👇 НОВЫЙ СКИН ЗА 15000 ДИЛИКОВ
             'dragon_skin': {
                 name: 'Драконий скин',
                 price: 15000,
                 image: 'https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13',
                 description: 'Мощный скин дракона',
-                currency: 'dilicks' // Покупается за дилики!
+                currency: 'dilicks'
             }
         };
         
@@ -88,7 +87,7 @@ class ClickerGame {
                 name: 'Коллекционер',
                 description: 'Соберите все скины',
                 icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png',
-                condition: (data) => data.inventory && data.inventory.length >= 4, // 👈 ИЗМЕНЕНО с 3 на 4
+                condition: (data) => data.inventory && data.inventory.length >= 4,
                 reward: { money: 3000, dilicks: 300 }
             },
             {
@@ -160,7 +159,6 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
-            // 👇 НОВЫЙ ПРОМОКОД ДЛЯ ДРАКОНЬЕГО СКИНА (если хочешь)
             'DRAGON-SKIN': {
                 code: 'DRAGON-SKIN',
                 reward: { money: 0, dilicks: 0, skin: 'dragon_skin' },
@@ -173,19 +171,17 @@ class ClickerGame {
         this.init();
     }
 
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
     async init() {
-        // Получаем ID пользователя из localStorage
         const userId = localStorage.getItem('userId');
         const currentUser = localStorage.getItem('currentUser');
         
-        // Если нет userId - отправляем на регистрацию
         if (!userId || !currentUser) {
             window.location.href = 'register.html';
             return;
         }
         
         try {
-            // Загружаем данные пользователя из Firebase
             const userRef = firebase.database().ref('users/' + userId);
             const snapshot = await userRef.once('value');
             
@@ -193,7 +189,6 @@ class ClickerGame {
                 this.userData = snapshot.val();
                 console.log('✅ Данные загружены из Firebase');
             } else {
-                // Если пользователь не найден в Firebase
                 console.error('❌ Пользователь не найден');
                 localStorage.clear();
                 window.location.href = 'register.html';
@@ -206,37 +201,25 @@ class ClickerGame {
             return;
         }
         
-        // Загружаем все элементы интерфейса
         this.loadElements();
-        
-        // Настраиваем обработчики событий
         this.setupEventListeners();
-        
-        // Запускаем автокликер
         this.startAutoClicker();
-        
-        // Запускаем трекер времени
         this.startPlaytimeTracker();
-        
-        // Запускаем пузырьки
         this.startBubbles();
         
-        // Устанавливаем иконку скина
         if (this.clickIcon && this.userData.currentSkin) {
             this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
         }
         
-        // Обновляем интерфейс
         this.updateUI();
         this.updateInventory();
         this.updateShopStatus();
-        this.updateUpgradePrices();
+        this.updateUpgradePrices(); // ← ВАЖНО: обновляем цены при загрузке
         this.updatePromocodesList();
         this.updatePromocodesHistory();
         this.updateLeaderboard('clicks');
     }
 
-    // Создание данных по умолчанию
     createDefaultData() {
         return {
             clicks: 0,
@@ -258,7 +241,7 @@ class ClickerGame {
         };
     }
 
-    // Загрузка элементов DOM
+    // ===== ЗАГРУЗКА ЭЛЕМЕНТОВ =====
     loadElements() {
         this.usernameDisplay = document.getElementById('usernameDisplay');
         this.moneySpan = document.getElementById('money');
@@ -285,7 +268,6 @@ class ClickerGame {
         
         this.inventoryGrid = document.getElementById('inventoryGrid');
         
-        // Элементы профиля
         this.profileUsername = document.getElementById('profileUsername');
         this.profileLevel = document.getElementById('profileLevel');
         this.profileClicks = document.getElementById('profileClicks');
@@ -299,14 +281,12 @@ class ClickerGame {
         this.ownedSkins = document.getElementById('ownedSkins');
         this.totalSkins = document.getElementById('totalSkins');
         
-        // Элементы промокодов
         this.promocodeInput = document.getElementById('promocodeInput');
         this.activatePromocodeBtn = document.getElementById('activatePromocodeBtn');
         this.promocodeMessage = document.getElementById('promocodeMessage');
         this.promocodesList = document.getElementById('promocodesList');
         this.promocodesHistory = document.getElementById('promocodesHistory');
         
-        // Кнопка скрытия навигации
         this.navToggleBtn = document.getElementById('navToggleBtn');
         this.navLinks = document.querySelector('.nav-links');
         
@@ -316,7 +296,7 @@ class ClickerGame {
         }
     }
 
-    // Настройка обработчиков событий
+    // ===== ОБРАБОТЧИКИ =====
     setupEventListeners() {
         this.navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -372,7 +352,6 @@ class ClickerGame {
             });
         }
         
-        // Обработчик для кнопки скрытия навигации - ИСПРАВЛЕНО
         if (this.navToggleBtn) {
             this.navToggleBtn.addEventListener('click', () => {
                 this.navLinks.classList.toggle('hidden');
@@ -386,7 +365,7 @@ class ClickerGame {
         }
     }
 
-    // Переключение вкладок
+    // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
     switchTab(tabId) {
         this.navBtns.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabId);
@@ -400,7 +379,7 @@ class ClickerGame {
             this.updateInventory();
         }
         if (tabId === 'upgrades') {
-            this.updateUpgradePrices();
+            this.updateUpgradePrices(); // ← ВАЖНО: обновляем цены при открытии вкладки
         }
         if (tabId === 'profile') {
             this.updateProfile();
@@ -416,7 +395,7 @@ class ClickerGame {
         }
     }
 
-    // Обработка клика
+    // ===== КЛИК =====
     handleClick(e) {
         let clickPower = this.userData.clickPower;
         const critRoll = Math.random() * 100;
@@ -439,7 +418,6 @@ class ClickerGame {
         this.checkAchievements();
     }
 
-    // Создание эффекта клика
     createClickEffect(x, y, text) {
         if (!this.clickEffects) return;
         
@@ -458,35 +436,28 @@ class ClickerGame {
         }, 600);
     }
 
-    // Покупка предмета - ИСПРАВЛЕНО ДЛЯ ПОДДЕРЖКИ РАЗНЫХ ВАЛЮТ
+    // ===== ПОКУПКА СКИНА =====
     async buyItem(item, price) {
-        const skinData = this.skinsData[item];
-        
-        // Проверяем, какая валюта нужна для покупки
-        if (skinData.currency === 'dilicks') {
-            // Покупка за дилики
+        if (item === 'dragon_skin') {
             if (this.userData.dilicks >= price) {
                 this.userData.dilicks -= price;
             } else {
-                alert(`Недостаточно диликов! Нужно: ${price}`);
+                alert(`❌ Недостаточно диликов! Есть: ${this.userData.dilicks}, нужно: ${price}`);
                 return;
             }
         } else {
-            // Покупка за обычные деньги (по умолчанию)
             if (this.userData.money >= price) {
                 this.userData.money -= price;
             } else {
-                alert(`Недостаточно денег! Нужно: ${price}`);
+                alert(`❌ Недостаточно денег! Есть: ${this.userData.money}, нужно: ${price}`);
                 return;
             }
         }
         
-        // Добавляем скин в инвентарь, если его там еще нет
         if (!this.userData.inventory.includes(item)) {
             this.userData.inventory.push(item);
         }
         
-        // Автоматически экипируем новый скин
         this.userData.currentSkin = item;
         if (this.clickIcon) {
             this.clickIcon.src = this.skinsData[item].image;
@@ -498,10 +469,10 @@ class ClickerGame {
         this.updateShopStatus();
         this.checkAchievements();
         
-        alert(`Куплен скин: ${this.skinsData[item].name}`);
+        alert(`✅ Куплен скин: ${this.skinsData[item].name}`);
     }
 
-    // Покупка улучшения
+    // ===== ПОКУПКА УЛУЧШЕНИЯ =====
     async buyUpgrade(upgradeType) {
         let currentLevel;
         let price;
@@ -517,9 +488,9 @@ class ClickerGame {
                     this.updateUI();
                     await this.saveGame();
                     this.checkAchievements();
-                    alert(`Усилитель клика улучшен до ${this.userData.clickPower} уровня!`);
+                    alert(`✅ Усилитель клика улучшен до ${this.userData.clickPower} уровня!`);
                 } else {
-                    alert(`Недостаточно диликов! Нужно: ${price}`);
+                    alert(`❌ Недостаточно диликов! Нужно: ${price}`);
                 }
                 break;
                 
@@ -534,9 +505,9 @@ class ClickerGame {
                     this.updateUI();
                     await this.saveGame();
                     this.checkAchievements();
-                    alert(`Автокликер улучшен до ${this.userData.autoClickerLevel} уровня!`);
+                    alert(`✅ Автокликер улучшен до ${this.userData.autoClickerLevel} уровня!`);
                 } else {
-                    alert(`Недостаточно диликов! Нужно: ${price}`);
+                    alert(`❌ Недостаточно диликов! Нужно: ${price}`);
                 }
                 break;
                 
@@ -550,15 +521,15 @@ class ClickerGame {
                     this.updateUI();
                     await this.saveGame();
                     this.checkAchievements();
-                    alert(`Шанс крита увеличен до ${this.userData.critChance}%!`);
+                    alert(`✅ Шанс крита увеличен до ${this.userData.critChance}%!`);
                 } else {
-                    alert(`Недостаточно диликов! Нужно: ${price}`);
+                    alert(`❌ Недостаточно диликов! Нужно: ${price}`);
                 }
                 break;
         }
     }
 
-    // Обновление цен улучшений
+    // ===== ОБНОВЛЕНИЕ ЦЕН УЛУЧШЕНИЙ (ИСПРАВЛЕНО) =====
     updateUpgradePrices() {
         document.querySelectorAll('.upgrade-item').forEach(item => {
             const upgradeType = item.dataset.upgrade;
@@ -595,7 +566,7 @@ class ClickerGame {
         });
     }
 
-    // Обновление статуса магазина
+    // ===== ОБНОВЛЕНИЕ СТАТУСА МАГАЗИНА =====
     updateShopStatus() {
         document.querySelectorAll('.shop-item').forEach(item => {
             const skinId = item.dataset.skin;
@@ -620,7 +591,7 @@ class ClickerGame {
         });
     }
 
-    // Обновление инвентаря
+    // ===== ОБНОВЛЕНИЕ ИНВЕНТАРЯ =====
     updateInventory() {
         if (!this.inventoryGrid) return;
         
@@ -667,7 +638,7 @@ class ClickerGame {
         });
     }
 
-    // Экипировка скина
+    // ===== ЭКИПИРОВКА СКИНА =====
     async equipSkin(skinId) {
         this.userData.currentSkin = skinId;
         if (this.clickIcon) {
@@ -692,7 +663,7 @@ class ClickerGame {
         }
     }
 
-    // Запуск автокликера
+    // ===== АВТОКЛИКЕР =====
     startAutoClicker() {
         if (this.autoClickerInterval) {
             clearInterval(this.autoClickerInterval);
@@ -713,12 +684,11 @@ class ClickerGame {
         }, 1000);
     }
 
-    // Перезапуск автокликера
     restartAutoClicker() {
         this.startAutoClicker();
     }
 
-    // Запуск трекера времени
+    // ===== ТРЕКЕР ВРЕМЕНИ =====
     startPlaytimeTracker() {
         this.playtimeInterval = setInterval(() => {
             this.userData.playtime++;
@@ -727,7 +697,6 @@ class ClickerGame {
         }, 1000);
     }
 
-    // Обновление отображения времени
     updatePlaytimeDisplay() {
         if (!this.playtimeSpan) return;
         
@@ -739,7 +708,7 @@ class ClickerGame {
             `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // Добавление опыта сезона
+    // ===== СЕЗОННЫЙ ОПЫТ =====
     addSeasonExp(amount) {
         this.userData.seasonExp += amount;
         const expNeeded = 100 + (this.userData.seasonLevel * 50);
@@ -758,20 +727,20 @@ class ClickerGame {
         }
     }
 
-    // Покупка премиум пропуска
+    // ===== ПРЕМИУМ ПРОПУСК =====
     async buyPremiumPass() {
         if (this.userData.dilicks >= 500) {
             this.userData.dilicks -= 500;
             this.userData.premiumPass = true;
             this.updateUI();
             await this.saveGame();
-            alert('Премиум пропуск активирован!');
+            alert('✅ Премиум пропуск активирован!');
         } else {
-            alert(`Недостаточно диликов! Нужно: 500`);
+            alert(`❌ Недостаточно диликов! Нужно: 500`);
         }
     }
 
-    // Обновление лидерборда
+    // ===== ЛИДЕРБОРД =====
     async updateLeaderboard(type) {
         if (!this.leaderboardBody) return;
         
@@ -843,7 +812,6 @@ class ClickerGame {
         }
     }
 
-    // Форматирование значения для лидерборда
     formatLeaderboardValue(value, type) {
         switch(type) {
             case 'playtime':
@@ -855,7 +823,7 @@ class ClickerGame {
         }
     }
 
-    // Обновление интерфейса
+    // ===== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА =====
     async updateUI() {
         if (this.usernameDisplay) {
             this.usernameDisplay.textContent = localStorage.getItem('currentUser');
@@ -886,7 +854,7 @@ class ClickerGame {
         }
     }
 
-    // Сохранение игры
+    // ===== СОХРАНЕНИЕ =====
     async saveGame() {
         const userId = localStorage.getItem('userId');
         if (userId) {
@@ -898,7 +866,7 @@ class ClickerGame {
         }
     }
 
-    // Выход из игры
+    // ===== ВЫХОД =====
     async logout() {
         if (this.bubbleFrame) {
             cancelAnimationFrame(this.bubbleFrame);
@@ -916,7 +884,7 @@ class ClickerGame {
         window.location.href = 'register.html';
     }
 
-    // Создание пузырька
+    // ===== ПУЗЫРЬКИ =====
     createBubble() {
         const existingBubbles = document.querySelectorAll('.bubble').length;
         if (existingBubbles > 10) return;
@@ -942,7 +910,6 @@ class ClickerGame {
         }, duration * 1000);
     }
 
-    // Запуск пузырьков
     startBubbles() {
         const bubbleInterval = 2500;
         
@@ -957,7 +924,7 @@ class ClickerGame {
         this.bubbleFrame = requestAnimationFrame(createBubbleOptimized);
     }
 
-    // Проверка достижений
+    // ===== ДОСТИЖЕНИЯ =====
     checkAchievements() {
         if (!this.userData.completedAchievements) {
             this.userData.completedAchievements = [];
@@ -988,7 +955,6 @@ class ClickerGame {
         }
     }
 
-    // Обновление профиля
     updateProfile() {
         if (!this.profileUsername) return;
         
@@ -1010,7 +976,6 @@ class ClickerGame {
         this.updateSkinStats();
     }
 
-    // Отображение достижений
     renderAchievements() {
         if (!this.achievementsGrid) return;
         
@@ -1043,7 +1008,6 @@ class ClickerGame {
         });
     }
 
-    // Расчет прогресса достижения
     calculateAchievementProgress(achievement) {
         switch(achievement.id) {
             case 'firstClick':
@@ -1069,7 +1033,6 @@ class ClickerGame {
         }
     }
 
-    // Показ уведомления о достижении
     showAchievementNotification(achievement) {
         const notification = document.createElement('div');
         notification.className = 'achievement-notification';
@@ -1096,7 +1059,6 @@ class ClickerGame {
         }, 3000);
     }
 
-    // Обновление статистики скинов
     updateSkinStats() {
         if (!this.ownedSkinsList) return;
         
@@ -1130,7 +1092,7 @@ class ClickerGame {
         });
     }
 
-    // Активация промокода
+    // ===== ПРОМОКОДЫ =====
     activatePromocode() {
         if (!this.promocodeInput) return;
         
@@ -1219,7 +1181,6 @@ class ClickerGame {
         this.checkAchievements();
     }
 
-    // Показ сообщения о промокоде
     showPromocodeMessage(text, type) {
         if (!this.promocodeMessage) return;
         
@@ -1234,7 +1195,6 @@ class ClickerGame {
         }, 3000);
     }
 
-    // Обновление списка промокодов
     updatePromocodesList() {
         if (!this.promocodesList) return;
         
@@ -1286,7 +1246,6 @@ class ClickerGame {
         }
     }
 
-    // Обновление истории промокодов
     updatePromocodesHistory() {
         if (!this.promocodesHistory) return;
         
@@ -1330,7 +1289,24 @@ class ClickerGame {
     }
 }
 
-// Запуск игры при загрузке страницы
+// ===== ЗАПУСК ИГРЫ =====
 document.addEventListener('DOMContentLoaded', () => {
-    new ClickerGame();
+    window.clickerGame = new ClickerGame();
+});
+
+// ===== ОБРАБОТЧИК ДЛЯ КАРТОЧЕК НА ОСТРОВЕ =====
+document.addEventListener('DOMContentLoaded', function() {
+    const featureCards = document.querySelectorAll('.feature-card');
+    
+    featureCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            if (tabId) {
+                const navBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+                if (navBtn) {
+                    navBtn.click();
+                }
+            }
+        });
+    });
 });

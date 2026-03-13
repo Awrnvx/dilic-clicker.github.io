@@ -2226,3 +2226,158 @@ a {
 .equip-btn:active {
     transform: scale(0.95);
 }
+
+/* ===== ОСТРОВНЫЕ ЭФФЕКТЫ ТОЛЬКО ДЛЯ ПК ===== */
+@media (min-width: 769px) {
+    /* Главный островной эффект - жидкое стекло */
+    .island-glass {
+        position: relative;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 
+            0 20px 35px -10px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+            0 0 30px rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .island-glass:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 25px 40px -10px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+            0 0 40px rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Водная рябь */
+    .island-glass::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+        pointer-events: none;
+        opacity: 0.6;
+        mix-blend-mode: overlay;
+    }
+
+    /* Блики как на воде */
+    .island-glass::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 80%);
+        animation: waterRipple 8s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    @keyframes waterRipple {
+        0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.3;
+        }
+        25% {
+            transform: translate(5%, 5%) scale(1.1);
+            opacity: 0.4;
+        }
+        50% {
+            transform: translate(0, 10%) scale(1.2);
+            opacity: 0.3;
+        }
+        75% {
+            transform: translate(-5%, 5%) scale(1.1);
+            opacity: 0.4;
+        }
+        100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.3;
+        }
+    }
+
+    /* Контейнер для островов */
+    .islands-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        padding: 20px;
+    }
+
+    /* Заголовки островов */
+    .island-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: white;
+        text-shadow: 0 2px 15px rgba(0,0,0,0.5);
+        margin-bottom: 20px;
+        padding-left: 15px;
+        border-left: 4px solid rgba(255, 255, 255, 0.3);
+        letter-spacing: 1px;
+    }
+
+    /* Текст на островах */
+    .island-text {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 16px;
+        line-height: 1.6;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* Специальные градиенты для разных островов */
+    .island-shop {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 255, 255, 0.02));
+    }
+
+    .island-upgrades {
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    }
+
+    .island-profile {
+        background: linear-gradient(135deg, rgba(147, 112, 219, 0.08), rgba(255, 255, 255, 0.02));
+    }
+
+    .island-promocodes {
+        background: linear-gradient(135deg, rgba(255, 105, 180, 0.08), rgba(255, 255, 255, 0.02));
+    }
+
+    .island-leaderboard {
+        background: linear-gradient(135deg, rgba(255, 69, 0, 0.08), rgba(255, 255, 255, 0.02));
+    }
+
+    .island-season {
+        background: linear-gradient(135deg, rgba(50, 205, 50, 0.08), rgba(255, 255, 255, 0.02));
+    }
+
+    .island-settings {
+        background: linear-gradient(135deg, rgba(135, 206, 235, 0.08), rgba(255, 255, 255, 0.02));
+    }
+}
+
+/* На мобилках все эффекты отключаются */
+@media (max-width: 768px) {
+    .island-glass,
+    .islands-container,
+    .island-title,
+    .island-text,
+    .island-fade-in,
+    .island-glass::before,
+    .island-glass::after {
+        all: unset;
+    }
+    
+    .island-title {
+        font-size: 24px;
+        margin: 15px 0;
+        color: white;
+    }
+}
