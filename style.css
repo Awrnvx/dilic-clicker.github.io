@@ -57,7 +57,6 @@ a {
     overflow: hidden;
 }
 
-/* Только легкий блик */
 .glass-effect::before {
     content: '';
     position: absolute;
@@ -71,7 +70,6 @@ a {
     mix-blend-mode: overlay;
 }
 
-/* Glass Card Premium */
 .glass-card {
     position: relative;
     background: rgba(255, 255, 255, 0.02);
@@ -95,7 +93,7 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-/* Навигация - КАК БЫЛО НА ПК */
+/* Навигация - ПК версия */
 .glass-nav {
     background: rgba(15, 18, 25, 0.6);
     backdrop-filter: blur(10px);
@@ -139,8 +137,6 @@ a {
     -webkit-backdrop-filter: blur(8px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    position: relative;
-    overflow: hidden;
 }
 
 .nav-btn:hover, .nav-btn.active {
@@ -184,7 +180,7 @@ a {
     transform: rotate(180deg);
 }
 
-/* USER-INFO - КАК БЫЛО НА ПК */
+/* USER-INFO - ПК версия */
 .user-info {
     display: flex;
     gap: 20px;
@@ -209,8 +205,6 @@ a {
     align-items: center;
     gap: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    position: relative;
-    overflow: hidden;
 }
 
 .currency-icon {
@@ -219,10 +213,6 @@ a {
     border-radius: 50%;
     object-fit: cover;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-#logoutBtn {
-    order: 3;
 }
 
 .content {
@@ -264,8 +254,6 @@ a {
     cursor: pointer;
     margin: 30px 0;
     transition: transform 0.1s ease;
-    position: relative;
-    overflow: hidden;
     background: rgba(255, 255, 255, 0.04);
     box-shadow: 
         0 25px 40px -12px rgba(0, 0, 0, 0.6),
@@ -328,8 +316,6 @@ a {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-    position: relative;
-    overflow: hidden;
 }
 
 .inventory-grid {
@@ -351,7 +337,6 @@ a {
     border-radius: 24px;
     box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.4);
     overflow: hidden;
-    position: relative;
 }
 
 .inventory-item:hover {
@@ -375,7 +360,6 @@ a {
     border: 2px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease;
-    position: relative;
     z-index: 2;
 }
 
@@ -399,7 +383,6 @@ a {
     font-size: 14px;
     opacity: 0.8;
     margin: 10px 0;
-    position: relative;
     z-index: 2;
 }
 
@@ -409,8 +392,6 @@ a {
     margin: 10px 0;
     font-size: 16px;
     text-shadow: 0 0 12px gold;
-    position: relative;
-    z-index: 2;
 }
 
 .section-title {
@@ -440,7 +421,6 @@ a {
     border-radius: 24px;
     box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.4);
     overflow: hidden;
-    position: relative;
 }
 
 .shop-item:hover {
@@ -496,7 +476,6 @@ a {
     border-radius: 24px;
     box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.4);
     overflow: hidden;
-    position: relative;
 }
 
 .upgrade-level {
@@ -523,8 +502,6 @@ a {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-    position: relative;
-    overflow: hidden;
 }
 
 .glass-btn:hover {
@@ -569,12 +546,10 @@ a {
     border-radius: 28px;
     box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-    position: relative;
 }
 
 .season-progress {
     margin: 20px 0;
-    position: relative;
     z-index: 2;
 }
 
@@ -606,7 +581,6 @@ a {
     -webkit-backdrop-filter: blur(8px);
     border-radius: 20px;
     overflow: hidden;
-    position: relative;
     z-index: 2;
 }
 
@@ -629,7 +603,6 @@ a {
     -webkit-backdrop-filter: blur(20px);
     border-radius: 40px;
     padding: 30px;
-    position: relative;
     overflow: hidden;
 }
 
@@ -637,7 +610,6 @@ a {
     color: rgba(255, 255, 255, 0.8);
     font-size: 18px;
     margin-top: 10px;
-    position: relative;
     z-index: 2;
 }
 
@@ -648,14 +620,12 @@ a {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 32px;
-    position: relative;
     overflow: hidden;
 }
 
 .promocode-input-wrapper {
     display: flex;
     gap: 15px;
-    position: relative;
     z-index: 2;
 }
 
@@ -708,10 +678,6 @@ a {
     transform: scale(0.98) translateY(0);
 }
 
-.promocode-activate-btn::before {
-    display: none;
-}
-
 .promocode-message {
     margin-top: 15px;
     padding: 10px;
@@ -720,8 +686,6 @@ a {
     font-weight: 600;
     text-align: center;
     transition: all 0.3s ease;
-    position: relative;
-    z-index: 2;
 }
 
 .promocode-message.success {
@@ -752,7 +716,6 @@ a {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 32px;
-    position: relative;
     overflow: hidden;
 }
 
@@ -761,7 +724,6 @@ a {
     margin-bottom: 20px;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    position: relative;
     z-index: 2;
 }
 
@@ -769,7 +731,6 @@ a {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
-    position: relative;
     z-index: 2;
 }
 
@@ -783,7 +744,6 @@ a {
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
-    position: relative;
     overflow: hidden;
 }
 
@@ -830,7 +790,6 @@ a {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 32px;
-    position: relative;
     overflow: hidden;
 }
 
@@ -839,7 +798,6 @@ a {
     margin-bottom: 20px;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    position: relative;
     z-index: 2;
 }
 
@@ -847,7 +805,6 @@ a {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    position: relative;
     z-index: 2;
     max-height: 300px;
     overflow-y: auto;
@@ -972,7 +929,6 @@ a {
     justify-content: center;
     gap: 12px;
     margin: 20px 0;
-    position: relative;
     z-index: 2;
     flex-wrap: wrap;
 }
@@ -991,7 +947,6 @@ a {
 .leaderboard-table {
     width: 100%;
     border-collapse: collapse;
-    position: relative;
     z-index: 2;
 }
 
@@ -1050,14 +1005,12 @@ a {
     border-radius: 32px;
     box-shadow: 0 30px 45px -15px rgba(0, 0, 0, 0.6);
     overflow: hidden;
-    position: relative;
 }
 
 .auth-tabs {
     display: flex;
     gap: 12px;
     margin: 25px 0;
-    position: relative;
     z-index: 2;
 }
 
@@ -1087,7 +1040,6 @@ a {
 
 .auth-form {
     display: none;
-    position: relative;
     z-index: 2;
 }
 
@@ -1152,7 +1104,6 @@ a {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-    position: relative;
     overflow: hidden;
 }
 
@@ -1162,7 +1113,6 @@ a {
     box-shadow: 0 15px 28px rgba(0, 0, 0, 0.35);
 }
 
-/* Эффект пузырьков */
 .bubble {
     position: fixed;
     background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
@@ -1200,7 +1150,6 @@ a {
     border-radius: 40px;
     border: 0.5px solid rgba(255, 255, 255, 0.08);
     padding: 30px;
-    position: relative;
     overflow: hidden;
 }
 
@@ -1225,7 +1174,6 @@ a {
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     overflow: hidden;
     animation: avatarFloat 3s ease-in-out infinite;
-    position: relative;
 }
 
 @keyframes avatarFloat {
@@ -1246,7 +1194,6 @@ a {
 
 .profile-info {
     flex: 1;
-    position: relative;
     z-index: 2;
 }
 
@@ -1288,7 +1235,6 @@ a {
     padding: 15px;
     text-align: center;
     transition: transform 0.2s ease;
-    position: relative;
     overflow: hidden;
 }
 
@@ -1329,7 +1275,6 @@ a {
     border-radius: 28px;
     padding: 25px;
     text-align: center;
-    position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -1348,7 +1293,6 @@ a {
     width: 80px;
     height: 80px;
     margin: 0 auto 15px;
-    position: relative;
     z-index: 2;
 }
 
@@ -1368,7 +1312,6 @@ a {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 10px;
-    position: relative;
     z-index: 2;
     color: white;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
@@ -1378,12 +1321,10 @@ a {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.7);
     margin-bottom: 15px;
-    position: relative;
     z-index: 2;
 }
 
 .achievement-progress {
-    position: relative;
     z-index: 2;
 }
 
@@ -1418,14 +1359,12 @@ a {
     border-radius: 32px;
     padding: 30px;
     margin-top: 30px;
-    position: relative;
     overflow: hidden;
 }
 
 .skin-stats h3 {
     font-size: 24px;
     margin-bottom: 20px;
-    position: relative;
     z-index: 2;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -1433,7 +1372,6 @@ a {
 
 .skin-progress {
     margin-bottom: 25px;
-    position: relative;
     z-index: 2;
 }
 
@@ -1460,7 +1398,6 @@ a {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    position: relative;
     z-index: 2;
 }
 
@@ -1528,7 +1465,6 @@ a {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid gold;
     overflow: hidden;
-    position: relative;
     z-index: 2;
 }
 
@@ -1539,7 +1475,6 @@ a {
 }
 
 .notification-content {
-    position: relative;
     z-index: 2;
 }
 
@@ -1563,7 +1498,6 @@ a {
     text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
 
-/* ===== НАСТРОЙКИ ПРОФИЛЯ ===== */
 .settings-container {
     max-width: 1000px;
     margin: 0 auto;
@@ -1583,7 +1517,6 @@ a {
     -webkit-backdrop-filter: blur(15px);
     border-radius: 24px;
     padding: 25px;
-    position: relative;
     overflow: hidden;
     transition: transform 0.2s ease;
 }
@@ -1597,7 +1530,6 @@ a {
     margin-bottom: 20px;
     color: white;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    position: relative;
     z-index: 2;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
@@ -1605,7 +1537,6 @@ a {
 
 .settings-field {
     margin-bottom: 25px;
-    position: relative;
     z-index: 2;
 }
 
@@ -1709,7 +1640,6 @@ a {
     color: white;
 }
 
-/* Модальное окно подтверждения */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1798,7 +1728,6 @@ a {
     transform: scale(1.05);
 }
 
-/* Уведомления */
 .settings-toast {
     position: fixed;
     bottom: 30px;
@@ -1836,70 +1765,76 @@ a {
     box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
 }
 
-/* ===== ТОЛЬКО ДЛЯ МОБИЛОК (ПК НЕ МЕНЯЕМ) ===== */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ - ТОЛЬКО ТО, ЧТО НУЖНО ===== */
 @media (max-width: 768px) {
     .glass-nav {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
+        flex-direction: column;
+        align-items: stretch;
         padding: 10px;
     }
     
+    /* Верхняя строка: кнопка слева, имя по центру */
     .nav-toggle-btn {
-        order: 1;
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        margin: 0;
     }
     
     .user-info {
-        order: 2;
-        flex: 1;
+        width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 5px;
+        margin-top: 0;
+        padding-top: 5px;
     }
     
-    .user-info-top {
-        width: 100%;
+    #usernameDisplay {
+        font-size: 16px;
+        font-weight: bold;
         text-align: center;
+        width: 100%;
+        margin-bottom: 5px;
     }
     
+    /* Вторая строка: кнопка выйти и валюты */
     .user-info-bottom {
         display: flex;
         gap: 10px;
         align-items: center;
         justify-content: center;
-    }
-    
-    #usernameDisplay {
-        font-weight: bold;
-        font-size: 16px;
+        width: 100%;
     }
     
     #logoutBtn {
+        order: 0;
         margin: 0;
         padding: 5px 12px;
         font-size: 13px;
-        order: 0;
     }
     
-    .currency, .dilic {
-        padding: 5px 10px;
-        font-size: 14px;
+    .currency {
+        order: 1;
     }
     
-    .currency-icon {
-        width: 16px;
-        height: 16px;
+    .dilic {
+        order: 2;
     }
     
+    /* Навигация снизу */
     .nav-links {
-        order: 3;
-        width: 100%;
-        display: flex;
+        display: flex !important;
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
         margin-top: 15px;
+        width: 100%;
+    }
+    
+    .nav-links.hidden {
+        display: flex !important;
     }
     
     .nav-btn {
@@ -1916,42 +1851,15 @@ a {
         display: none;
     }
     
-    .nav-btn[data-tab="main"]::before {
-        content: "🏠";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="shop"]::before {
-        content: "🛒";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="inventory"]::before {
-        content: "📦";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="upgrades"]::before {
-        content: "⚡";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="profile"]::before {
-        content: "👤";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="settings"]::before {
-        content: "⚙️";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="season"]::before {
-        content: "🎫";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="promocodes"]::before {
-        content: "🎁";
-        font-size: 22px;
-    }
-    .nav-btn[data-tab="leaderboard"]::before {
-        content: "🏆";
-        font-size: 22px;
-    }
+    .nav-btn[data-tab="main"]::before { content: "🏠"; font-size: 22px; }
+    .nav-btn[data-tab="shop"]::before { content: "🛒"; font-size: 22px; }
+    .nav-btn[data-tab="inventory"]::before { content: "📦"; font-size: 22px; }
+    .nav-btn[data-tab="upgrades"]::before { content: "⚡"; font-size: 22px; }
+    .nav-btn[data-tab="profile"]::before { content: "👤"; font-size: 22px; }
+    .nav-btn[data-tab="settings"]::before { content: "⚙️"; font-size: 22px; }
+    .nav-btn[data-tab="season"]::before { content: "🎫"; font-size: 22px; }
+    .nav-btn[data-tab="promocodes"]::before { content: "🎁"; font-size: 22px; }
+    .nav-btn[data-tab="leaderboard"]::before { content: "🏆"; font-size: 22px; }
 }
 
 @media (max-width: 500px) {
