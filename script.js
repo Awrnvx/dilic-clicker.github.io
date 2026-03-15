@@ -2019,7 +2019,7 @@ class Settings {
     }
 }
 
-// ===== КОЛЕСО ФОРТУНЫ (СРЕДНИЙ РАЗМЕР, КРУГЛЫЕ ВАЛЮТЫ, ИСПРАВЛЕННАЯ СТРЕЛКА) =====
+// ===== КОЛЕСО ФОРТУНЫ (ПОЛНАЯ ВЕРСИЯ) =====
 class WheelOfFortune {
     constructor(game) {
         this.game = game;
@@ -2035,7 +2035,7 @@ class WheelOfFortune {
         this.SPIN_COST = 2500;
         this.MONEY_ICON = 'https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13';
         this.DILICKS_ICON = 'https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg';
-        this.SKIN_ID = 'wheel_dragon_skin'; // ID нового скина
+        this.SKIN_ID = 'wheel_dragon_skin';
         
         this.rotation = 0;
         this.isSpinning = false;
@@ -2057,81 +2057,118 @@ class WheelOfFortune {
     
     render() {
         const html = `
-            <div class="wheel-card" style="padding: 25px 25px 30px;">
-                <div class="wheel-header" style="margin-bottom: 15px;">
-                    <h2 style="font-size: 2.2rem; margin-bottom: 5px;">✦ КОЛЕСО ФОРТУНЫ ✦</h2>
-                    <p style="font-size: 1rem; margin-bottom: 8px; color: rgba(255,255,255,0.7);">Испытай удачу!</p>
-                    <div class="wheel-price" style="padding: 6px 25px; background: rgba(255,215,0,0.1); border-radius: 40px; display: inline-block;">
+            <div class="wheel-card" style="padding: 20px 15px 25px;">
+                <!-- ЗАГОЛОВОК -->
+                <div class="wheel-header" style="text-align: center; margin-bottom: 10px;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 3px; background: linear-gradient(135deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✦ КОЛЕСО ФОРТУНЫ ✦</h2>
+                    <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 8px;">Испытай удачу!</p>
+                    <div class="wheel-price" style="display: inline-block; background: rgba(255,215,0,0.15); border: 1px solid gold; border-radius: 40px; padding: 6px 20px;">
                         <img src="${this.DILICKS_ICON}" style="width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; margin-right: 5px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                        <span style="font-size: 1rem; color: gold;">${this.SPIN_COST} за крутку</span>
+                        <span style="font-size: 1rem; color: gold; font-weight: 600;">${this.SPIN_COST} за крутку</span>
                     </div>
                 </div>
                 
-                <div class="wheel-wrapper" style="width: 280px; height: 280px; margin: 10px auto; position: relative;">
-                    <canvas id="wheelCanvas" width="450" height="450" class="wheel-canvas" style="width: 100%; height: 100%;"></canvas>
-                    <div class="wheel-pointer" style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid gold; filter: drop-shadow(0 8px 6px #00000099); z-index: 10;"></div>
-                    <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: radial-gradient(circle, #ffd966, #b8860b); border-radius: 50%; box-shadow: 0 0 20px gold; z-index: 11;"></div>
+                <!-- КОЛЕСО -->
+                <div class="wheel-wrapper" style="width: 260px; height: 260px; margin: 5px auto; position: relative;">
+                    <canvas id="wheelCanvas" width="450" height="450" class="wheel-canvas" style="width: 100%; height: 100%; display: block; border-radius: 50%; box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,215,0,0.3); background: rgba(0,0,0,0.3);"></canvas>
+                    <div class="wheel-pointer" style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid gold; filter: drop-shadow(0 5px 5px #000); z-index: 10;"></div>
+                    <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 14px; height: 14px; background: radial-gradient(circle, #ffd700, #b8860b); border-radius: 50%; box-shadow: 0 0 15px gold; z-index: 11;"></div>
                 </div>
                 
-                <div class="wheel-controls" style="margin: 15px 0; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                    <button class="wheel-spin-btn" id="wheelSpinBtn" style="background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.12); color: white; padding: 12px 35px; border-radius: 50px; font-size: 1.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; box-shadow: 0 8px 18px rgba(0,0,0,0.25); backdrop-filter: blur(8px); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 10px;">
+                <!-- КНОПКА И БАЛАНС -->
+                <div class="wheel-controls" style="margin: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <button class="wheel-spin-btn" id="wheelSpinBtn" style="background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1)); border: 1px solid gold; color: white; padding: 12px 30px; border-radius: 50px; font-size: 1.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(5px); cursor: pointer; width: 100%; max-width: 280px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <span>🎡</span> КРУТИТЬ <span>🎡</span>
                     </button>
-                    <div class="wheel-balance" style="color: white; font-size: 1rem; display: flex; align-items: center; gap: 5px;">
+                    <div class="wheel-balance" style="color: white; font-size: 1rem; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.3); padding: 6px 20px; border-radius: 40px; border: 1px solid rgba(255,215,0,0.2);">
                         Твой баланс: 
-                        <span id="wheelBalance" style="color: gold; font-weight: 600;">${this.game.userData.dilicks.toLocaleString()}</span>
-                        <img src="${this.DILICKS_ICON}" style="width: 20px; height: 20px; border-radius: 50%;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
+                        <span id="wheelBalance" style="color: gold; font-weight: 700; font-size: 1.1rem;">${this.game.userData.dilicks.toLocaleString()}</span>
+                        <img src="${this.DILICKS_ICON}" style="width: 18px; height: 18px; border-radius: 50%;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
                     </div>
                 </div>
                 
-                <div class="wheel-prizes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: rgba(0,0,0,0.25); backdrop-filter: blur(10px); border-radius: 40px; border: 0.5px solid rgba(255,255,255,0.08); padding: 12px; margin: 15px 0;">
-                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
-                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #2e7d32; box-shadow: 0 0 10px #2e7d32;"></span>
-                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">50%</strong> 2500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                <!-- СПИСОК ПРИЗОВ (КОМПАКТНЫЙ, 2 КОЛОНКИ) -->
+                <div class="wheel-prizes" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; background: rgba(0,0,0,0.35); backdrop-filter: blur(12px); border-radius: 30px; border: 1px solid rgba(255,215,0,0.2); padding: 12px; margin: 15px 0 10px;">
+                    
+                    <!-- 50% - 2500 монет -->
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 40px; border: 1px solid rgba(255,215,0,0.1);">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; min-width: 14px; border-radius: 50%; background: #2e7d32; box-shadow: 0 0 10px #2e7d32;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <strong style="color: gold; font-size: 0.95rem; background: rgba(255,215,0,0.15); padding: 2px 8px; border-radius: 20px;">50%</strong>
+                            <span style="display: flex; align-items: center; gap: 3px;">2.5k <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                        </span>
                     </div>
-                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
-                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #f9a825; box-shadow: 0 0 10px #f9a825;"></span>
-                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">35%</strong> 5500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    
+                    <!-- 35% - 5500 монет -->
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 40px; border: 1px solid rgba(255,215,0,0.1);">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; min-width: 14px; border-radius: 50%; background: #f9a825; box-shadow: 0 0 10px #f9a825;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <strong style="color: gold; font-size: 0.95rem; background: rgba(255,215,0,0.15); padding: 2px 8px; border-radius: 20px;">35%</strong>
+                            <span style="display: flex; align-items: center; gap: 3px;">5.5k <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                        </span>
                     </div>
-                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
-                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #ef6c00; box-shadow: 0 0 10px #ef6c00;"></span>
-                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">25%</strong> 8500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    
+                    <!-- 25% - 8500 монет -->
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 40px; border: 1px solid rgba(255,215,0,0.1);">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; min-width: 14px; border-radius: 50%; background: #ef6c00; box-shadow: 0 0 10px #ef6c00;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <strong style="color: gold; font-size: 0.95rem; background: rgba(255,215,0,0.15); padding: 2px 8px; border-radius: 20px;">25%</strong>
+                            <span style="display: flex; align-items: center; gap: 3px;">8.5k <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                        </span>
                     </div>
-                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
-                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #d32f2f; box-shadow: 0 0 10px #d32f2f;"></span>
-                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">15%</strong> 11500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    
+                    <!-- 15% - 11500 монет -->
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 40px; border: 1px solid rgba(255,215,0,0.1);">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; min-width: 14px; border-radius: 50%; background: #d32f2f; box-shadow: 0 0 10px #d32f2f;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <strong style="color: gold; font-size: 0.95rem; background: rgba(255,215,0,0.15); padding: 2px 8px; border-radius: 20px;">15%</strong>
+                            <span style="display: flex; align-items: center; gap: 3px;">11.5k <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                        </span>
                     </div>
-                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
-                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #7b1fa2; box-shadow: 0 0 10px #7b1fa2;"></span>
-                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">5%</strong> 5000 <img src="${this.DILICKS_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    
+                    <!-- 5% - 5000 диликов -->
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 40px; border: 1px solid rgba(255,215,0,0.1);">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; min-width: 14px; border-radius: 50%; background: #7b1fa2; box-shadow: 0 0 10px #7b1fa2;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <strong style="color: gold; font-size: 0.95rem; background: rgba(255,215,0,0.15); padding: 2px 8px; border-radius: 20px;">5%</strong>
+                            <span style="display: flex; align-items: center; gap: 3px;">5k <img src="${this.DILICKS_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                        </span>
                     </div>
-                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
-                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #c2185b; box-shadow: 0 0 10px #c2185b;"></span>
-                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">2.5%</strong> СКИН ✨</span>
-                        <div class="wheel-skin-btn" id="showSkinBtn" style="background: rgba(255,215,0,0.15); border: 1px solid gold; color: gold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-left: auto; cursor: pointer; font-size: 0.8rem;">?</div>
+                    
+                    <!-- 2.5% - СКИН -->
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 40px; border: 1px solid rgba(255,215,0,0.1);">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="wheel-prize-dot" style="width: 14px; height: 14px; min-width: 14px; border-radius: 50%; background: #c2185b; box-shadow: 0 0 10px #c2185b;"></span>
+                            <span class="wheel-prize-text" style="color: white; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+                                <strong style="color: gold; font-size: 0.95rem; background: rgba(255,215,0,0.15); padding: 2px 8px; border-radius: 20px;">2.5%</strong>
+                                <span style="display: flex; align-items: center; gap: 2px;">СКИН ✨</span>
+                            </span>
+                        </div>
+                        <div class="wheel-skin-btn" id="showSkinBtn" style="background: rgba(255,215,0,0.2); border: 1.5px solid gold; color: gold; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; font-size: 1rem; flex-shrink: 0; box-shadow: 0 0 10px gold;">?</div>
                     </div>
                 </div>
                 
-                <div class="wheel-result" style="background: rgba(0,0,0,0.25); backdrop-filter: blur(10px); border-radius: 50px; border: 0.5px solid rgba(255,255,255,0.08); padding: 18px; text-align: center;" id="wheelResult">
-                    <div class="wheel-result-label" style="color: rgba(255,255,255,0.5); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px;">ТВОЙ ВЫИГРЫШ</div>
-                    <div class="wheel-result-value" style="font-size: 1.6rem; font-weight: 600; color: gold; text-shadow: 0 0 15px gold; display: flex; align-items: center; justify-content: center; gap: 8px;" id="wheelResultDisplay">НАЖМИ КРУТИТЬ</div>
+                <!-- РЕЗУЛЬТАТ -->
+                <div class="wheel-result" style="background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); border-radius: 40px; border: 1px solid rgba(255,215,0,0.2); padding: 15px; text-align: center; margin-top: 10px;" id="wheelResult">
+                    <div class="wheel-result-label" style="color: rgba(255,255,255,0.5); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">ТВОЙ ВЫИГРЫШ</div>
+                    <div class="wheel-result-value" style="font-size: 1.4rem; font-weight: 600; color: gold; text-shadow: 0 0 15px gold; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px;" id="wheelResultDisplay">НАЖМИ КРУТИТЬ</div>
                 </div>
             </div>
             
-            <!-- Модальное окно для скина -->
+            <!-- МОДАЛЬНОЕ ОКНО ДЛЯ СКИНА -->
             <div class="wheel-skin-modal" id="skinModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
-                <div class="wheel-modal-content" style="max-width: 400px; width: 100%; background: rgba(20,25,35,0.95); backdrop-filter: blur(20px); border: 2px solid gold; border-radius: 50px; padding: 30px 25px; text-align: center; position: relative; animation: modalAppear 0.3s ease;">
-                    <span class="wheel-modal-close" id="closeModal" style="position: absolute; top: 20px; right: 25px; font-size: 2rem; color: gold; cursor: pointer;">✕</span>
-                    <h2 class="wheel-modal-title" style="color: gold; font-size: 2rem; margin-bottom: 15px; text-shadow: 0 0 20px gold;">✦ ОСОБЕННЫЙ СКИН ✦</h2>
-                    <div class="wheel-skin-preview" style="width: 160px; height: 160px; margin: 15px auto; border-radius: 50%; border: 4px solid gold; overflow: hidden; box-shadow: 0 0 40px gold;">
+                <div class="wheel-modal-content" style="max-width: 380px; width: 100%; background: rgba(20,25,35,0.95); backdrop-filter: blur(20px); border: 2px solid gold; border-radius: 50px; padding: 25px 20px; text-align: center; position: relative; animation: modalAppear 0.3s ease;">
+                    <span class="wheel-modal-close" id="closeModal" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; color: gold; cursor: pointer; z-index: 10;">✕</span>
+                    <h2 class="wheel-modal-title" style="color: gold; font-size: 1.8rem; margin-bottom: 15px; text-shadow: 0 0 20px gold;">✦ ОСОБЕННЫЙ СКИН ✦</h2>
+                    <div class="wheel-skin-preview" style="width: 150px; height: 150px; margin: 10px auto; border-radius: 50%; border: 4px solid gold; overflow: hidden; box-shadow: 0 0 40px gold;">
                         <img src="https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755" alt="Special Skin" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
                     </div>
                     <p class="wheel-skin-description" style="color: white; font-size: 1.1rem; margin: 15px 0; line-height: 1.5;">
                         ✨ Легендарный скин дракона<br>
-                        <strong style="color: gold;">×250 МНОЖИТЕЛЬ</strong><br>
+                        <strong style="color: gold; font-size: 1.3rem;">×250 МНОЖИТЕЛЬ</strong><br>
                         ко всем кликам
                     </p>
-                    <div class="wheel-multiplier" style="display: inline-block; background: linear-gradient(145deg, #ffd966, #b8860b); padding: 8px 25px; border-radius: 40px; color: #1a0f00; font-weight: bold; font-size: 1.2rem; margin-top: 10px; box-shadow: 0 4px 0 #7a4f00;">×250</div>
+                    <div class="wheel-multiplier" style="display: inline-block; background: linear-gradient(145deg, #ffd966, #b8860b); padding: 8px 25px; border-radius: 40px; color: #1a0f00; font-weight: bold; font-size: 1.2rem; margin-top: 5px; box-shadow: 0 4px 0 #7a4f00;">×250</div>
                 </div>
             </div>
         `;
@@ -2287,7 +2324,6 @@ class WheelOfFortune {
     }
     
     givePrize(prize) {
-        // Формируем строку результата с круглыми иконками
         let resultHTML = '';
         
         if (prize.type === 'skin') {
@@ -2318,13 +2354,13 @@ class WheelOfFortune {
         } else if (prize.type === 'money') {
             this.game.userData.money += prize.value;
             resultHTML = `
-                <span> +${prize.value.toLocaleString()}</span>
+                <span>+${prize.value.toLocaleString()}</span>
                 <img src="${this.MONEY_ICON}" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle;">
             `;
         } else {
             this.game.userData.dilicks += prize.value;
             resultHTML = `
-                <span>  +${prize.value.toLocaleString()}</span>
+                <span>+${prize.value.toLocaleString()}</span>
                 <img src="${this.DILICKS_ICON}" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle;">
             `;
         }
@@ -2336,7 +2372,7 @@ class WheelOfFortune {
         this.game.updateUI();
         this.game.updateInventory();
         this.game.saveGame();
-        this.game.checkAchievements(); // Проверяем достижения
+        this.game.checkAchievements();
         
         // Вибрация на телефоне
         if (navigator.vibrate) navigator.vibrate(100);
