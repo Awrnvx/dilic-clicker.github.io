@@ -23,55 +23,59 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- Навигация -->
-        <nav class="glass-nav">
+        <!-- Навигация с эффектом liquid-glass -->
+        <nav class="glass-nav liquid-glass">
             <!-- Кнопка скрытия/показа навигации -->
-            <button class="nav-toggle-btn" id="navToggleBtn">
+            <button class="nav-toggle-btn liquid-glass" id="navToggleBtn">
                 <span class="toggle-icon">◀</span>
             </button>
             
             <div class="nav-links">
-                <button class="nav-btn active" data-tab="main">
+                <button class="nav-btn liquid-glass active" data-tab="main">
                     <span class="nav-text">Главная</span>
                 </button>
-                <button class="nav-btn" data-tab="shop">
+                <button class="nav-btn liquid-glass" data-tab="shop">
                     <span class="nav-text">Магазин</span>
                 </button>
-                <button class="nav-btn" data-tab="inventory">
+                <button class="nav-btn liquid-glass" data-tab="inventory">
                     <span class="nav-text">Инвентарь</span>
                 </button>
-                <button class="nav-btn" data-tab="upgrades">
+                <button class="nav-btn liquid-glass" data-tab="upgrades">
                     <span class="nav-text">Улучшения</span>
                 </button>
-                <button class="nav-btn" data-tab="profile">
+                <button class="nav-btn liquid-glass" data-tab="profile">
                     <span class="nav-text">Профиль</span>
                 </button>
-                <button class="nav-btn" data-tab="settings">
+                <button class="nav-btn liquid-glass" data-tab="settings">
                     <span class="nav-text">Настройки</span>
                 </button>
-                <button class="nav-btn" data-tab="season">
+                <button class="nav-btn liquid-glass" data-tab="season">
                     <span class="nav-text">Сезон</span>
                 </button>
-                <button class="nav-btn" data-tab="promocodes">
+                <button class="nav-btn liquid-glass" data-tab="promocodes">
                     <span class="nav-text">Промо</span>
                 </button>
-                <button class="nav-btn" data-tab="leaderboard">
+                <button class="nav-btn liquid-glass" data-tab="leaderboard">
                     <span class="nav-text">Лидеры</span>
+                </button>
+                <!-- 🎡 КНОПКА КОЛЕСА ФОРТУНЫ -->
+                <button class="nav-btn liquid-glass" data-tab="wheel">
+                    <span class="nav-text">Колесо 🎡</span>
                 </button>
             </div>
             
             <!-- USER-INFO С КНОПКОЙ ВЫХОДА -->
             <div class="user-info">
                 <div class="user-info-top">
-                    <button id="logoutBtn" class="glass-btn small">Выйти</button>
+                    <button id="logoutBtn" class="glass-btn small liquid-glass">Выйти</button>
                 </div>
                 <div class="user-info-bottom">
                     <span id="usernameDisplay"></span>
-                    <span class="currency">
+                    <span class="currency liquid-glass">
                         <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" alt="Money" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
                         <span id="money">0</span>
                     </span>
-                    <span class="dilic">
+                    <span class="dilic liquid-glass">
                         <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
                         <span id="dilicks">0</span>
                     </span>
@@ -84,13 +88,13 @@
             <!-- Главная вкладка -->
             <div id="main" class="tab active">
                 <div class="clicker-section">
-                    <div class="glass-card clicker-card">
+                    <div class="glass-card clicker-card liquid-glass">
                         <h1>Dilic Clicker</h1>
                         <div class="click-effects" id="clickEffects"></div>
-                        <button id="clickButton" class="click-btn glass-effect">
+                        <button id="clickButton" class="click-btn liquid-glass">
                             <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Click" id="clickIcon">
                         </button>
-                        <div class="stats">
+                        <div class="stats liquid-glass">
                             <p>Кликов: <span id="clicks">0</span></p>
                             <p>Сила клика: <span id="clickPower">1</span></p>
                             <p>Время в игре: <span id="playtime">00:00:00</span></p>
@@ -101,64 +105,72 @@
 
             <!-- ЕДИНЫЙ ОСТРОВ СО ВСЕМИ ФУНКЦИЯМИ (только для ПК) -->
             <div id="feature-island" class="tab feature-island-container">
-                <div class="feature-island glass-effect">
+                <div class="feature-island glass-effect liquid-glass">
                     <div class="water-surface"></div>
                     <h2 class="island-main-title">🏝️ Остров Возможностей</h2>
                     
                     <div class="feature-grid">
-                        <div class="feature-card" data-tab="shop">
+                        <div class="feature-card liquid-glass" data-tab="shop">
                             <div class="feature-icon">🛒</div>
                             <h3>Магазин</h3>
                             <p>4 скина</p>
                             <div class="feature-glow"></div>
                         </div>
                         
-                        <div class="feature-card" data-tab="upgrades">
+                        <div class="feature-card liquid-glass" data-tab="upgrades">
                             <div class="feature-icon">⚡</div>
                             <h3>Улучшения</h3>
                             <p>Прокачка</p>
                             <div class="feature-glow"></div>
                         </div>
                         
-                        <div class="feature-card" data-tab="profile">
+                        <div class="feature-card liquid-glass" data-tab="profile">
                             <div class="feature-icon">👤</div>
                             <h3>Профиль</h3>
                             <p>Статистика</p>
                             <div class="feature-glow"></div>
                         </div>
                         
-                        <div class="feature-card" data-tab="promocodes">
+                        <div class="feature-card liquid-glass" data-tab="promocodes">
                             <div class="feature-icon">🎁</div>
                             <h3>Промокоды</h3>
                             <p>Бонусы</p>
                             <div class="feature-glow"></div>
                         </div>
                         
-                        <div class="feature-card" data-tab="leaderboard">
+                        <div class="feature-card liquid-glass" data-tab="leaderboard">
                             <div class="feature-icon">🏆</div>
                             <h3>Лидеры</h3>
                             <p>Топ игроков</p>
                             <div class="feature-glow"></div>
                         </div>
                         
-                        <div class="feature-card" data-tab="season">
+                        <div class="feature-card liquid-glass" data-tab="season">
                             <div class="feature-icon">🎫</div>
                             <h3>Сезон</h3>
                             <p>Награды</p>
                             <div class="feature-glow"></div>
                         </div>
                         
-                        <div class="feature-card" data-tab="settings">
+                        <div class="feature-card liquid-glass" data-tab="settings">
                             <div class="feature-icon">⚙️</div>
                             <h3>Настройки</h3>
                             <p>Управление</p>
                             <div class="feature-glow"></div>
                         </div>
                         
-                        <div class="feature-card" data-tab="inventory">
+                        <div class="feature-card liquid-glass" data-tab="inventory">
                             <div class="feature-icon">📦</div>
                             <h3>Инвентарь</h3>
                             <p>Скины</p>
+                            <div class="feature-glow"></div>
+                        </div>
+                        
+                        <!-- 🎡 КАРТОЧКА КОЛЕСА НА ОСТРОВЕ -->
+                        <div class="feature-card liquid-glass" data-tab="wheel">
+                            <div class="feature-icon">🎡</div>
+                            <h3>Колесо</h3>
+                            <p>2500💎 за крутку</p>
                             <div class="feature-glow"></div>
                         </div>
                     </div>
@@ -175,7 +187,7 @@
                 <h2 class="section-title">Магазин скинов</h2>
                 <div class="shop-grid">
                     <!-- Классический скин -->
-                    <div class="glass-card shop-item" data-item="classic" data-skin="classic">
+                    <div class="glass-card shop-item liquid-glass" data-item="classic" data-skin="classic">
                         <div class="skin-preview">
                             <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Classic Skin">
                         </div>
@@ -186,11 +198,11 @@
                             <span class="price-value">0</span>
                         </p>
                         <p class="skin-status" id="status-classic">В инвентаре</p>
-                        <button class="glass-btn buy-btn disabled" data-item="classic" data-price="0" disabled>Куплено</button>
+                        <button class="glass-btn buy-btn liquid-glass disabled" data-item="classic" data-price="0" disabled>Куплено</button>
                     </div>
                     
                     <!-- Неоновый скин -->
-                    <div class="glass-card shop-item" data-item="neon" data-skin="neon">
+                    <div class="glass-card shop-item liquid-glass" data-item="neon" data-skin="neon">
                         <div class="skin-preview">
                             <img src="https://img.freepik.com/premium-photo/neon-style-computer-cursor-arrow-design-vector_1018059-4.jpg?semt=ais_hybrid&w=740" alt="Neon Skin">
                         </div>
@@ -201,11 +213,11 @@
                             <span class="price-value">1000</span>
                         </p>
                         <p class="skin-status" id="status-neon">Не куплено</p>
-                        <button class="glass-btn buy-btn" data-item="neon" data-price="1000">Купить</button>
+                        <button class="glass-btn buy-btn liquid-glass" data-item="neon" data-price="1000">Купить</button>
                     </div>
 
                     <!-- Скин монстра -->
-                    <div class="glass-card shop-item" data-item="monsters_skin" data-skin="monsters_skin">
+                    <div class="glass-card shop-item liquid-glass" data-item="monsters_skin" data-skin="monsters_skin">
                         <div class="skin-preview">
                             <img src="https://avatars.mds.yandex.net/i?id=83ac2b7a91b5b67b7ffb26da4b8b1a2abd4fc83f-8981816-images-thumbs&n=13" alt="Monster Skin">
                         </div>
@@ -216,11 +228,11 @@
                             <span class="price-value">0</span>
                         </p>
                         <p class="skin-status" id="status-monsters_skin">Не куплено</p>
-                        <button class="glass-btn buy-btn" data-item="monsters_skin" data-price="0">Купить</button>
+                        <button class="glass-btn buy-btn liquid-glass" data-item="monsters_skin" data-price="0">Купить</button>
                     </div>
                     
                     <!-- Драконий скин -->
-                    <div class="glass-card shop-item" data-item="dragon_skin" data-skin="dragon_skin">
+                    <div class="glass-card shop-item liquid-glass" data-item="dragon_skin" data-skin="dragon_skin">
                         <div class="skin-preview">
                             <img src="https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13" alt="Dragon Skin">
                         </div>
@@ -231,7 +243,7 @@
                             <span class="price-value">15000</span>
                         </p>
                         <p class="skin-status" id="status-dragon_skin">Не куплено</p>
-                        <button class="glass-btn buy-btn" data-item="dragon_skin" data-price="15000">Купить</button>
+                        <button class="glass-btn buy-btn liquid-glass" data-item="dragon_skin" data-price="15000">Купить</button>
                     </div>
                 </div>
             </div>
@@ -246,7 +258,7 @@
             <div id="upgrades" class="tab">
                 <h2 class="section-title">Улучшения</h2>
                 <div class="upgrades-grid">
-                    <div class="glass-card upgrade-item" data-upgrade="clickPower">
+                    <div class="glass-card upgrade-item liquid-glass" data-upgrade="clickPower">
                         <h3>Усилитель клика</h3>
                         <p>Уровень: <span class="upgrade-level">1</span></p>
                         <p>Сила: +1 к клику</p>
@@ -254,9 +266,9 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">50</span>
                         </p>
-                        <button class="glass-btn upgrade-btn" data-upgrade="clickPower">Улучшить</button>
+                        <button class="glass-btn upgrade-btn liquid-glass" data-upgrade="clickPower">Улучшить</button>
                     </div>
-                    <div class="glass-card upgrade-item" data-upgrade="autoClicker">
+                    <div class="glass-card upgrade-item liquid-glass" data-upgrade="autoClicker">
                         <h3>Автокликер</h3>
                         <p>Уровень: <span class="upgrade-level">0</span></p>
                         <p>+1 клик/сек</p>
@@ -264,9 +276,9 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">100</span>
                         </p>
-                        <button class="glass-btn upgrade-btn" data-upgrade="autoClicker">Купить</button>
+                        <button class="glass-btn upgrade-btn liquid-glass" data-upgrade="autoClicker">Купить</button>
                     </div>
-                    <div class="glass-card upgrade-item" data-upgrade="critChance">
+                    <div class="glass-card upgrade-item liquid-glass" data-upgrade="critChance">
                         <h3>Критический удар</h3>
                         <p>Шанс: <span class="upgrade-level">5%</span></p>
                         <p>Множитель: x2</p>
@@ -274,7 +286,7 @@
                             <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                             <span class="price-value">200</span>
                         </p>
-                        <button class="glass-btn upgrade-btn" data-upgrade="critChance">Улучшить</button>
+                        <button class="glass-btn upgrade-btn liquid-glass" data-upgrade="critChance">Улучшить</button>
                     </div>
                 </div>
             </div>
@@ -282,7 +294,7 @@
             <!-- Профиль игрока -->
             <div id="profile" class="tab">
                 <div class="profile-container">
-                    <div class="profile-header glass-card">
+                    <div class="profile-header glass-card liquid-glass">
                         <div class="profile-avatar">
                             <div class="avatar-ring">
                                 <img src="https://cdn-icons-png.flaticon.com/512/4366/4366891.png" alt="Avatar" id="profileAvatar">
@@ -292,19 +304,19 @@
                             <h2 id="profileUsername">Игрок</h2>
                             <p class="profile-level">Уровень: <span id="profileLevel">1</span></p>
                             <div class="profile-stats-grid">
-                                <div class="profile-stat-item">
+                                <div class="profile-stat-item liquid-glass">
                                     <span class="stat-label">Всего кликов</span>
                                     <span class="stat-value" id="profileClicks">0</span>
                                 </div>
-                                <div class="profile-stat-item">
+                                <div class="profile-stat-item liquid-glass">
                                     <span class="stat-label">Денег</span>
                                     <span class="stat-value" id="profileMoney">0</span>
                                 </div>
-                                <div class="profile-stat-item">
+                                <div class="profile-stat-item liquid-glass">
                                     <span class="stat-label">Диликов</span>
                                     <span class="stat-value" id="profileDilicks">0</span>
                                 </div>
-                                <div class="profile-stat-item">
+                                <div class="profile-stat-item liquid-glass">
                                     <span class="stat-label">В игре</span>
                                     <span class="stat-value" id="profilePlaytime">00:00</span>
                                 </div>
@@ -315,33 +327,36 @@
                     <h2 class="section-title">Достижения</h2>
                     <div class="achievements-grid" id="achievementsGrid"></div>
 
-                    <div class="skin-stats glass-card">
-                        <h3>Коллекция скинов</h3>
+                    <div class="skin-stats glass-card liquid-glass">
+                        <h3>🎨 Коллекция скинов</h3>
                         <div class="skin-progress">
                             <div class="skin-progress-bar">
                                 <div class="skin-progress-fill" id="skinProgressFill"></div>
                             </div>
-                            <p><span id="ownedSkins">1</span> / <span id="totalSkins">4</span> скинов</p>
+                            <div class="skin-progress-text">
+                                <span>Собрано:</span>
+                                <span><span class="progress-current" id="ownedSkins">1</span> / <span class="progress-total" id="totalSkins">5</span></span>
+                            </div>
                         </div>
                         <div class="owned-skins-list" id="ownedSkinsList"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Настройки профиля (БЕЗ АДМИНКИ) -->
+            <!-- Настройки профиля -->
             <div id="settings" class="tab">
                 <div class="settings-container">
                     <h2 class="section-title">⚙️ Настройки профиля</h2>
                     
                     <div class="settings-grid">
                         <!-- Основная информация -->
-                        <div class="settings-card glass-card">
+                        <div class="settings-card glass-card liquid-glass">
                             <h3>👤 Основное</h3>
                             <div class="settings-field">
                                 <label>👑 Отображаемое имя</label>
                                 <div class="settings-input-group">
                                     <input type="text" id="displayName" class="glass-input" placeholder="Введите никнейм" maxlength="20">
-                                    <button class="glass-btn settings-save-btn" id="saveDisplayName">Сохранить</button>
+                                    <button class="glass-btn settings-save-btn liquid-glass" id="saveDisplayName">Сохранить</button>
                                 </div>
                                 <p class="settings-hint">Будет отображаться в профиле и лидерборде</p>
                             </div>
@@ -354,19 +369,19 @@
                         </div>
                         
                         <!-- Безопасность -->
-                        <div class="settings-card glass-card">
+                        <div class="settings-card glass-card liquid-glass">
                             <h3>🔒 Безопасность</h3>
                             <div class="settings-field">
                                 <label>🔑 Смена пароля</label>
                                 <input type="password" id="oldPassword" class="glass-input" placeholder="Старый пароль">
                                 <input type="password" id="newPassword" class="glass-input" placeholder="Новый пароль (мин. 4 символа)">
                                 <input type="password" id="confirmPassword" class="glass-input" placeholder="Подтвердите пароль">
-                                <button class="glass-btn settings-save-btn" id="changePasswordBtn">Изменить пароль</button>
+                                <button class="glass-btn settings-save-btn liquid-glass" id="changePasswordBtn">Изменить пароль</button>
                             </div>
                         </div>
                         
                         <!-- Настройки интерфейса -->
-                        <div class="settings-card glass-card">
+                        <div class="settings-card glass-card liquid-glass">
                             <h3>🎨 Интерфейс</h3>
                             <div class="settings-field">
                                 <label>🌙 Тема</label>
@@ -405,13 +420,13 @@
                         </div>
                         
                         <!-- Управление данными -->
-                        <div class="settings-card glass-card">
+                        <div class="settings-card glass-card liquid-glass">
                             <h3>💾 Управление данными</h3>
                             <div class="settings-field">
                                 <label>📊 Резервное копирование</label>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <button class="glass-btn settings-warning-btn" id="exportDataBtn">📥 Экспорт</button>
-                                    <button class="glass-btn settings-warning-btn" id="importDataBtn">📤 Импорт</button>
+                                    <button class="glass-btn settings-warning-btn liquid-glass" id="exportDataBtn">📥 Экспорт</button>
+                                    <button class="glass-btn settings-warning-btn liquid-glass" id="importDataBtn">📤 Импорт</button>
                                 </div>
                                 <p class="settings-hint">Сохраните свои данные или восстановите из резервной копии</p>
                             </div>
@@ -419,21 +434,21 @@
                             <div class="settings-field">
                                 <label>⚠️ Опасная зона</label>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <button class="glass-btn settings-danger-btn" id="resetProgressBtn">🔄 Сброс прогресса</button>
-                                    <button class="glass-btn settings-danger-btn" id="deleteAccountBtn">🗑️ Удалить аккаунт</button>
+                                    <button class="glass-btn settings-danger-btn liquid-glass" id="resetProgressBtn">🔄 Сброс прогресса</button>
+                                    <button class="glass-btn settings-danger-btn liquid-glass" id="deleteAccountBtn">🗑️ Удалить аккаунт</button>
                                 </div>
                                 <p class="settings-hint">Эти действия необратимы</p>
                             </div>
                         </div>
                         
                         <!-- О приложении -->
-                        <div class="settings-card glass-card">
+                        <div class="settings-card glass-card liquid-glass">
                             <h3>ℹ️ О приложении</h3>
                             <div class="settings-field">
                                 <p><strong>Версия:</strong> 2.0.0</p>
                                 <p><strong>Разработчик:</strong> Dilic Team</p>
                                 <p><strong>Telegram:</strong> @DilicClicker_bot</p>
-                                <button class="glass-btn" id="checkUpdatesBtn" style="width: 100%;">🔄 Проверить обновления</button>
+                                <button class="glass-btn liquid-glass" id="checkUpdatesBtn" style="width: 100%;">🔄 Проверить обновления</button>
                             </div>
                         </div>
                     </div>
@@ -442,7 +457,7 @@
 
             <!-- Сезонный пропуск -->
             <div id="season" class="tab">
-                <div class="season-pass glass-card">
+                <div class="season-pass glass-card liquid-glass">
                     <h2>Сезонный пропуск</h2>
                     <div class="season-progress">
                         <div class="progress-bar">
@@ -451,21 +466,21 @@
                         <p>Уровень: <span id="seasonLevel">1</span>/50</p>
                     </div>
                     <div class="season-rewards">
-                        <div class="reward-tier glass-card">
+                        <div class="reward-tier glass-card liquid-glass">
                             <h3>Бесплатный уровень</h3>
                             <p class="reward-price">
                                 <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" alt="Money" class="price-icon">
                                 <span>100</span>
                             </p>
                         </div>
-                        <div class="reward-tier glass-card premium">
+                        <div class="reward-tier glass-card premium liquid-glass">
                             <h3>Премиум уровень</h3>
                             <p>Награда: Скин "Сезонный"</p>
                             <p class="reward-price">
                                 <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" alt="Dilicks" class="price-icon">
                                 <span>500</span>
                             </p>
-                            <button class="glass-btn" id="buyPremiumBtn">Купить премиум</button>
+                            <button class="glass-btn liquid-glass" id="buyPremiumBtn">Купить премиум</button>
                         </div>
                     </div>
                 </div>
@@ -474,27 +489,27 @@
             <!-- Промокоды -->
             <div id="promocodes" class="tab">
                 <div class="promocodes-container">
-                    <div class="promocodes-header glass-card">
+                    <div class="promocodes-header glass-card liquid-glass">
                         <h2 class="section-title">Промокоды</h2>
                         <p class="promocodes-subtitle">Вводи промокоды и получай бонусы!</p>
                     </div>
                     
-                    <div class="promocode-input-section glass-card">
+                    <div class="promocode-input-section glass-card liquid-glass">
                         <div class="promocode-input-wrapper">
                             <input type="text" id="promocodeInput" class="glass-input promocode-input" placeholder="ВВЕДИ ПРОМОКОД" maxlength="20">
-                            <button class="glass-btn promocode-activate-btn" id="activatePromocodeBtn">
+                            <button class="glass-btn promocode-activate-btn liquid-glass" id="activatePromocodeBtn">
                                 <span class="btn-text">Активировать</span>
                             </button>
                         </div>
                         <div id="promocodeMessage" class="promocode-message"></div>
                     </div>
                     
-                    <div class="active-promocodes glass-card">
+                    <div class="active-promocodes glass-card liquid-glass">
                         <h3>Доступные промокоды</h3>
                         <div class="promocodes-list" id="promocodesList"></div>
                     </div>
                     
-                    <div class="promocodes-history glass-card">
+                    <div class="promocodes-history glass-card liquid-glass">
                         <h3>История активаций</h3>
                         <div class="history-list" id="promocodesHistory"></div>
                     </div>
@@ -503,12 +518,12 @@
 
             <!-- Лидерборд -->
             <div id="leaderboard" class="tab">
-                <div class="leaderboard-container glass-card">
+                <div class="leaderboard-container glass-card liquid-glass">
                     <h2>Таблица лидеров</h2>
                     <div class="leaderboard-tabs">
-                        <button class="glass-btn small active" data-leaderboard="clicks">По кликам</button>
-                        <button class="glass-btn small" data-leaderboard="money">По деньгам</button>
-                        <button class="glass-btn small" data-leaderboard="playtime">По времени</button>
+                        <button class="glass-btn small active liquid-glass" data-leaderboard="clicks">По кликам</button>
+                        <button class="glass-btn small liquid-glass" data-leaderboard="money">По деньгам</button>
+                        <button class="glass-btn small liquid-glass" data-leaderboard="playtime">По времени</button>
                     </div>
                     <table class="leaderboard-table">
                         <thead>
@@ -520,6 +535,13 @@
                         </thead>
                         <tbody id="leaderboardBody"></tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- 🎡 КОЛЕСО ФОРТУНЫ -->
+            <div id="wheel" class="tab">
+                <div class="wheel-container" id="wheelContainer">
+                    <!-- Контент будет загружаться динамически -->
                 </div>
             </div>
         </div>

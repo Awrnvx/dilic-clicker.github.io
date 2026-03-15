@@ -1,4 +1,4 @@
-// script.js - Полная версия игры
+// script.js - Полная версия игры с колесом фортуны и компенсацией
 
 class ClickerGame {
     constructor() {
@@ -8,6 +8,8 @@ class ClickerGame {
         this.bubbleFrame = null;
         this.lastBubbleTime = 0;
         this.settings = null;
+        this.wheel = null; // Для колеса фортуны
+        this.compensationShown = false; // Флаг для показа компенсации
         
         // Данные скинов
         this.skinsData = {
@@ -38,10 +40,18 @@ class ClickerGame {
                 image: 'https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13',
                 description: 'Мощный скин дракона',
                 currency: 'dilicks'
+            },
+            // 👇 НОВЫЙ СКИН ИЗ КОЛЕСА
+            'wheel_dragon_skin': {
+                name: 'Колесный дракон',
+                price: 0, // Не продается, только из колеса
+                image: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755',
+                description: 'Особенный скин дракона (×250 множитель)',
+                currency: 'special'
             }
         };
         
-        // Достижения
+        // Достижения - ОБНОВЛЕНО ДОСТИЖЕНИЕ КОЛЛЕКЦИОНЕРА
         this.achievementsData = [
             {
                 id: 'firstClick',
@@ -86,10 +96,10 @@ class ClickerGame {
             {
                 id: 'skinCollector',
                 name: 'Коллекционер',
-                description: 'Соберите все скины',
+                description: 'Соберите все 5 скинов',
                 icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png',
-                condition: (data) => data.inventory && data.inventory.length >= 4,
-                reward: { money: 3000, dilicks: 300 }
+                condition: (data) => data.inventory && data.inventory.length >= 5,
+                reward: { money: 35000, dilicks: 0 } // 👈 35000 диликов
             },
             {
                 id: 'critMaster',
@@ -106,10 +116,18 @@ class ClickerGame {
                 icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png',
                 condition: (data) => data.autoClickerLevel >= 10,
                 reward: { money: 5000, dilicks: 500 }
+            },
+            {
+                id: 'wheelMaster',
+                name: 'Властелин колеса',
+                description: 'Получите особенного скина из колеса фортуны',
+                icon: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755',
+                condition: (data) => data.inventory && data.inventory.includes('wheel_dragon_skin'),
+                reward: { money: 10000, dilicks: 5000 }
             }
         ];
         
-        // Промокоды
+        // Прояямокоды
         this.promocodesData = {
             'WELCOME': {
                 code: 'WELCOME',
@@ -166,7 +184,8 @@ class ClickerGame {
                 description: 'Скин дракона в подарок!',
                 maxActivations: 1,
                 expiryDate: null
-            }
+            },
+
         };
         
         this.init();
@@ -189,6 +208,10 @@ class ClickerGame {
             if (snapshot.exists()) {
                 this.userData = snapshot.val();
                 console.log('✅ Данные загружены из Firebase');
+                
+                // 👇 ПРОВЕРЯЕМ НУЖНА ЛИ КОМПЕНСАЦИЯ
+                await this.checkCompensation();
+                
             } else {
                 console.error('❌ Пользователь не найден');
                 localStorage.clear();
@@ -224,6 +247,111 @@ class ClickerGame {
         this.updateLeaderboard('clicks');
     }
 
+    // ===== ПРОВЕРКА КОМПЕНСАЦИИ ДЛЯ СТАРЫХ ИГРОКОВ =====
+    async checkCompensation() {
+        // Проверяем, получал ли игрок компенсацию раньше
+        if (this.userData.compensationReceived) {
+            console.log('✅ Компенсация уже была получена');
+            return;
+        }
+        
+        // Проверяем, есть ли у игрока достижение "Коллекционер" (полученное при 4 скинах)
+        const hasOldCollector = this.userData.completedAchievements && 
+                                this.userData.completedAchievements.includes('skinCollector');
+        
+        // Проверяем, сколько сейчас скинов
+        const currentSkinCount = this.userData.inventory?.length || 0;
+        
+        // Условие для компенсации:
+        // 1. Игрок уже получал достижение "Коллекционер" (когда было 4 скина)
+        // 2. ИЛИ у игрока 4 скина (почти коллекционер)
+        // 3. И компенсация еще не выдавалась
+        if ((hasOldCollector || currentSkinCount >= 4) && !this.userData.compensationReceived) {
+            console.log('🎁 Игроку положена компенсация!');
+            this.showCompensationDialog();
+        }
+    }
+
+    // ===== ПОКАЗ ДИАЛОГА КОМПЕНСАЦИИ =====
+    showCompensationDialog() {
+        if (this.compensationShown) return;
+        this.compensationShown = true;
+        
+        // Создаем модальное окно для компенсации
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'compensationModal';
+        modal.style.display = 'flex';
+        modal.style.opacity = '1';
+        modal.style.pointerEvents = 'all';
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 450px; background: rgba(20,25,35,0.95); border: 2px solid gold; border-radius: 50px; padding: 30px; text-align: center;">
+                <h2 style="color: gold; font-size: 2rem; margin-bottom: 20px;">🎁 БОНУС ОБНОВЛЕНИЯ</h2>
+                <div style="margin: 20px 0;">
+                    <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px;">
+                    <p style="color: white; font-size: 1.2rem; margin-bottom: 10px;">В игру добавлен 5-й скин!</p>
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">Для коллекционеров мы подготовили компенсацию:</p>
+                    <div style="background: rgba(255,215,0,0.1); border-radius: 30px; padding: 15px; margin-bottom: 20px;">
+                        <span style="color: gold; font-size: 2rem; font-weight: bold;">+4500</span>
+                        <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" style="width: 30px; height: 30px; border-radius: 50%; margin-left: 10px;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button class="modal-btn confirm" id="claimCompensation" style="background: rgba(76,175,80,0.2); border: 1px solid #4CAF50; color: white; padding: 12px 30px; border-radius: 40px; font-weight: bold; cursor: pointer;">ПОЛУЧИТЬ</button>
+                    <button class="modal-btn cancel" id="closeCompensation" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 30px; border-radius: 40px; font-weight: bold; cursor: pointer;">ПОЗЖЕ</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Обработчики
+        document.getElementById('claimCompensation').addEventListener('click', () => {
+            this.claimCompensation();
+            modal.remove();
+        });
+        
+        document.getElementById('closeCompensation').addEventListener('click', () => {
+            modal.remove();
+        });
+    }
+
+    // ===== ПОЛУЧЕНИЕ КОМПЕНСАЦИИ =====
+    async claimCompensation() {
+        // Добавляем 4500 диликов
+        this.userData.dilicks += 4500;
+        
+        // Отмечаем, что компенсация получена
+        this.userData.compensationReceived = true;
+        
+        // Сохраняем в Firebase
+        await this.saveGame();
+        
+        // Обновляем интерфейс
+        this.updateUI();
+        
+        // Показываем уведомление
+        this.showNotification('✅ +4500 диликов получено!', 'success');
+        
+        console.log('✅ Компенсация выдана:', this.userData.dilicks);
+    }
+
+    // ===== УВЕДОМЛЕНИЕ =====
+    showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `settings-toast ${type}`;
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
     createDefaultData() {
         return {
             clicks: 0,
@@ -241,6 +369,7 @@ class ClickerGame {
             completedAchievements: [],
             activatedPromocodes: [],
             promocodesHistory: [],
+            compensationReceived: false, // 👈 Флаг для компенсации
             settings: {
                 displayName: '',
                 theme: 'dark',
@@ -408,11 +537,24 @@ class ClickerGame {
             const type = activeTab ? activeTab.dataset.leaderboard : 'clicks';
             this.updateLeaderboard(type);
         }
+        // 👇 Обработка для колеса
+        if (tabId === 'wheel') {
+            // Создаем колесо при первом открытии
+            if (!this.wheel) {
+                this.wheel = new WheelOfFortune(this);
+            }
+        }
     }
 
     // ===== КЛИК =====
     handleClick(e) {
         let clickPower = this.userData.clickPower;
+        
+        // Проверяем, есть ли особенный скин с множителем 250
+        if (this.userData.currentSkin === 'wheel_dragon_skin') {
+            clickPower *= 250;
+        }
+        
         const critRoll = Math.random() * 100;
         
         if (critRoll < this.userData.critChance) {
@@ -453,6 +595,12 @@ class ClickerGame {
 
     // ===== ПОКУПКА СКИНА =====
     async buyItem(item, price) {
+        // Особенный скин нельзя купить
+        if (item === 'wheel_dragon_skin') {
+            alert('❌ Этот скин можно получить только в колесе фортуны!');
+            return;
+        }
+        
         if (item === 'dragon_skin') {
             if (this.userData.dilicks >= price) {
                 this.userData.dilicks -= price;
@@ -687,10 +835,17 @@ class ClickerGame {
         this.autoClickerInterval = setInterval(() => {
             if (this.userData.autoClickerLevel > 0) {
                 for (let i = 0; i < this.userData.autoClickerLevel; i++) {
+                    let clickPower = this.userData.clickPower;
+                    
+                    // Проверяем, есть ли особенный скин с множителем 250
+                    if (this.userData.currentSkin === 'wheel_dragon_skin') {
+                        clickPower *= 250;
+                    }
+                    
                     this.userData.clicks++;
-                    this.userData.money += this.userData.clickPower;
+                    this.userData.money += clickPower;
                     this.userData.dilicks++;
-                    this.addSeasonExp(this.userData.clickPower);
+                    this.addSeasonExp(clickPower);
                 }
                 this.updateUI();
                 this.saveGame();
@@ -869,6 +1024,11 @@ class ClickerGame {
         if (document.getElementById('profile')?.classList.contains('active')) {
             this.updateProfile();
         }
+        
+        // Обновляем баланс в колесе, если оно открыто
+        if (this.wheel && this.wheel.balanceSpan) {
+            this.wheel.balanceSpan.textContent = this.userData.dilicks.toLocaleString();
+        }
     }
 
     // ===== СОХРАНЕНИЕ =====
@@ -941,7 +1101,7 @@ class ClickerGame {
         this.bubbleFrame = requestAnimationFrame(createBubbleOptimized);
     }
 
-    // ===== ДОСТИЖЕНИЯ =====
+    // ===== ДОСТИЖЕНИЯ (С ИСПРАВЛЕННЫМ ПРОГРЕССОМ) =====
     checkAchievements() {
         if (!this.userData.completedAchievements) {
             this.userData.completedAchievements = [];
@@ -959,7 +1119,16 @@ class ClickerGame {
                 this.userData.dilicks += achievement.reward.dilicks;
                 newAchievementUnlocked = true;
                 
-                this.showAchievementNotification(achievement);
+                // Специальная иконка для достижения "Коллекционер" при получении
+                if (achievement.id === 'skinCollector') {
+                    // Показываем уведомление с иконкой нового скина
+                    this.showAchievementNotification({
+                        ...achievement,
+                        icon: this.skinsData['wheel_dragon_skin'].image
+                    });
+                } else {
+                    this.showAchievementNotification(achievement);
+                }
             }
         });
         
@@ -1026,7 +1195,13 @@ class ClickerGame {
         });
     }
 
+    // ===== РАСЧЕТ ПРОГРЕССА ДОСТИЖЕНИЯ (С ФИКСАЦИЕЙ ВЫПОЛНЕННЫХ) =====
     calculateAchievementProgress(achievement) {
+        // Если достижение уже выполнено - возвращаем 100%
+        if (this.userData.completedAchievements?.includes(achievement.id)) {
+            return 100;
+        }
+        
         switch(achievement.id) {
             case 'firstClick':
                 return Math.min(100, (this.userData.clicks / 1) * 100);
@@ -1046,6 +1221,8 @@ class ClickerGame {
                 return Math.min(100, (this.userData.critChance / 50) * 100);
             case 'autoClickerMaster':
                 return Math.min(100, (this.userData.autoClickerLevel / 10) * 100);
+            case 'wheelMaster':
+                return this.userData.inventory?.includes('wheel_dragon_skin') ? 100 : 0;
             default:
                 return 0;
         }
@@ -1054,6 +1231,16 @@ class ClickerGame {
     showAchievementNotification(achievement) {
         const notification = document.createElement('div');
         notification.className = 'achievement-notification';
+        
+        // Заменяем эмодзи на иконки валют
+        let rewardText = '';
+        if (achievement.reward.money > 0) {
+            rewardText += `+${achievement.reward.money} <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" style="width: 20px; height: 20px; border-radius: 50%; vertical-align: middle;"> `;
+        }
+        if (achievement.reward.dilicks > 0) {
+            rewardText += `+${achievement.reward.dilicks} <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" style="width: 20px; height: 20px; border-radius: 50%; vertical-align: middle;">`;
+        }
+        
         notification.innerHTML = `
             <div class="notification-icon">
                 <img src="${achievement.icon}" alt="${achievement.name}">
@@ -1062,7 +1249,7 @@ class ClickerGame {
                 <h4>Достижение получено!</h4>
                 <p>${achievement.name}</p>
                 <p class="notification-reward">
-                    +${achievement.reward.money} 💰 +${achievement.reward.dilicks} 💎
+                    ${rewardText}
                 </p>
             </div>
         `;
@@ -1086,13 +1273,22 @@ class ClickerGame {
         if (this.skinProgressFill) {
             const progress = (ownedSkins / totalSkins) * 100;
             this.skinProgressFill.style.width = progress + '%';
+            // Добавляем золотое свечение и делаем линию желтой
+            this.skinProgressFill.style.background = 'linear-gradient(90deg, #ffd700, #ffaa00, #ffd700)';
+            this.skinProgressFill.style.boxShadow = '0 0 15px gold, 0 0 30px rgba(255, 215, 0, 0.3)';
         }
         
         if (this.ownedSkins) {
             this.ownedSkins.textContent = ownedSkins;
+            // Делаем цифры желтыми
+            this.ownedSkins.style.color = 'gold';
+            this.ownedSkins.style.textShadow = '0 0 10px gold';
         }
         if (this.totalSkins) {
             this.totalSkins.textContent = totalSkins;
+            // Делаем цифры желтыми
+            this.totalSkins.style.color = 'gold';
+            this.totalSkins.style.textShadow = '0 0 10px gold';
         }
         
         this.ownedSkinsList.innerHTML = '';
@@ -1142,12 +1338,12 @@ class ClickerGame {
         
         if (promocode.reward.money > 0) {
             this.userData.money += promocode.reward.money;
-            rewardMessage += `+${promocode.reward.money}💰 `;
+            rewardMessage += `+${promocode.reward.money} <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" style="width: 18px; height: 18px; border-radius: 50%;"> `;
         }
         
         if (promocode.reward.dilicks > 0) {
             this.userData.dilicks += promocode.reward.dilicks;
-            rewardMessage += `+${promocode.reward.dilicks}💎 `;
+            rewardMessage += `+${promocode.reward.dilicks} <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" style="width: 18px; height: 18px; border-radius: 50%;"> `;
         }
         
         if (promocode.reward.skin) {
@@ -1164,7 +1360,7 @@ class ClickerGame {
                 }
             } else {
                 this.userData.dilicks += 100;
-                rewardMessage += `+100💎 (скин уже был)`;
+                rewardMessage += `+100 <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" style="width: 18px; height: 18px; border-radius: 50%;"> (скин уже был)`;
             }
         }
         
@@ -1202,12 +1398,12 @@ class ClickerGame {
     showPromocodeMessage(text, type) {
         if (!this.promocodeMessage) return;
         
-        this.promocodeMessage.textContent = text;
+        this.promocodeMessage.innerHTML = text;
         this.promocodeMessage.className = 'promocode-message ' + type;
         
         setTimeout(() => {
             if (this.promocodeMessage) {
-                this.promocodeMessage.textContent = '';
+                this.promocodeMessage.innerHTML = '';
                 this.promocodeMessage.className = 'promocode-message';
             }
         }, 3000);
@@ -1580,6 +1776,7 @@ class Settings {
                 seasonExp: this.game.userData.seasonExp,
                 playtime: this.game.userData.playtime,
                 completedAchievements: this.game.userData.completedAchievements,
+                compensationReceived: this.game.userData.compensationReceived,
                 settings: this.game.userData.settings,
                 exportDate: new Date().toLocaleString()
             };
@@ -1720,6 +1917,7 @@ class Settings {
             completedAchievements: [],
             activatedPromocodes: [],
             promocodesHistory: [],
+            compensationReceived: false,
             settings: this.game.userData.settings,
             lastSave: Date.now(),
             username: username,
@@ -1776,7 +1974,7 @@ class Settings {
         
         const toast = document.createElement('div');
         toast.className = `settings-toast ${type}`;
-        toast.textContent = message;
+        toast.innerHTML = message;
         document.body.appendChild(toast);
         
         setTimeout(() => toast.classList.add('show'), 10);
@@ -1821,6 +2019,330 @@ class Settings {
     }
 }
 
+// ===== КОЛЕСО ФОРТУНЫ (СРЕДНИЙ РАЗМЕР, КРУГЛЫЕ ВАЛЮТЫ, ИСПРАВЛЕННАЯ СТРЕЛКА) =====
+class WheelOfFortune {
+    constructor(game) {
+        this.game = game;
+        this.PRIZES = [
+            { name: '2500 МОНЕТ', value: 2500, type: 'money', prob: 50, color: '#2e7d32' },
+            { name: '5500 МОНЕТ', value: 5500, type: 'money', prob: 35, color: '#f9a825' },
+            { name: '8500 МОНЕТ', value: 8500, type: 'money', prob: 25, color: '#ef6c00' },
+            { name: '11500 МОНЕТ', value: 11500, type: 'money', prob: 15, color: '#d32f2f' },
+            { name: '5000 ДИЛИКОВ', value: 5000, type: 'dilicks', prob: 5, color: '#7b1fa2' },
+            { name: 'ОСОБЕННЫЙ СКИН', value: 'skin', type: 'skin', prob: 2.5, color: '#c2185b' }
+        ];
+        
+        this.SPIN_COST = 2500;
+        this.MONEY_ICON = 'https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13';
+        this.DILICKS_ICON = 'https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg';
+        this.SKIN_ID = 'wheel_dragon_skin'; // ID нового скина
+        
+        this.rotation = 0;
+        this.isSpinning = false;
+        this.spinVelocity = 0;
+        this.spinDeceleration = 0.985;
+        this.spinActive = false;
+        this.animationFrame = null;
+        
+        this.container = document.getElementById('wheelContainer');
+        this.modal = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.render();
+        this.setupEventListeners();
+    }
+    
+    render() {
+        const html = `
+            <div class="wheel-card" style="padding: 25px 25px 30px;">
+                <div class="wheel-header" style="margin-bottom: 15px;">
+                    <h2 style="font-size: 2.2rem; margin-bottom: 5px;">✦ КОЛЕСО ФОРТУНЫ ✦</h2>
+                    <p style="font-size: 1rem; margin-bottom: 8px; color: rgba(255,255,255,0.7);">Испытай удачу!</p>
+                    <div class="wheel-price" style="padding: 6px 25px; background: rgba(255,215,0,0.1); border-radius: 40px; display: inline-block;">
+                        <img src="${this.DILICKS_ICON}" style="width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; margin-right: 5px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
+                        <span style="font-size: 1rem; color: gold;">${this.SPIN_COST} за крутку</span>
+                    </div>
+                </div>
+                
+                <div class="wheel-wrapper" style="width: 280px; height: 280px; margin: 10px auto; position: relative;">
+                    <canvas id="wheelCanvas" width="450" height="450" class="wheel-canvas" style="width: 100%; height: 100%;"></canvas>
+                    <div class="wheel-pointer" style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid gold; filter: drop-shadow(0 8px 6px #00000099); z-index: 10;"></div>
+                    <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: radial-gradient(circle, #ffd966, #b8860b); border-radius: 50%; box-shadow: 0 0 20px gold; z-index: 11;"></div>
+                </div>
+                
+                <div class="wheel-controls" style="margin: 15px 0; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <button class="wheel-spin-btn" id="wheelSpinBtn" style="background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.12); color: white; padding: 12px 35px; border-radius: 50px; font-size: 1.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; box-shadow: 0 8px 18px rgba(0,0,0,0.25); backdrop-filter: blur(8px); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 10px;">
+                        <span>🎡</span> КРУТИТЬ <span>🎡</span>
+                    </button>
+                    <div class="wheel-balance" style="color: white; font-size: 1rem; display: flex; align-items: center; gap: 5px;">
+                        Твой баланс: 
+                        <span id="wheelBalance" style="color: gold; font-weight: 600;">${this.game.userData.dilicks.toLocaleString()}</span>
+                        <img src="${this.DILICKS_ICON}" style="width: 20px; height: 20px; border-radius: 50%;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
+                    </div>
+                </div>
+                
+                <div class="wheel-prizes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: rgba(0,0,0,0.25); backdrop-filter: blur(10px); border-radius: 40px; border: 0.5px solid rgba(255,255,255,0.08); padding: 12px; margin: 15px 0;">
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #2e7d32; box-shadow: 0 0 10px #2e7d32;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">50%</strong> 2500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    </div>
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #f9a825; box-shadow: 0 0 10px #f9a825;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">35%</strong> 5500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    </div>
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #ef6c00; box-shadow: 0 0 10px #ef6c00;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">25%</strong> 8500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    </div>
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #d32f2f; box-shadow: 0 0 10px #d32f2f;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">15%</strong> 11500 <img src="${this.MONEY_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    </div>
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #7b1fa2; box-shadow: 0 0 10px #7b1fa2;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">5%</strong> 5000 <img src="${this.DILICKS_ICON}" style="width: 16px; height: 16px; border-radius: 50%;"></span>
+                    </div>
+                    <div class="wheel-prize-item" style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 30px;">
+                        <span class="wheel-prize-dot" style="width: 14px; height: 14px; border-radius: 50%; background: #c2185b; box-shadow: 0 0 10px #c2185b;"></span>
+                        <span class="wheel-prize-text" style="color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><strong style="color: gold;">2.5%</strong> СКИН ✨</span>
+                        <div class="wheel-skin-btn" id="showSkinBtn" style="background: rgba(255,215,0,0.15); border: 1px solid gold; color: gold; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-left: auto; cursor: pointer; font-size: 0.8rem;">?</div>
+                    </div>
+                </div>
+                
+                <div class="wheel-result" style="background: rgba(0,0,0,0.25); backdrop-filter: blur(10px); border-radius: 50px; border: 0.5px solid rgba(255,255,255,0.08); padding: 18px; text-align: center;" id="wheelResult">
+                    <div class="wheel-result-label" style="color: rgba(255,255,255,0.5); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px;">ТВОЙ ВЫИГРЫШ</div>
+                    <div class="wheel-result-value" style="font-size: 1.6rem; font-weight: 600; color: gold; text-shadow: 0 0 15px gold; display: flex; align-items: center; justify-content: center; gap: 8px;" id="wheelResultDisplay">НАЖМИ КРУТИТЬ</div>
+                </div>
+            </div>
+            
+            <!-- Модальное окно для скина -->
+            <div class="wheel-skin-modal" id="skinModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+                <div class="wheel-modal-content" style="max-width: 400px; width: 100%; background: rgba(20,25,35,0.95); backdrop-filter: blur(20px); border: 2px solid gold; border-radius: 50px; padding: 30px 25px; text-align: center; position: relative; animation: modalAppear 0.3s ease;">
+                    <span class="wheel-modal-close" id="closeModal" style="position: absolute; top: 20px; right: 25px; font-size: 2rem; color: gold; cursor: pointer;">✕</span>
+                    <h2 class="wheel-modal-title" style="color: gold; font-size: 2rem; margin-bottom: 15px; text-shadow: 0 0 20px gold;">✦ ОСОБЕННЫЙ СКИН ✦</h2>
+                    <div class="wheel-skin-preview" style="width: 160px; height: 160px; margin: 15px auto; border-radius: 50%; border: 4px solid gold; overflow: hidden; box-shadow: 0 0 40px gold;">
+                        <img src="https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755" alt="Special Skin" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
+                    </div>
+                    <p class="wheel-skin-description" style="color: white; font-size: 1.1rem; margin: 15px 0; line-height: 1.5;">
+                        ✨ Легендарный скин дракона<br>
+                        <strong style="color: gold;">×250 МНОЖИТЕЛЬ</strong><br>
+                        ко всем кликам
+                    </p>
+                    <div class="wheel-multiplier" style="display: inline-block; background: linear-gradient(145deg, #ffd966, #b8860b); padding: 8px 25px; border-radius: 40px; color: #1a0f00; font-weight: bold; font-size: 1.2rem; margin-top: 10px; box-shadow: 0 4px 0 #7a4f00;">×250</div>
+                </div>
+            </div>
+        `;
+        
+        this.container.innerHTML = html;
+        
+        this.canvas = document.getElementById('wheelCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.spinBtn = document.getElementById('wheelSpinBtn');
+        this.balanceSpan = document.getElementById('wheelBalance');
+        this.resultDisplay = document.getElementById('wheelResultDisplay');
+        this.modal = document.getElementById('skinModal');
+        
+        this.drawWheel();
+    }
+    
+    setupEventListeners() {
+        if (this.spinBtn) {
+            this.spinBtn.addEventListener('click', () => this.spin());
+        }
+        
+        const showSkinBtn = document.getElementById('showSkinBtn');
+        const closeModal = document.getElementById('closeModal');
+        
+        if (showSkinBtn) {
+            showSkinBtn.addEventListener('click', () => {
+                this.modal.style.display = 'flex';
+            });
+        }
+        
+        if (closeModal) {
+            closeModal.addEventListener('click', () => {
+                this.modal.style.display = 'none';
+            });
+        }
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.modal.style.display = 'none';
+            }
+        });
+    }
+    
+    drawWheel() {
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const r = Math.min(w, h) * 0.4;
+        
+        this.ctx.clearRect(0, 0, w, h);
+        
+        let startAngle = this.rotation - Math.PI / 2;
+        
+        for (let i = 0; i < this.PRIZES.length; i++) {
+            const prize = this.PRIZES[i];
+            const sliceAngle = (prize.prob / 100) * 2 * Math.PI;
+            const endAngle = startAngle + sliceAngle;
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(cx, cy);
+            this.ctx.arc(cx, cy, r, startAngle, endAngle);
+            this.ctx.closePath();
+            
+            this.ctx.fillStyle = prize.color;
+            this.ctx.shadowColor = 'rgba(255,255,255,0.3)';
+            this.ctx.shadowBlur = 15;
+            this.ctx.fill();
+            
+            this.ctx.shadowBlur = 0;
+            this.ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            this.ctx.lineWidth = 1.5;
+            this.ctx.stroke();
+            
+            startAngle = endAngle;
+        }
+        
+        // Центр
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, r * 0.15, 0, 2 * Math.PI);
+        this.ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        this.ctx.shadowColor = 'rgba(255,215,0,0.5)';
+        this.ctx.shadowBlur = 20;
+        this.ctx.fill();
+        this.ctx.shadowBlur = 0;
+        this.ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+    }
+    
+    spin() {
+        if (this.isSpinning) return;
+        
+        // Проверяем баланс
+        if (this.game.userData.dilicks < this.SPIN_COST) {
+            this.resultDisplay.innerHTML = '❌ Недостаточно диликов!';
+            return;
+        }
+        
+        // Списываем дилики
+        this.game.userData.dilicks -= this.SPIN_COST;
+        this.balanceSpan.textContent = this.game.userData.dilicks.toLocaleString();
+        this.game.updateUI();
+        this.game.saveGame();
+        
+        // Запускаем вращение
+        this.spinVelocity = 0.45 + Math.random() * 0.3;
+        this.spinDeceleration = 0.982 + (Math.random() * 0.01);
+        this.spinActive = true;
+        this.isSpinning = true;
+        this.spinBtn.disabled = true;
+        
+        this.resultDisplay.innerHTML = '⏳ КРУТИТСЯ...';
+        
+        if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = requestAnimationFrame(() => this.spinAnimation());
+    }
+    
+    spinAnimation() {
+        if (!this.spinActive) return;
+        
+        this.rotation += this.spinVelocity;
+        this.spinVelocity *= this.spinDeceleration;
+        this.drawWheel();
+        
+        if (this.spinVelocity < 0.002) {
+            this.spinActive = false;
+            this.isSpinning = false;
+            this.spinBtn.disabled = false;
+            
+            // Определяем результат
+            const normalized = ((this.rotation % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+            let angle = (normalized + Math.PI/2) % (2*Math.PI);
+            
+            let cumulative = 0;
+            let selectedPrize = this.PRIZES[0];
+            
+            for (let prize of this.PRIZES) {
+                const slice = (prize.prob / 100) * 2 * Math.PI;
+                if (angle >= cumulative && angle < cumulative + slice) {
+                    selectedPrize = prize;
+                    break;
+                }
+                cumulative += slice;
+            }
+            
+            // Выдаем приз
+            this.givePrize(selectedPrize);
+            return;
+        }
+        
+        this.animationFrame = requestAnimationFrame(() => this.spinAnimation());
+    }
+    
+    givePrize(prize) {
+        // Формируем строку результата с круглыми иконками
+        let resultHTML = '';
+        
+        if (prize.type === 'skin') {
+            // Проверяем, есть ли уже скин
+            if (!this.game.userData.inventory.includes(this.SKIN_ID)) {
+                this.game.userData.inventory.push(this.SKIN_ID);
+                resultHTML = '✨ ОСОБЕННЫЙ СКИН ✨';
+                this.resultDisplay.style.color = '#ffb7c5';
+                this.resultDisplay.style.textShadow = '0 0 30px #ff69b4';
+                
+                // Уведомление
+                this.game.showAchievementNotification({
+                    name: 'ОСОБЕННЫЙ СКИН',
+                    icon: this.game.skinsData[this.SKIN_ID].image,
+                    reward: { money: 0, dilicks: 0 }
+                });
+            } else {
+                // Если скин уже есть, даем 10000 диликов
+                this.game.userData.dilicks += 10000;
+                resultHTML = `
+                    <span>🎉 +10000</span>
+                    <img src="${this.DILICKS_ICON}" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle;">
+                    <span>(скин уже был)</span>
+                `;
+                this.resultDisplay.style.color = 'gold';
+                this.resultDisplay.style.textShadow = '0 0 20px gold';
+            }
+        } else if (prize.type === 'money') {
+            this.game.userData.money += prize.value;
+            resultHTML = `
+                <span> +${prize.value.toLocaleString()}</span>
+                <img src="${this.MONEY_ICON}" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle;">
+            `;
+        } else {
+            this.game.userData.dilicks += prize.value;
+            resultHTML = `
+                <span>  +${prize.value.toLocaleString()}</span>
+                <img src="${this.DILICKS_ICON}" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle;">
+            `;
+        }
+        
+        this.resultDisplay.innerHTML = resultHTML;
+        
+        // Обновляем интерфейс
+        this.balanceSpan.textContent = this.game.userData.dilicks.toLocaleString();
+        this.game.updateUI();
+        this.game.updateInventory();
+        this.game.saveGame();
+        this.game.checkAchievements(); // Проверяем достижения
+        
+        // Вибрация на телефоне
+        if (navigator.vibrate) navigator.vibrate(100);
+    }
+}
+
 // ===== ЗАПУСК ИГРЫ =====
 document.addEventListener('DOMContentLoaded', () => {
     window.clickerGame = new ClickerGame();
@@ -1841,4 +2363,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+
+// ===== ГОРЯЧИЕ КЛАВИШИ SHIFT+ENTER =====
+document.addEventListener('keydown', (e) => {
+    // SHIFT + ENTER для открытия колеса
+    if (e.shiftKey && e.key === 'Enter') {
+        e.preventDefault();
+        
+        // Находим кнопку колеса в навигации
+        const wheelBtn = document.querySelector('.nav-btn[data-tab="wheel"]');
+        if (wheelBtn) {
+            wheelBtn.click();
+            
+            // Эффект нажатия
+            wheelBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                wheelBtn.style.transform = '';
+            }, 200);
+        }
+    }
 });
