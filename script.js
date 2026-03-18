@@ -13,7 +13,7 @@ class ClickerGame {
         
         // Для техработ
         this.maintenanceInterval = null;
-        this.CREATOR_ID = '-Onbl-wmWqYsAV-cYUWm'; // ТВОЙ ID!
+        this.CREATOR_ID = ' -Oo0zt9muVN8hpvMTn_n'; // ТВОЙ ID!
         
         // Данные скинов
         this.skinsData = {
