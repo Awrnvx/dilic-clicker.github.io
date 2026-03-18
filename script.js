@@ -1,4 +1,4 @@
-// script.js - Полная версия игры (БЕЗ АДМИН-КОНСОЛИ)
+// script.js - ПОЛНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ
 
 class ClickerGame {
     constructor() {
@@ -13,6 +13,7 @@ class ClickerGame {
         
         // ТОЛЬКО для таймера техработ
         this.maintenanceInterval = null;
+        this.maintenanceListener = null; // Для отслеживания слушателя
         
         // Данные скинов
         this.skinsData = {
@@ -203,6 +204,7 @@ class ClickerGame {
         }
         
         try {
+            // Загружаем данные пользователя
             const userRef = firebase.database().ref('users/' + userId);
             const snapshot = await userRef.once('value');
             
@@ -212,11 +214,8 @@ class ClickerGame {
                 
                 await this.checkCompensation();
                 
-                // Проверяем статус техработ при загрузке
-                await this.checkMaintenanceStatus();
-                
-                // Слушаем изменения техработ в реальном времени
-                this.listenForMaintenanceChanges();
+                // Настраиваем слушатель техработ (будет работать постоянно)
+                this.setupMaintenanceListener();
                 
             } else {
                 console.error('❌ Пользователь не найден');
@@ -250,6 +249,52 @@ class ClickerGame {
         this.updatePromocodesList();
         this.updatePromocodesHistory();
         this.updateLeaderboard('clicks');
+    }
+
+    // ===== НАСТРОЙКА СЛУШАТЕЛЯ ТЕХРАБОТ =====
+    setupMaintenanceListener() {
+        const maintRef = firebase.database().ref('maintenance');
+        
+        // Удаляем старый слушатель если есть
+        if (this.maintenanceListener) {
+            maintRef.off('value', this.maintenanceListener);
+        }
+        
+        // Создаем новый слушатель
+        this.maintenanceListener = maintRef.on('value', (snapshot) => {
+            console.log('🔄 Изменение статуса техработ:', snapshot.val());
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                if (data.active) {
+                    // Техработы включены - показываем экран
+                    this.showMaintenanceScreen(data);
+                } else {
+                    // Техработы выключены - убираем экран
+                    const overlay = document.getElementById('maintenanceOverlay');
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                    }
+                    if (this.maintenanceInterval) {
+                        clearInterval(this.maintenanceInterval);
+                        this.maintenanceInterval = null;
+                    }
+                }
+            } else {
+                // Нет данных о техработах - убираем экран
+                const overlay = document.getElementById('maintenanceOverlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                }
+                if (this.maintenanceInterval) {
+                    clearInterval(this.maintenanceInterval);
+                    this.maintenanceInterval = null;
+                }
+            }
+        }, (error) => {
+            console.error('Ошибка слушателя:', error);
+        });
     }
 
     // ===== ПРОВЕРКА КОМПЕНСАЦИИ =====
@@ -337,74 +382,6 @@ class ClickerGame {
         }, 3000);
     }
 
-    // ===== ПРОВЕРКА ТЕХРАБОТ ПРИ ЗАГРУЗКЕ =====
-    async checkMaintenanceStatus() {
-        try {
-            const maintRef = firebase.database().ref('maintenance');
-            const snapshot = await maintRef.once('value');
-            
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                console.log('🔧 Статус техработ из Firebase:', data);
-                
-                if (data.active) {
-                    this.showMaintenanceScreen(data);
-                } else {
-                    // Если техработы выключены - убираем экран
-                    const overlay = document.getElementById('maintenanceOverlay');
-                    if (overlay) {
-                        overlay.style.display = 'none';
-                    }
-                    if (this.maintenanceInterval) {
-                        clearInterval(this.maintenanceInterval);
-                        this.maintenanceInterval = null;
-                    }
-                }
-            } else {
-                console.log('🔧 Нет данных о техработах');
-                const overlay = document.getElementById('maintenanceOverlay');
-                if (overlay) {
-                    overlay.style.display = 'none';
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка проверки техработ:', error);
-        }
-    }
-
-    // ===== СЛУШАТЕЛЬ ИЗМЕНЕНИЙ ТЕХРАБОТ =====
-    listenForMaintenanceChanges() {
-        const maintRef = firebase.database().ref('maintenance');
-        
-        maintRef.on('value', (snapshot) => {
-            console.log('🔄 Изменение статуса техработ:', snapshot.val());
-            
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                
-                if (data.active) {
-                    this.showMaintenanceScreen(data);
-                } else {
-                    const overlay = document.getElementById('maintenanceOverlay');
-                    if (overlay) {
-                        overlay.style.display = 'none';
-                    }
-                    if (this.maintenanceInterval) {
-                        clearInterval(this.maintenanceInterval);
-                        this.maintenanceInterval = null;
-                    }
-                }
-            } else {
-                const overlay = document.getElementById('maintenanceOverlay');
-                if (overlay) {
-                    overlay.style.display = 'none';
-                }
-            }
-        }, (error) => {
-            console.error('Ошибка слушателя:', error);
-        });
-    }
-
     // ===== ПОКАЗ ЭКРАНА ТЕХРАБОТ =====
     showMaintenanceScreen(data) {
         const overlay = document.getElementById('maintenanceOverlay');
@@ -416,6 +393,7 @@ class ClickerGame {
         console.log('🔧 Показываем экран техработ');
         overlay.style.display = 'flex';
         
+        // Если есть таймер
         if (data.endTime) {
             timerDiv.style.display = 'block';
             progressBar.style.width = '100%';
@@ -434,6 +412,7 @@ class ClickerGame {
                     clearInterval(this.maintenanceInterval);
                     this.maintenanceInterval = null;
                     
+                    // Автоматически выключаем в Firebase
                     firebase.database().ref('maintenance').update({
                         active: false
                     }).catch(err => console.error('Ошибка отключения:', err));
@@ -453,6 +432,7 @@ class ClickerGame {
                 
             }, 1000);
         } else {
+            // Если нет таймера - просто показываем экран
             timerDiv.style.display = 'none';
             progressBar.style.width = '0%';
         }
@@ -1159,7 +1139,10 @@ class ClickerGame {
         }
         
         // Отключаем слушатель Firebase
-        firebase.database().ref('maintenance').off();
+        const maintRef = firebase.database().ref('maintenance');
+        if (this.maintenanceListener) {
+            maintRef.off('value', this.maintenanceListener);
+        }
         
         localStorage.removeItem('currentUser');
         localStorage.removeItem('userId');
