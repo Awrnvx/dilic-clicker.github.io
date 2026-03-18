@@ -14,7 +14,7 @@ class ClickerGame {
         
         // ===== АДМИН-СВОЙСТВА =====
         this.maintenanceInterval = null;
-        this.CREATOR_ID = '-Oo0p0Wzv1Ue4LBuqZ6a'; // ← ТВОЙ НОВЫЙ ID!
+        this.CREATOR_ID = '-Oo0sy8fzK5OE4MH4KUf'; // ← ТВОЙ НОВЫЙ ID!
         
         // Данные скинов
         this.skinsData = {
@@ -425,71 +425,44 @@ class ClickerGame {
         }
     }
 
-    // ===== АДМИН-КОМАНДЫ (ТОЛЬКО ТЕХРАБОТЫ) =====
-    toggleAdminConsole() {
-        const adminConsole = document.getElementById('adminConsole');
-        if (!adminConsole) return;
-        
-        if (adminConsole.style.display === 'none' || !adminConsole.style.display) {
-            adminConsole.style.display = 'block';
+// ===== АДМИН-КОМАНДЫ (ТОЛЬКО maintenance) =====
+async executeAdminCommand(command) {
+    const userId = localStorage.getItem('userId');
+    
+    if (userId !== this.CREATOR_ID) {
+        this.showNotification('❌ Доступ запрещен', 'error');
+        return;
+    }
+    
+    // ✅ Работаем ТОЛЬКО с maintenance
+    const maintRef = firebase.database().ref('maintenance');
+    
+    switch(command) {
+        case 'tech_work':
+            await maintRef.set({
+                active: true,
+                startTime: Date.now(),
+                endTime: null
+            });
+            break;
             
-            const adminUserId = document.getElementById('adminUserId');
-            if (adminUserId) {
-                adminUserId.textContent = localStorage.getItem('userId') || 'неизвестно';
-            }
-        } else {
-            adminConsole.style.display = 'none';
-        }
+        case 'tech_work_time':
+            const seconds = document.getElementById('techWorkTimeInput')?.value;
+            if (!seconds || seconds < 1) return;
+            const endTime = Date.now() + (seconds * 1000);
+            await maintRef.set({
+                active: true,
+                startTime: Date.now(),
+                endTime: endTime,
+                duration: parseInt(seconds)
+            });
+            break;
+            
+        case 'tech_work_off':
+            await maintRef.set({ active: false });
+            break;
     }
-
-    async executeAdminCommand(command) {
-        const userId = localStorage.getItem('userId');
-        
-        if (userId !== this.CREATOR_ID) {
-            this.showNotification('❌ Доступ запрещен', 'error');
-            return;
-        }
-        
-        const maintRef = firebase.database().ref('maintenance');
-        
-        switch(command) {
-            case 'tech_work':
-                // ✅ БЕЗОПАСНО - только узел maintenance
-                await maintRef.set({
-                    active: true,
-                    startTime: Date.now(),
-                    endTime: null,
-                    duration: null
-                });
-                this.showNotification('🔧 Техработы включены (бесконечно)', 'success');
-                break;
-                
-            case 'tech_work_time':
-                const seconds = document.getElementById('techWorkTimeInput')?.value;
-                if (!seconds || seconds < 1) {
-                    this.showNotification('❌ Введите корректное время', 'error');
-                    return;
-                }
-                const endTime = Date.now() + (seconds * 1000);
-                // ✅ БЕЗОПАСНО - только узел maintenance
-                await maintRef.set({
-                    active: true,
-                    startTime: Date.now(),
-                    endTime: endTime,
-                    duration: parseInt(seconds)
-                });
-                this.showNotification(`🔧 Техработы включены на ${seconds} сек`, 'success');
-                break;
-                
-            case 'tech_work_off':
-                // ✅ БЕЗОПАСНО - только узел maintenance
-                await maintRef.set({
-                    active: false
-                });
-                this.showNotification('✅ Техработы отключены', 'success');
-                break;
-        }
-    }
+}
 
     // ===== ЗАГРУЗКА ЭЛЕМЕНТОВ =====
     loadElements() {
