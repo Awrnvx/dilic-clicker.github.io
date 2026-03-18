@@ -1,4 +1,4 @@
-// register.js - ПОЛНАЯ БЕЗОПАСНАЯ ВЕРСИЯ
+// register.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 
 // Очищаем localStorage при загрузке
 localStorage.removeItem('currentUser');
@@ -18,12 +18,11 @@ class UserManager {
                 return { success: false, message: 'Пользователь уже существует' };
             }
             
-            // ✅ ВАЖНО: создаем НОВЫЙ уникальный ID через push()
+            // Создаем нового пользователя с паролем
             const newUserRef = firebase.database().ref('users').push();
-            
             const userData = {
                 username: username,
-                password: password,
+                password: password,  // ← ПАРОЛЬ ЗДЕСЬ!
                 clicks: 0,
                 money: 1000,
                 dilicks: 500,
@@ -39,13 +38,11 @@ class UserManager {
                 completedAchievements: [],
                 activatedPromocodes: [],
                 promocodesHistory: [],
-                lastSave: Date.now(),
-                createdAt: Date.now()
+                lastSave: Date.now()
             };
             
             await newUserRef.set(userData);
-            console.log('✅ Новый пользователь создан с ID:', newUserRef.key);
-            
+            console.log('✅ Новый пользователь создан с паролем');
             return { success: true, message: 'Регистрация успешна' };
         } catch (error) {
             console.error('❌ Ошибка регистрации:', error);
@@ -55,31 +52,35 @@ class UserManager {
 
     async login(username, password) {
         try {
+            // Ищем пользователя по имени
             const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
             
             if (!snapshot.exists()) {
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
+            // Получаем данные пользователя
             let userData = null;
             let userId = null;
             
             snapshot.forEach(child => {
                 userData = child.val();
                 userId = child.key;
-                console.log('Найден пользователь:', userData.username, 'с ID:', userId);
+                console.log('Найден пользователь:', userData.username);
             });
             
+            // Проверяем пароль
             if (userData.password !== password) {
                 console.log('Пароль не совпадает');
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
+            // Сохраняем данные в localStorage
             this.currentUser = username;
             localStorage.setItem('currentUser', username);
             localStorage.setItem('userId', userId);
             
-            console.log('✅ Вход выполнен для пользователя:', username, 'ID:', userId);
+            console.log('✅ Вход выполнен');
             return { success: true, message: 'Вход выполнен' };
         } catch (error) {
             console.error('❌ Ошибка входа:', error);
@@ -103,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     
+    // Переключение между вкладками
     loginTab.addEventListener('click', () => {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
@@ -117,25 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.classList.remove('active');
     });
     
+    // Обработка регистрации
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const username = document.getElementById('regUsername').value.trim();
+        const username = document.getElementById('regUsername').value;
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         
-        if (!username || !password) {
-            alert('❌ Заполните все поля');
-            return;
-        }
-        
         if (password !== confirmPassword) {
             alert('❌ Пароли не совпадают');
-            return;
-        }
-        
-        if (password.length < 4) {
-            alert('❌ Пароль должен быть минимум 4 символа');
             return;
         }
         
@@ -144,25 +137,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.success) {
             alert('✅ Регистрация успешна! Теперь войдите.');
             loginTab.click();
-            
-            document.getElementById('regUsername').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regConfirmPassword').value = '';
         } else {
             alert('❌ ' + result.message);
         }
     });
     
+    // Обработка входа
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const username = document.getElementById('loginUsername').value.trim();
+        const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
-        
-        if (!username || !password) {
-            alert('❌ Заполните все поля');
-            return;
-        }
         
         const result = await userManager.login(username, password);
         
@@ -170,11 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'index.html';
         } else {
             alert('❌ ' + result.message);
-            document.getElementById('loginPassword').value = '';
         }
     });
     
-    if (localStorage.getItem('currentUser') && localStorage.getItem('userId')) {
+    // Если пользователь уже вошел - перенаправляем
+    if (localStorage.getItem('currentUser')) {
         window.location.href = 'index.html';
     }
 });
