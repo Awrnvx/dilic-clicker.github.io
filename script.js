@@ -1,5 +1,4 @@
-// script.js - ПОЛНАЯ БЕЗОПАСНАЯ ВЕРСИЯ
-// В этом файле НЕТ массовых операций с пользователями!
+// script.js - Полная версия игры (БЕЗ АДМИН-КОНСОЛИ)
 
 class ClickerGame {
     constructor() {
@@ -12,9 +11,8 @@ class ClickerGame {
         this.wheel = null;
         this.compensationShown = false;
         
-        // ===== АДМИН-СВОЙСТВА =====
+        // ТОЛЬКО для таймера техработ
         this.maintenanceInterval = null;
-        this.CREATOR_ID = ''; // ← ТВОЙ НОВЫЙ ID!
         
         // Данные скинов
         this.skinsData = {
@@ -205,7 +203,6 @@ class ClickerGame {
         }
         
         try {
-            // ✅ БЕЗОПАСНО - только конкретный пользователь
             const userRef = firebase.database().ref('users/' + userId);
             const snapshot = await userRef.once('value');
             
@@ -213,11 +210,13 @@ class ClickerGame {
                 this.userData = snapshot.val();
                 console.log('✅ Данные загружены для:', this.userData.username);
                 
-                // Проверяем компенсацию
                 await this.checkCompensation();
                 
-                // Проверяем техработы
+                // Проверяем статус техработ при загрузке
                 await this.checkMaintenanceStatus();
+                
+                // Слушаем изменения техработ в реальном времени
+                this.listenForMaintenanceChanges();
                 
             } else {
                 console.error('❌ Пользователь не найден');
@@ -243,9 +242,6 @@ class ClickerGame {
         }
         
         this.settings = new Settings(this);
-        
-        // Проверяем, создатель ли это
-        this.checkIfCreator();
         
         this.updateUI();
         this.updateInventory();
@@ -341,7 +337,7 @@ class ClickerGame {
         }, 3000);
     }
 
-    // ===== ПРОВЕРКА ТЕХРАБОТ =====
+    // ===== ПРОВЕРКА ТЕХРАБОТ ПРИ ЗАГРУЗКЕ =====
     async checkMaintenanceStatus() {
         try {
             const maintRef = firebase.database().ref('maintenance');
@@ -349,14 +345,26 @@ class ClickerGame {
             
             if (snapshot.exists()) {
                 const data = snapshot.val();
+                console.log('🔧 Статус техработ из Firebase:', data);
                 
                 if (data.active) {
-                    const userId = localStorage.getItem('userId');
-                    
-                    // Только если это НЕ создатель
-                    if (userId !== this.CREATOR_ID) {
-                        this.showMaintenanceScreen(data);
+                    this.showMaintenanceScreen(data);
+                } else {
+                    // Если техработы выключены - убираем экран
+                    const overlay = document.getElementById('maintenanceOverlay');
+                    if (overlay) {
+                        overlay.style.display = 'none';
                     }
+                    if (this.maintenanceInterval) {
+                        clearInterval(this.maintenanceInterval);
+                        this.maintenanceInterval = null;
+                    }
+                }
+            } else {
+                console.log('🔧 Нет данных о техработах');
+                const overlay = document.getElementById('maintenanceOverlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
                 }
             }
         } catch (error) {
@@ -364,7 +372,40 @@ class ClickerGame {
         }
     }
 
-    // ===== ЭКРАН ТЕХРАБОТ =====
+    // ===== СЛУШАТЕЛЬ ИЗМЕНЕНИЙ ТЕХРАБОТ =====
+    listenForMaintenanceChanges() {
+        const maintRef = firebase.database().ref('maintenance');
+        
+        maintRef.on('value', (snapshot) => {
+            console.log('🔄 Изменение статуса техработ:', snapshot.val());
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                if (data.active) {
+                    this.showMaintenanceScreen(data);
+                } else {
+                    const overlay = document.getElementById('maintenanceOverlay');
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                    }
+                    if (this.maintenanceInterval) {
+                        clearInterval(this.maintenanceInterval);
+                        this.maintenanceInterval = null;
+                    }
+                }
+            } else {
+                const overlay = document.getElementById('maintenanceOverlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                }
+            }
+        }, (error) => {
+            console.error('Ошибка слушателя:', error);
+        });
+    }
+
+    // ===== ПОКАЗ ЭКРАНА ТЕХРАБОТ =====
     showMaintenanceScreen(data) {
         const overlay = document.getElementById('maintenanceOverlay');
         const timerDiv = document.getElementById('maintenanceTimer');
@@ -372,6 +413,7 @@ class ClickerGame {
         
         if (!overlay) return;
         
+        console.log('🔧 Показываем экран техработ');
         overlay.style.display = 'flex';
         
         if (data.endTime) {
@@ -390,12 +432,11 @@ class ClickerGame {
                 
                 if (remaining <= 0) {
                     clearInterval(this.maintenanceInterval);
-                    overlay.style.display = 'none';
+                    this.maintenanceInterval = null;
                     
-                    // ✅ БЕЗОПАСНО - обновляем только узел maintenance
                     firebase.database().ref('maintenance').update({
                         active: false
-                    });
+                    }).catch(err => console.error('Ошибка отключения:', err));
                     
                     return;
                 }
@@ -411,58 +452,41 @@ class ClickerGame {
                 progressBar.style.width = progress + '%';
                 
             }, 1000);
+        } else {
+            timerDiv.style.display = 'none';
+            progressBar.style.width = '0%';
         }
     }
 
-    // ===== ПРОВЕРКА СОЗДАТЕЛЯ =====
-    checkIfCreator() {
-        const userId = localStorage.getItem('userId');
-        const adminBtn = document.getElementById('adminBtn');
-        
-        if (userId === this.CREATOR_ID && adminBtn) {
-            adminBtn.style.display = 'inline-block';
-            console.log('👑 Админ-кнопка активирована');
-        }
+    createDefaultData() {
+        return {
+            clicks: 0,
+            money: 1000,
+            dilicks: 500,
+            clickPower: 1,
+            autoClickerLevel: 0,
+            critChance: 5,
+            inventory: ['classic'],
+            currentSkin: 'classic',
+            seasonLevel: 1,
+            seasonExp: 0,
+            playtime: 0,
+            premiumPass: false,
+            completedAchievements: [],
+            activatedPromocodes: [],
+            promocodesHistory: [],
+            compensationReceived: false,
+            settings: {
+                displayName: '',
+                theme: 'dark',
+                notifications: true,
+                sound: true,
+                animations: true,
+                language: 'ru'
+            },
+            lastSave: Date.now()
+        };
     }
-
-// ===== АДМИН-КОМАНДЫ (ТОЛЬКО maintenance) =====
-async executeAdminCommand(command) {
-    const userId = localStorage.getItem('userId');
-    
-    if (userId !== this.CREATOR_ID) {
-        this.showNotification('❌ Доступ запрещен', 'error');
-        return;
-    }
-    
-    // ✅ Работаем ТОЛЬКО с maintenance
-    const maintRef = firebase.database().ref('maintenance');
-    
-    switch(command) {
-        case 'tech_work':
-            await maintRef.set({
-                active: true,
-                startTime: Date.now(),
-                endTime: null
-            });
-            break;
-            
-        case 'tech_work_time':
-            const seconds = document.getElementById('techWorkTimeInput')?.value;
-            if (!seconds || seconds < 1) return;
-            const endTime = Date.now() + (seconds * 1000);
-            await maintRef.set({
-                active: true,
-                startTime: Date.now(),
-                endTime: endTime,
-                duration: parseInt(seconds)
-            });
-            break;
-            
-        case 'tech_work_off':
-            await maintRef.set({ active: false });
-            break;
-    }
-}
 
     // ===== ЗАГРУЗКА ЭЛЕМЕНТОВ =====
     loadElements() {
@@ -513,75 +537,27 @@ async executeAdminCommand(command) {
         this.navToggleBtn = document.getElementById('navToggleBtn');
         this.navLinks = document.querySelector('.nav-links');
         
-        // Админ-элементы
-        this.adminBtn = document.getElementById('adminBtn');
-        this.adminConsole = document.getElementById('adminConsole');
-        this.adminCloseBtn = document.getElementById('adminCloseBtn');
-        
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => this.logout());
         }
-        
-        if (this.adminBtn) {
-            this.adminBtn.addEventListener('click', () => this.toggleAdminConsole());
-        }
-        
-        if (this.adminCloseBtn) {
-            this.adminCloseBtn.addEventListener('click', () => {
-                this.adminConsole.style.display = 'none';
-            });
-        }
-        
-        const execBtns = document.querySelectorAll('.admin-execute-btn');
-        execBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const command = btn.dataset.command;
-                this.executeAdminCommand(command);
-            });
-        });
-        
-        // Tab-навигация
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab' && this.adminConsole?.style.display === 'block') {
-                e.preventDefault();
-                
-                const focusable = this.adminConsole.querySelectorAll('button, input');
-                const currentIndex = Array.from(focusable).findIndex(el => el === document.activeElement);
-                
-                if (currentIndex === -1 || currentIndex === focusable.length - 1) {
-                    focusable[0]?.focus();
-                } else {
-                    focusable[currentIndex + 1]?.focus();
-                }
-            }
-            
-            if (e.key === 'Enter' && document.activeElement?.classList.contains('admin-execute-btn')) {
-                document.activeElement.click();
-            }
-        });
     }
 
     // ===== ОБРАБОТЧИКИ =====
     setupEventListeners() {
         this.navBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
+            btn.addEventListener('click', () => {
                 const tabId = btn.dataset.tab;
                 this.switchTab(tabId);
             });
         });
         
         if (this.clickButton) {
-            this.clickButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.handleClick(e);
-            });
+            this.clickButton.addEventListener('click', (e) => this.handleClick(e));
         }
         
         this.buyBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 const item = btn.dataset.item;
                 const price = parseInt(btn.dataset.price);
@@ -591,7 +567,6 @@ async executeAdminCommand(command) {
         
         this.upgradeBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 const upgradeItem = e.target.closest('.upgrade-item');
                 if (upgradeItem) {
@@ -602,8 +577,7 @@ async executeAdminCommand(command) {
         });
         
         this.leaderboardBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
+            btn.addEventListener('click', () => {
                 this.leaderboardBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.updateLeaderboard(btn.dataset.leaderboard);
@@ -611,17 +585,11 @@ async executeAdminCommand(command) {
         });
         
         if (this.buyPremiumBtn) {
-            this.buyPremiumBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.buyPremiumPass();
-            });
+            this.buyPremiumBtn.addEventListener('click', () => this.buyPremiumPass());
         }
         
         if (this.activatePromocodeBtn) {
-            this.activatePromocodeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.activatePromocode();
-            });
+            this.activatePromocodeBtn.addEventListener('click', () => this.activatePromocode());
         }
         if (this.promocodeInput) {
             this.promocodeInput.addEventListener('keypress', (e) => {
@@ -632,8 +600,7 @@ async executeAdminCommand(command) {
         }
         
         if (this.navToggleBtn) {
-            this.navToggleBtn.addEventListener('click', (e) => {
-                e.preventDefault();
+            this.navToggleBtn.addEventListener('click', () => {
                 this.navLinks.classList.toggle('hidden');
                 const icon = this.navToggleBtn.querySelector('.toggle-icon');
                 if (this.navLinks.classList.contains('hidden')) {
@@ -1051,7 +1018,6 @@ async executeAdminCommand(command) {
         this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
         
         try {
-            // ✅ БЕЗОПАСНО - только ЧИТАЕМ всех пользователей
             const snapshot = await firebase.database().ref('users').once('value');
             
             if (!snapshot.exists()) {
@@ -1170,7 +1136,6 @@ async executeAdminCommand(command) {
         const userId = localStorage.getItem('userId');
         if (userId) {
             try {
-                // ✅ БЕЗОПАСНО - сохраняем только свои данные
                 await firebase.database().ref('users/' + userId).update(this.userData);
             } catch (error) {
                 console.error('❌ Ошибка сохранения:', error);
@@ -1192,6 +1157,9 @@ async executeAdminCommand(command) {
         if (this.maintenanceInterval) {
             clearInterval(this.maintenanceInterval);
         }
+        
+        // Отключаем слушатель Firebase
+        firebase.database().ref('maintenance').off();
         
         localStorage.removeItem('currentUser');
         localStorage.removeItem('userId');

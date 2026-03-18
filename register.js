@@ -1,4 +1,4 @@
-// register.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// register.js - ПОЛНАЯ БЕЗОПАСНАЯ ВЕРСИЯ
 
 // Очищаем localStorage при загрузке
 localStorage.removeItem('currentUser');
@@ -40,7 +40,7 @@ class UserManager {
                 activatedPromocodes: [],
                 promocodesHistory: [],
                 lastSave: Date.now(),
-                createdAt: Date.now() // Добавляем дату создания
+                createdAt: Date.now()
             };
             
             await newUserRef.set(userData);
@@ -55,14 +55,12 @@ class UserManager {
 
     async login(username, password) {
         try {
-            // Ищем пользователя по имени
             const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
             
             if (!snapshot.exists()) {
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
-            // Получаем данные пользователя
             let userData = null;
             let userId = null;
             
@@ -72,13 +70,11 @@ class UserManager {
                 console.log('Найден пользователь:', userData.username, 'с ID:', userId);
             });
             
-            // Проверяем пароль
             if (userData.password !== password) {
                 console.log('Пароль не совпадает');
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
-            // Сохраняем данные в localStorage
             this.currentUser = username;
             localStorage.setItem('currentUser', username);
             localStorage.setItem('userId', userId);
@@ -107,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     
-    // Переключение между вкладками
     loginTab.addEventListener('click', () => {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
@@ -122,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.classList.remove('active');
     });
     
-    // Обработка регистрации
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -151,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('✅ Регистрация успешна! Теперь войдите.');
             loginTab.click();
             
-            // Очищаем поля
             document.getElementById('regUsername').value = '';
             document.getElementById('regPassword').value = '';
             document.getElementById('regConfirmPassword').value = '';
@@ -160,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Обработка входа
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -178,13 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'index.html';
         } else {
             alert('❌ ' + result.message);
-            
-            // Очищаем поля при ошибке
             document.getElementById('loginPassword').value = '';
         }
     });
     
-    // Если пользователь уже вошел - перенаправляем
     if (localStorage.getItem('currentUser') && localStorage.getItem('userId')) {
         window.location.href = 'index.html';
     }
