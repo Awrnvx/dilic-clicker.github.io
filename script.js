@@ -14,7 +14,7 @@ class ClickerGame {
         
         // ===== АДМИН-СВОЙСТВА =====
         this.maintenanceInterval = null;
-        this.CREATOR_ID = '-Oo0sy8fzK5OE4MH4KUf'; // ← ТВОЙ НОВЫЙ ID!
+        this.CREATOR_ID = ''; // ← ТВОЙ НОВЫЙ ID!
         
         // Данные скинов
         this.skinsData = {
