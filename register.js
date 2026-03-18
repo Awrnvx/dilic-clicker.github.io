@@ -1,4 +1,4 @@
-// register.js - ПОЛНАЯ БЕЗОПАСНАЯ ВЕРСИЯ
+// register.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 
 // Очищаем localStorage при загрузке
 localStorage.removeItem('currentUser');
@@ -18,8 +18,9 @@ class UserManager {
                 return { success: false, message: 'Пользователь уже существует' };
             }
             
-            // Создаем нового пользователя с паролем
+            // ✅ ВАЖНО: создаем НОВЫЙ уникальный ID через push()
             const newUserRef = firebase.database().ref('users').push();
+            
             const userData = {
                 username: username,
                 password: password,
@@ -38,11 +39,13 @@ class UserManager {
                 completedAchievements: [],
                 activatedPromocodes: [],
                 promocodesHistory: [],
-                lastSave: Date.now()
+                lastSave: Date.now(),
+                createdAt: Date.now() // Добавляем дату создания
             };
             
             await newUserRef.set(userData);
-            console.log('✅ Новый пользователь создан');
+            console.log('✅ Новый пользователь создан с ID:', newUserRef.key);
+            
             return { success: true, message: 'Регистрация успешна' };
         } catch (error) {
             console.error('❌ Ошибка регистрации:', error);
@@ -66,7 +69,7 @@ class UserManager {
             snapshot.forEach(child => {
                 userData = child.val();
                 userId = child.key;
-                console.log('Найден пользователь:', userData.username);
+                console.log('Найден пользователь:', userData.username, 'с ID:', userId);
             });
             
             // Проверяем пароль
@@ -80,7 +83,7 @@ class UserManager {
             localStorage.setItem('currentUser', username);
             localStorage.setItem('userId', userId);
             
-            console.log('✅ Вход выполнен');
+            console.log('✅ Вход выполнен для пользователя:', username, 'ID:', userId);
             return { success: true, message: 'Вход выполнен' };
         } catch (error) {
             console.error('❌ Ошибка входа:', error);
@@ -123,12 +126,22 @@ document.addEventListener('DOMContentLoaded', () => {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const username = document.getElementById('regUsername').value;
+        const username = document.getElementById('regUsername').value.trim();
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         
+        if (!username || !password) {
+            alert('❌ Заполните все поля');
+            return;
+        }
+        
         if (password !== confirmPassword) {
             alert('❌ Пароли не совпадают');
+            return;
+        }
+        
+        if (password.length < 4) {
+            alert('❌ Пароль должен быть минимум 4 символа');
             return;
         }
         
@@ -137,6 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.success) {
             alert('✅ Регистрация успешна! Теперь войдите.');
             loginTab.click();
+            
+            // Очищаем поля
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regConfirmPassword').value = '';
         } else {
             alert('❌ ' + result.message);
         }
@@ -146,8 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const username = document.getElementById('loginUsername').value;
+        const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
+        
+        if (!username || !password) {
+            alert('❌ Заполните все поля');
+            return;
+        }
         
         const result = await userManager.login(username, password);
         
@@ -155,11 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'index.html';
         } else {
             alert('❌ ' + result.message);
+            
+            // Очищаем поля при ошибке
+            document.getElementById('loginPassword').value = '';
         }
     });
     
     // Если пользователь уже вошел - перенаправляем
-    if (localStorage.getItem('currentUser')) {
+    if (localStorage.getItem('currentUser') && localStorage.getItem('userId')) {
         window.location.href = 'index.html';
     }
 });
