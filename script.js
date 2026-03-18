@@ -1,4 +1,5 @@
-// script.js - Полная версия игры с колесом фортуны и компенсацией
+// script.js - ПОЛНАЯ БЕЗОПАСНАЯ ВЕРСИЯ
+// В этом файле НЕТ массовых операций с пользователями!
 
 class ClickerGame {
     constructor() {
@@ -8,8 +9,12 @@ class ClickerGame {
         this.bubbleFrame = null;
         this.lastBubbleTime = 0;
         this.settings = null;
-        this.wheel = null; // Для колеса фортуны
-        this.compensationShown = false; // Флаг для показа компенсации
+        this.wheel = null;
+        this.compensationShown = false;
+        
+        // ===== АДМИН-СВОЙСТВА =====
+        this.maintenanceInterval = null;
+        this.CREATOR_ID = '-Oo0jHuMCSAn2L6ZaBJC'; // ← ТВОЙ НОВЫЙ ID!
         
         // Данные скинов
         this.skinsData = {
@@ -41,17 +46,16 @@ class ClickerGame {
                 description: 'Мощный скин дракона',
                 currency: 'dilicks'
             },
-            // 👇 НОВЫЙ СКИН ИЗ КОЛЕСА
             'wheel_dragon_skin': {
                 name: 'Колесный дракон',
-                price: 0, // Не продается, только из колеса
+                price: 0,
                 image: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755',
                 description: 'Особенный скин дракона (×250 множитель)',
                 currency: 'special'
             }
         };
         
-        // Достижения - ОБНОВЛЕНО ДОСТИЖЕНИЕ КОЛЛЕКЦИОНЕРА
+        // Достижения
         this.achievementsData = [
             {
                 id: 'firstClick',
@@ -99,7 +103,7 @@ class ClickerGame {
                 description: 'Соберите все 5 скинов',
                 icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png',
                 condition: (data) => data.inventory && data.inventory.length >= 5,
-                reward: { money: 35000, dilicks: 0 } // 👈 35000 диликов
+                reward: { money: 35000, dilicks: 0 }
             },
             {
                 id: 'critMaster',
@@ -127,7 +131,7 @@ class ClickerGame {
             }
         ];
         
-        // Прояямокоды
+        // Промокоды
         this.promocodesData = {
             'WELCOME': {
                 code: 'WELCOME',
@@ -185,7 +189,6 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
-
         };
         
         this.init();
@@ -202,15 +205,19 @@ class ClickerGame {
         }
         
         try {
+            // ✅ БЕЗОПАСНО - только конкретный пользователь
             const userRef = firebase.database().ref('users/' + userId);
             const snapshot = await userRef.once('value');
             
             if (snapshot.exists()) {
                 this.userData = snapshot.val();
-                console.log('✅ Данные загружены из Firebase');
+                console.log('✅ Данные загружены для:', this.userData.username);
                 
-                // 👇 ПРОВЕРЯЕМ НУЖНА ЛИ КОМПЕНСАЦИЯ
+                // Проверяем компенсацию
                 await this.checkCompensation();
+                
+                // Проверяем техработы
+                await this.checkMaintenanceStatus();
                 
             } else {
                 console.error('❌ Пользователь не найден');
@@ -235,8 +242,10 @@ class ClickerGame {
             this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
         }
         
-        // Инициализируем настройки
         this.settings = new Settings(this);
+        
+        // Проверяем, создатель ли это
+        this.checkIfCreator();
         
         this.updateUI();
         this.updateInventory();
@@ -247,25 +256,18 @@ class ClickerGame {
         this.updateLeaderboard('clicks');
     }
 
-    // ===== ПРОВЕРКА КОМПЕНСАЦИИ ДЛЯ СТАРЫХ ИГРОКОВ =====
+    // ===== ПРОВЕРКА КОМПЕНСАЦИИ =====
     async checkCompensation() {
-        // Проверяем, получал ли игрок компенсацию раньше
         if (this.userData.compensationReceived) {
             console.log('✅ Компенсация уже была получена');
             return;
         }
         
-        // Проверяем, есть ли у игрока достижение "Коллекционер" (полученное при 4 скинах)
         const hasOldCollector = this.userData.completedAchievements && 
                                 this.userData.completedAchievements.includes('skinCollector');
         
-        // Проверяем, сколько сейчас скинов
         const currentSkinCount = this.userData.inventory?.length || 0;
         
-        // Условие для компенсации:
-        // 1. Игрок уже получал достижение "Коллекционер" (когда было 4 скина)
-        // 2. ИЛИ у игрока 4 скина (почти коллекционер)
-        // 3. И компенсация еще не выдавалась
         if ((hasOldCollector || currentSkinCount >= 4) && !this.userData.compensationReceived) {
             console.log('🎁 Игроку положена компенсация!');
             this.showCompensationDialog();
@@ -277,7 +279,6 @@ class ClickerGame {
         if (this.compensationShown) return;
         this.compensationShown = true;
         
-        // Создаем модальное окно для компенсации
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'compensationModal';
@@ -306,7 +307,6 @@ class ClickerGame {
         
         document.body.appendChild(modal);
         
-        // Обработчики
         document.getElementById('claimCompensation').addEventListener('click', () => {
             this.claimCompensation();
             modal.remove();
@@ -319,21 +319,11 @@ class ClickerGame {
 
     // ===== ПОЛУЧЕНИЕ КОМПЕНСАЦИИ =====
     async claimCompensation() {
-        // Добавляем 4500 диликов
         this.userData.dilicks += 4500;
-        
-        // Отмечаем, что компенсация получена
         this.userData.compensationReceived = true;
-        
-        // Сохраняем в Firebase
         await this.saveGame();
-        
-        // Обновляем интерфейс
         this.updateUI();
-        
-        // Показываем уведомление
         this.showNotification('✅ +4500 диликов получено!', 'success');
-        
         console.log('✅ Компенсация выдана:', this.userData.dilicks);
     }
 
@@ -345,41 +335,160 @@ class ClickerGame {
         document.body.appendChild(toast);
         
         setTimeout(() => toast.classList.add('show'), 10);
-        
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
-    createDefaultData() {
-        return {
-            clicks: 0,
-            money: 1000,
-            dilicks: 500,
-            clickPower: 1,
-            autoClickerLevel: 0,
-            critChance: 5,
-            inventory: ['classic'],
-            currentSkin: 'classic',
-            seasonLevel: 1,
-            seasonExp: 0,
-            playtime: 0,
-            premiumPass: false,
-            completedAchievements: [],
-            activatedPromocodes: [],
-            promocodesHistory: [],
-            compensationReceived: false, // 👈 Флаг для компенсации
-            settings: {
-                displayName: '',
-                theme: 'dark',
-                notifications: true,
-                sound: true,
-                animations: true,
-                language: 'ru'
-            },
-            lastSave: Date.now()
-        };
+    // ===== ПРОВЕРКА ТЕХРАБОТ =====
+    async checkMaintenanceStatus() {
+        try {
+            const maintRef = firebase.database().ref('maintenance');
+            const snapshot = await maintRef.once('value');
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                if (data.active) {
+                    const userId = localStorage.getItem('userId');
+                    
+                    // Только если это НЕ создатель
+                    if (userId !== this.CREATOR_ID) {
+                        this.showMaintenanceScreen(data);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка проверки техработ:', error);
+        }
+    }
+
+    // ===== ЭКРАН ТЕХРАБОТ =====
+    showMaintenanceScreen(data) {
+        const overlay = document.getElementById('maintenanceOverlay');
+        const timerDiv = document.getElementById('maintenanceTimer');
+        const progressBar = document.getElementById('maintenanceProgressBar');
+        
+        if (!overlay) return;
+        
+        overlay.style.display = 'flex';
+        
+        if (data.endTime) {
+            timerDiv.style.display = 'block';
+            progressBar.style.width = '100%';
+            
+            const endTime = data.endTime;
+            
+            if (this.maintenanceInterval) {
+                clearInterval(this.maintenanceInterval);
+            }
+            
+            this.maintenanceInterval = setInterval(() => {
+                const now = Date.now();
+                const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+                
+                if (remaining <= 0) {
+                    clearInterval(this.maintenanceInterval);
+                    overlay.style.display = 'none';
+                    
+                    // ✅ БЕЗОПАСНО - обновляем только узел maintenance
+                    firebase.database().ref('maintenance').update({
+                        active: false
+                    });
+                    
+                    return;
+                }
+                
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = remaining % 60;
+                
+                timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                const total = data.duration || 3600;
+                const progress = ((total - remaining) / total) * 100;
+                progressBar.style.width = progress + '%';
+                
+            }, 1000);
+        }
+    }
+
+    // ===== ПРОВЕРКА СОЗДАТЕЛЯ =====
+    checkIfCreator() {
+        const userId = localStorage.getItem('userId');
+        const adminBtn = document.getElementById('adminBtn');
+        
+        if (userId === this.CREATOR_ID && adminBtn) {
+            adminBtn.style.display = 'inline-block';
+            console.log('👑 Админ-кнопка активирована');
+        }
+    }
+
+    // ===== АДМИН-КОМАНДЫ (ТОЛЬКО ТЕХРАБОТЫ) =====
+    toggleAdminConsole() {
+        const adminConsole = document.getElementById('adminConsole');
+        if (!adminConsole) return;
+        
+        if (adminConsole.style.display === 'none' || !adminConsole.style.display) {
+            adminConsole.style.display = 'block';
+            
+            const adminUserId = document.getElementById('adminUserId');
+            if (adminUserId) {
+                adminUserId.textContent = localStorage.getItem('userId') || 'неизвестно';
+            }
+        } else {
+            adminConsole.style.display = 'none';
+        }
+    }
+
+    async executeAdminCommand(command) {
+        const userId = localStorage.getItem('userId');
+        
+        if (userId !== this.CREATOR_ID) {
+            this.showNotification('❌ Доступ запрещен', 'error');
+            return;
+        }
+        
+        const maintRef = firebase.database().ref('maintenance');
+        
+        switch(command) {
+            case 'tech_work':
+                // ✅ БЕЗОПАСНО - только узел maintenance
+                await maintRef.set({
+                    active: true,
+                    startTime: Date.now(),
+                    endTime: null,
+                    duration: null
+                });
+                this.showNotification('🔧 Техработы включены (бесконечно)', 'success');
+                break;
+                
+            case 'tech_work_time':
+                const seconds = document.getElementById('techWorkTimeInput')?.value;
+                if (!seconds || seconds < 1) {
+                    this.showNotification('❌ Введите корректное время', 'error');
+                    return;
+                }
+                const endTime = Date.now() + (seconds * 1000);
+                // ✅ БЕЗОПАСНО - только узел maintenance
+                await maintRef.set({
+                    active: true,
+                    startTime: Date.now(),
+                    endTime: endTime,
+                    duration: parseInt(seconds)
+                });
+                this.showNotification(`🔧 Техработы включены на ${seconds} сек`, 'success');
+                break;
+                
+            case 'tech_work_off':
+                // ✅ БЕЗОПАСНО - только узел maintenance
+                await maintRef.set({
+                    active: false
+                });
+                this.showNotification('✅ Техработы отключены', 'success');
+                break;
+        }
     }
 
     // ===== ЗАГРУЗКА ЭЛЕМЕНТОВ =====
@@ -431,27 +540,75 @@ class ClickerGame {
         this.navToggleBtn = document.getElementById('navToggleBtn');
         this.navLinks = document.querySelector('.nav-links');
         
+        // Админ-элементы
+        this.adminBtn = document.getElementById('adminBtn');
+        this.adminConsole = document.getElementById('adminConsole');
+        this.adminCloseBtn = document.getElementById('adminCloseBtn');
+        
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => this.logout());
         }
+        
+        if (this.adminBtn) {
+            this.adminBtn.addEventListener('click', () => this.toggleAdminConsole());
+        }
+        
+        if (this.adminCloseBtn) {
+            this.adminCloseBtn.addEventListener('click', () => {
+                this.adminConsole.style.display = 'none';
+            });
+        }
+        
+        const execBtns = document.querySelectorAll('.admin-execute-btn');
+        execBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const command = btn.dataset.command;
+                this.executeAdminCommand(command);
+            });
+        });
+        
+        // Tab-навигация
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && this.adminConsole?.style.display === 'block') {
+                e.preventDefault();
+                
+                const focusable = this.adminConsole.querySelectorAll('button, input');
+                const currentIndex = Array.from(focusable).findIndex(el => el === document.activeElement);
+                
+                if (currentIndex === -1 || currentIndex === focusable.length - 1) {
+                    focusable[0]?.focus();
+                } else {
+                    focusable[currentIndex + 1]?.focus();
+                }
+            }
+            
+            if (e.key === 'Enter' && document.activeElement?.classList.contains('admin-execute-btn')) {
+                document.activeElement.click();
+            }
+        });
     }
 
     // ===== ОБРАБОТЧИКИ =====
     setupEventListeners() {
         this.navBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 const tabId = btn.dataset.tab;
                 this.switchTab(tabId);
             });
         });
         
         if (this.clickButton) {
-            this.clickButton.addEventListener('click', (e) => this.handleClick(e));
+            this.clickButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleClick(e);
+            });
         }
         
         this.buyBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 const item = btn.dataset.item;
                 const price = parseInt(btn.dataset.price);
@@ -461,6 +618,7 @@ class ClickerGame {
         
         this.upgradeBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 const upgradeItem = e.target.closest('.upgrade-item');
                 if (upgradeItem) {
@@ -471,7 +629,8 @@ class ClickerGame {
         });
         
         this.leaderboardBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.leaderboardBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.updateLeaderboard(btn.dataset.leaderboard);
@@ -479,11 +638,17 @@ class ClickerGame {
         });
         
         if (this.buyPremiumBtn) {
-            this.buyPremiumBtn.addEventListener('click', () => this.buyPremiumPass());
+            this.buyPremiumBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.buyPremiumPass();
+            });
         }
         
         if (this.activatePromocodeBtn) {
-            this.activatePromocodeBtn.addEventListener('click', () => this.activatePromocode());
+            this.activatePromocodeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.activatePromocode();
+            });
         }
         if (this.promocodeInput) {
             this.promocodeInput.addEventListener('keypress', (e) => {
@@ -494,7 +659,8 @@ class ClickerGame {
         }
         
         if (this.navToggleBtn) {
-            this.navToggleBtn.addEventListener('click', () => {
+            this.navToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.navLinks.classList.toggle('hidden');
                 const icon = this.navToggleBtn.querySelector('.toggle-icon');
                 if (this.navLinks.classList.contains('hidden')) {
@@ -537,9 +703,7 @@ class ClickerGame {
             const type = activeTab ? activeTab.dataset.leaderboard : 'clicks';
             this.updateLeaderboard(type);
         }
-        // 👇 Обработка для колеса
         if (tabId === 'wheel') {
-            // Создаем колесо при первом открытии
             if (!this.wheel) {
                 this.wheel = new WheelOfFortune(this);
             }
@@ -550,7 +714,6 @@ class ClickerGame {
     handleClick(e) {
         let clickPower = this.userData.clickPower;
         
-        // Проверяем, есть ли особенный скин с множителем 250
         if (this.userData.currentSkin === 'wheel_dragon_skin') {
             clickPower *= 250;
         }
@@ -595,7 +758,6 @@ class ClickerGame {
 
     // ===== ПОКУПКА СКИНА =====
     async buyItem(item, price) {
-        // Особенный скин нельзя купить
         if (item === 'wheel_dragon_skin') {
             alert('❌ Этот скин можно получить только в колесе фортуны!');
             return;
@@ -837,7 +999,6 @@ class ClickerGame {
                 for (let i = 0; i < this.userData.autoClickerLevel; i++) {
                     let clickPower = this.userData.clickPower;
                     
-                    // Проверяем, есть ли особенный скин с множителем 250
                     if (this.userData.currentSkin === 'wheel_dragon_skin') {
                         clickPower *= 250;
                     }
@@ -917,6 +1078,7 @@ class ClickerGame {
         this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
         
         try {
+            // ✅ БЕЗОПАСНО - только ЧИТАЕМ всех пользователей
             const snapshot = await firebase.database().ref('users').once('value');
             
             if (!snapshot.exists()) {
@@ -1025,7 +1187,6 @@ class ClickerGame {
             this.updateProfile();
         }
         
-        // Обновляем баланс в колесе, если оно открыто
         if (this.wheel && this.wheel.balanceSpan) {
             this.wheel.balanceSpan.textContent = this.userData.dilicks.toLocaleString();
         }
@@ -1036,6 +1197,7 @@ class ClickerGame {
         const userId = localStorage.getItem('userId');
         if (userId) {
             try {
+                // ✅ БЕЗОПАСНО - сохраняем только свои данные
                 await firebase.database().ref('users/' + userId).update(this.userData);
             } catch (error) {
                 console.error('❌ Ошибка сохранения:', error);
@@ -1053,6 +1215,9 @@ class ClickerGame {
         }
         if (this.playtimeInterval) {
             clearInterval(this.playtimeInterval);
+        }
+        if (this.maintenanceInterval) {
+            clearInterval(this.maintenanceInterval);
         }
         
         localStorage.removeItem('currentUser');
@@ -1101,7 +1266,7 @@ class ClickerGame {
         this.bubbleFrame = requestAnimationFrame(createBubbleOptimized);
     }
 
-    // ===== ДОСТИЖЕНИЯ (С ИСПРАВЛЕННЫМ ПРОГРЕССОМ) =====
+    // ===== ДОСТИЖЕНИЯ =====
     checkAchievements() {
         if (!this.userData.completedAchievements) {
             this.userData.completedAchievements = [];
@@ -1119,9 +1284,7 @@ class ClickerGame {
                 this.userData.dilicks += achievement.reward.dilicks;
                 newAchievementUnlocked = true;
                 
-                // Специальная иконка для достижения "Коллекционер" при получении
                 if (achievement.id === 'skinCollector') {
-                    // Показываем уведомление с иконкой нового скина
                     this.showAchievementNotification({
                         ...achievement,
                         icon: this.skinsData['wheel_dragon_skin'].image
@@ -1195,9 +1358,7 @@ class ClickerGame {
         });
     }
 
-    // ===== РАСЧЕТ ПРОГРЕССА ДОСТИЖЕНИЯ (С ФИКСАЦИЕЙ ВЫПОЛНЕННЫХ) =====
     calculateAchievementProgress(achievement) {
-        // Если достижение уже выполнено - возвращаем 100%
         if (this.userData.completedAchievements?.includes(achievement.id)) {
             return 100;
         }
@@ -1232,7 +1393,6 @@ class ClickerGame {
         const notification = document.createElement('div');
         notification.className = 'achievement-notification';
         
-        // Заменяем эмодзи на иконки валют
         let rewardText = '';
         if (achievement.reward.money > 0) {
             rewardText += `+${achievement.reward.money} <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" style="width: 20px; height: 20px; border-radius: 50%; vertical-align: middle;"> `;
@@ -1257,7 +1417,6 @@ class ClickerGame {
         document.body.appendChild(notification);
         
         setTimeout(() => notification.classList.add('show'), 100);
-        
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
@@ -1273,20 +1432,17 @@ class ClickerGame {
         if (this.skinProgressFill) {
             const progress = (ownedSkins / totalSkins) * 100;
             this.skinProgressFill.style.width = progress + '%';
-            // Добавляем золотое свечение и делаем линию желтой
             this.skinProgressFill.style.background = 'linear-gradient(90deg, #ffd700, #ffaa00, #ffd700)';
             this.skinProgressFill.style.boxShadow = '0 0 15px gold, 0 0 30px rgba(255, 215, 0, 0.3)';
         }
         
         if (this.ownedSkins) {
             this.ownedSkins.textContent = ownedSkins;
-            // Делаем цифры желтыми
             this.ownedSkins.style.color = 'gold';
             this.ownedSkins.style.textShadow = '0 0 10px gold';
         }
         if (this.totalSkins) {
             this.totalSkins.textContent = totalSkins;
-            // Делаем цифры желтыми
             this.totalSkins.style.color = 'gold';
             this.totalSkins.style.textShadow = '0 0 10px gold';
         }
@@ -1530,25 +1686,21 @@ class Settings {
     }
 
     setupEventListeners() {
-        // Сохранение никнейма
         const saveDisplayName = document.getElementById('saveDisplayName');
         if (saveDisplayName) {
             saveDisplayName.addEventListener('click', () => this.saveDisplayName());
         }
 
-        // Смена пароля
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         if (changePasswordBtn) {
             changePasswordBtn.addEventListener('click', () => this.changePassword());
         }
 
-        // Тема
         const themeSelect = document.getElementById('themeSelect');
         if (themeSelect) {
             themeSelect.addEventListener('change', (e) => this.saveTheme(e.target.value));
         }
 
-        // Уведомления
         const notificationsEnabled = document.getElementById('notificationsEnabled');
         if (notificationsEnabled) {
             notificationsEnabled.addEventListener('change', (e) => {
@@ -1558,7 +1710,6 @@ class Settings {
             });
         }
 
-        // Звук
         const soundEnabled = document.getElementById('soundEnabled');
         if (soundEnabled) {
             soundEnabled.addEventListener('change', (e) => {
@@ -1568,7 +1719,6 @@ class Settings {
             });
         }
 
-        // Анимации
         const animationsEnabled = document.getElementById('animationsEnabled');
         if (animationsEnabled) {
             animationsEnabled.addEventListener('change', (e) => {
@@ -1578,37 +1728,31 @@ class Settings {
             });
         }
 
-        // Язык
         const languageSelect = document.getElementById('languageSelect');
         if (languageSelect) {
             languageSelect.addEventListener('change', (e) => this.saveLanguage(e.target.value));
         }
 
-        // Экспорт данных
         const exportDataBtn = document.getElementById('exportDataBtn');
         if (exportDataBtn) {
             exportDataBtn.addEventListener('click', () => this.exportData());
         }
 
-        // Импорт данных
         const importDataBtn = document.getElementById('importDataBtn');
         if (importDataBtn) {
             importDataBtn.addEventListener('click', () => this.importData());
         }
 
-        // Сброс прогресса
         const resetProgressBtn = document.getElementById('resetProgressBtn');
         if (resetProgressBtn) {
             resetProgressBtn.addEventListener('click', () => this.confirmResetProgress());
         }
 
-        // Удаление аккаунта
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
         if (deleteAccountBtn) {
             deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
         }
 
-        // Проверка обновлений
         const checkUpdatesBtn = document.getElementById('checkUpdatesBtn');
         if (checkUpdatesBtn) {
             checkUpdatesBtn.addEventListener('click', () => this.checkUpdates());
@@ -1669,7 +1813,6 @@ class Settings {
         this.game.userData.settings.displayName = newName;
         await this.game.saveGame();
         
-        // Обновляем отображение в профиле и шапке
         const profileUsername = document.getElementById('profileUsername');
         if (profileUsername) {
             profileUsername.textContent = newName;
@@ -1730,7 +1873,6 @@ class Settings {
         
         this.showToast(`✅ Тема изменена на ${themeNames[theme] || theme}`, 'success');
         
-        // Применяем тему
         if (theme === 'light') {
             document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
         } else if (theme === 'dark') {
@@ -1758,7 +1900,6 @@ class Settings {
         this.showToast(`✅ Язык изменен на ${langNames[lang] || lang}`, 'success');
     }
 
-    // ===== ЭКСПОРТ ДАННЫХ =====
     exportData() {
         try {
             const exportData = {
@@ -1804,7 +1945,6 @@ class Settings {
         }
     }
 
-    // ===== ИМПОРТ ДАННЫХ =====
     importData() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -1827,13 +1967,11 @@ class Settings {
                     try {
                         const importedData = JSON.parse(event.target.result);
                         
-                        // Валидация
                         if (!this.validateImportedData(importedData)) {
                             this.showToast('❌ Неверный формат файла', 'error');
                             return;
                         }
                         
-                        // Сохраняем логин и пароль
                         importedData.username = this.game.userData.username;
                         importedData.password = this.game.userData.password;
                         
@@ -1978,7 +2116,6 @@ class Settings {
         document.body.appendChild(toast);
         
         setTimeout(() => toast.classList.add('show'), 10);
-        
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
@@ -2019,7 +2156,7 @@ class Settings {
     }
 }
 
-// ===== КОЛЕСО ФОРТУНЫ (ПОЛНАЯ ВЕРСИЯ С CSS КЛАССАМИ) =====
+// ===== КОЛЕСО ФОРТУНЫ =====
 class WheelOfFortune {
     constructor(game) {
         this.game = game;
@@ -2058,7 +2195,6 @@ class WheelOfFortune {
     render() {
         const html = `
             <div class="wheel-card">
-                <!-- ЗАГОЛОВОК -->
                 <div class="wheel-header">
                     <h2>✦ КОЛЕСО ФОРТУНЫ ✦</h2>
                     <p class="wheel-subtitle">Испытай удачу!</p>
@@ -2068,14 +2204,12 @@ class WheelOfFortune {
                     </div>
                 </div>
                 
-                <!-- КОЛЕСО -->
                 <div class="wheel-wrapper">
                     <canvas id="wheelCanvas" width="450" height="450" class="wheel-canvas"></canvas>
                     <div class="wheel-pointer"></div>
                     <div class="wheel-pointer-center"></div>
                 </div>
                 
-                <!-- КНОПКА И БАЛАНС -->
                 <div class="wheel-controls">
                     <button class="wheel-spin-btn" id="wheelSpinBtn">
                         <span>🎡</span> КРУТИТЬ <span>🎡</span>
@@ -2087,68 +2221,45 @@ class WheelOfFortune {
                     </div>
                 </div>
                 
-                <!-- СПИСОК ПРИЗОВ (КОМПАКТНЫЙ, 2 КОЛОНКИ) -->
                 <div class="wheel-prizes">
-                    
-                    <!-- 50% - 2500 монет -->
                     <div class="wheel-prize-item">
-                        <span class="wheel-prize-dot" style="background: #2e7d32; box-shadow: 0 0 10px #2e7d32;"></span>
+                        <span class="wheel-prize-dot" style="background: #2e7d32;"></span>
                         <span class="wheel-prize-text">
                             <strong class="wheel-prize-percent">50%</strong>
-                            <span class="wheel-prize-value">
-                                2.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon">
-                            </span>
+                            <span class="wheel-prize-value">2.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon"></span>
                         </span>
                     </div>
-                    
-                    <!-- 35% - 5500 монет -->
                     <div class="wheel-prize-item">
-                        <span class="wheel-prize-dot" style="background: #f9a825; box-shadow: 0 0 10px #f9a825;"></span>
+                        <span class="wheel-prize-dot" style="background: #f9a825;"></span>
                         <span class="wheel-prize-text">
                             <strong class="wheel-prize-percent">35%</strong>
-                            <span class="wheel-prize-value">
-                                5.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon">
-                            </span>
+                            <span class="wheel-prize-value">5.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon"></span>
                         </span>
                     </div>
-                    
-                    <!-- 25% - 8500 монет -->
                     <div class="wheel-prize-item">
-                        <span class="wheel-prize-dot" style="background: #ef6c00; box-shadow: 0 0 10px #ef6c00;"></span>
+                        <span class="wheel-prize-dot" style="background: #ef6c00;"></span>
                         <span class="wheel-prize-text">
                             <strong class="wheel-prize-percent">25%</strong>
-                            <span class="wheel-prize-value">
-                                8.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon">
-                            </span>
+                            <span class="wheel-prize-value">8.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon"></span>
                         </span>
                     </div>
-                    
-                    <!-- 15% - 11500 монет -->
                     <div class="wheel-prize-item">
-                        <span class="wheel-prize-dot" style="background: #d32f2f; box-shadow: 0 0 10px #d32f2f;"></span>
+                        <span class="wheel-prize-dot" style="background: #d32f2f;"></span>
                         <span class="wheel-prize-text">
                             <strong class="wheel-prize-percent">15%</strong>
-                            <span class="wheel-prize-value">
-                                11.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon">
-                            </span>
+                            <span class="wheel-prize-value">11.5k <img src="${this.MONEY_ICON}" class="wheel-prize-icon"></span>
                         </span>
                     </div>
-                    
-                    <!-- 5% - 5000 диликов -->
                     <div class="wheel-prize-item">
-                        <span class="wheel-prize-dot" style="background: #7b1fa2; box-shadow: 0 0 10px #7b1fa2;"></span>
+                        <span class="wheel-prize-dot" style="background: #7b1fa2;"></span>
                         <span class="wheel-prize-text">
                             <strong class="wheel-prize-percent">5%</strong>
-                            <span class="wheel-prize-value">
-                                5k <img src="${this.DILICKS_ICON}" class="wheel-prize-icon">
-                            </span>
+                            <span class="wheel-prize-value">5k <img src="${this.DILICKS_ICON}" class="wheel-prize-icon"></span>
                         </span>
                     </div>
-                    
-                    <!-- 2.5% - СКИН -->
                     <div class="wheel-prize-item skin-prize">
                         <div class="wheel-prize-skin-content">
-                            <span class="wheel-prize-dot" style="background: #c2185b; box-shadow: 0 0 10px #c2185b;"></span>
+                            <span class="wheel-prize-dot" style="background: #c2185b;"></span>
                             <span class="wheel-prize-text">
                                 <strong class="wheel-prize-percent">2.5%</strong>
                                 <span class="wheel-prize-value">СКИН ✨</span>
@@ -2158,14 +2269,12 @@ class WheelOfFortune {
                     </div>
                 </div>
                 
-                <!-- РЕЗУЛЬТАТ -->
                 <div class="wheel-result" id="wheelResult">
                     <div class="wheel-result-label">ТВОЙ ВЫИГРЫШ</div>
                     <div class="wheel-result-value" id="wheelResultDisplay">НАЖМИ КРУТИТЬ</div>
                 </div>
             </div>
             
-            <!-- МОДАЛЬНОЕ ОКНО ДЛЯ СКИНА -->
             <div class="wheel-skin-modal" id="skinModal">
                 <div class="wheel-modal-content">
                     <span class="wheel-modal-close" id="closeModal">✕</span>
@@ -2256,7 +2365,6 @@ class WheelOfFortune {
             startAngle = endAngle;
         }
         
-        // Центр
         this.ctx.beginPath();
         this.ctx.arc(cx, cy, r * 0.15, 0, 2 * Math.PI);
         this.ctx.fillStyle = 'rgba(255,255,255,0.1)';
@@ -2272,19 +2380,16 @@ class WheelOfFortune {
     spin() {
         if (this.isSpinning) return;
         
-        // Проверяем баланс
         if (this.game.userData.dilicks < this.SPIN_COST) {
             this.resultDisplay.innerHTML = '❌ Недостаточно диликов!';
             return;
         }
         
-        // Списываем дилики
         this.game.userData.dilicks -= this.SPIN_COST;
         this.balanceSpan.textContent = this.game.userData.dilicks.toLocaleString();
         this.game.updateUI();
         this.game.saveGame();
         
-        // Запускаем вращение
         this.spinVelocity = 0.45 + Math.random() * 0.3;
         this.spinDeceleration = 0.982 + (Math.random() * 0.01);
         this.spinActive = true;
@@ -2309,7 +2414,6 @@ class WheelOfFortune {
             this.isSpinning = false;
             this.spinBtn.disabled = false;
             
-            // Определяем результат
             const normalized = ((this.rotation % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
             let angle = (normalized + Math.PI/2) % (2*Math.PI);
             
@@ -2325,7 +2429,6 @@ class WheelOfFortune {
                 cumulative += slice;
             }
             
-            // Выдаем приз
             this.givePrize(selectedPrize);
             return;
         }
@@ -2337,21 +2440,18 @@ class WheelOfFortune {
         let resultHTML = '';
         
         if (prize.type === 'skin') {
-            // Проверяем, есть ли уже скин
             if (!this.game.userData.inventory.includes(this.SKIN_ID)) {
                 this.game.userData.inventory.push(this.SKIN_ID);
                 resultHTML = '✨ ОСОБЕННЫЙ СКИН ✨';
                 this.resultDisplay.style.color = '#ffb7c5';
                 this.resultDisplay.style.textShadow = '0 0 30px #ff69b4';
                 
-                // Уведомление
                 this.game.showAchievementNotification({
                     name: 'ОСОБЕННЫЙ СКИН',
                     icon: this.game.skinsData[this.SKIN_ID].image,
                     reward: { money: 0, dilicks: 0 }
                 });
             } else {
-                // Если скин уже есть, даем 10000 диликов
                 this.game.userData.dilicks += 10000;
                 resultHTML = `
                     <span>🎉 +10000</span>
@@ -2377,14 +2477,12 @@ class WheelOfFortune {
         
         this.resultDisplay.innerHTML = resultHTML;
         
-        // Обновляем интерфейс
         this.balanceSpan.textContent = this.game.userData.dilicks.toLocaleString();
         this.game.updateUI();
         this.game.updateInventory();
         this.game.saveGame();
         this.game.checkAchievements();
         
-        // Вибрация на телефоне
         if (navigator.vibrate) navigator.vibrate(100);
     }
 }
@@ -2394,35 +2492,25 @@ document.addEventListener('DOMContentLoaded', () => {
     window.clickerGame = new ClickerGame();
 });
 
-// ===== ОБРАБОТЧИК ДЛЯ КАРТОЧЕК НА ОСТРОВЕ =====
 document.addEventListener('DOMContentLoaded', function() {
     const featureCards = document.querySelectorAll('.feature-card');
-    
     featureCards.forEach(card => {
         card.addEventListener('click', function() {
             const tabId = this.dataset.tab;
             if (tabId) {
                 const navBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
-                if (navBtn) {
-                    navBtn.click();
-                }
+                if (navBtn) navBtn.click();
             }
         });
     });
 });
 
-// ===== ГОРЯЧИЕ КЛАВИШИ SHIFT+ENTER =====
 document.addEventListener('keydown', (e) => {
-    // SHIFT + ENTER для открытия колеса
     if (e.shiftKey && e.key === 'Enter') {
         e.preventDefault();
-        
-        // Находим кнопку колеса в навигации
         const wheelBtn = document.querySelector('.nav-btn[data-tab="wheel"]');
         if (wheelBtn) {
             wheelBtn.click();
-            
-            // Эффект нажатия
             wheelBtn.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 wheelBtn.style.transform = '';

@@ -1,4 +1,4 @@
-// register.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// register.js - ПОЛНАЯ БЕЗОПАСНАЯ ВЕРСИЯ
 
 // Очищаем localStorage при загрузке
 localStorage.removeItem('currentUser');
@@ -22,7 +22,7 @@ class UserManager {
             const newUserRef = firebase.database().ref('users').push();
             const userData = {
                 username: username,
-                password: password,  // ← ПАРОЛЬ ЗДЕСЬ!
+                password: password,
                 clicks: 0,
                 money: 1000,
                 dilicks: 500,
@@ -42,7 +42,7 @@ class UserManager {
             };
             
             await newUserRef.set(userData);
-            console.log('✅ Новый пользователь создан с паролем');
+            console.log('✅ Новый пользователь создан');
             return { success: true, message: 'Регистрация успешна' };
         } catch (error) {
             console.error('❌ Ошибка регистрации:', error);

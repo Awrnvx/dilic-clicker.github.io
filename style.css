@@ -24,6 +24,289 @@ body {
     tap-highlight-color: transparent !important;
 }
 
+/* ===== ЭКРАН ТЕХНИЧЕСКИХ РАБОТ ===== */
+.maintenance-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: maintenanceFadeIn 0.3s ease;
+}
+
+@keyframes maintenanceFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0); }
+    to { opacity: 1; backdrop-filter: blur(12px); }
+}
+
+.maintenance-card {
+    max-width: 400px;
+    width: 90%;
+    padding: 35px 25px;
+    text-align: center;
+    background: rgba(20, 25, 35, 0.95);
+    border: 2px solid gold;
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+    animation: maintenancePulse 2s infinite;
+}
+
+@keyframes maintenancePulse {
+    0% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.5); }
+    100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+}
+
+.maintenance-icon {
+    font-size: 5rem;
+    margin-bottom: 15px;
+    animation: maintenanceSpin 3s linear infinite;
+}
+
+@keyframes maintenanceSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.maintenance-title {
+    color: gold;
+    font-size: 2rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px gold;
+}
+
+.maintenance-text {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.maintenance-timer {
+    color: gold;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px gold;
+    font-family: monospace;
+}
+
+.maintenance-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.maintenance-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, gold, #ffaa00, gold);
+    width: 0%;
+    transition: width 1s linear;
+    border-radius: 10px;
+    box-shadow: 0 0 10px gold;
+}
+
+/* ===== АДМИН-КОНСОЛЬ ===== */
+.admin-btn {
+    background: rgba(255, 215, 0, 0.2) !important;
+    border: 1px solid gold !important;
+    color: gold !important;
+    font-size: 18px !important;
+    padding: 8px 15px !important;
+    margin-right: 10px;
+    animation: adminGlow 2s infinite;
+}
+
+@keyframes adminGlow {
+    0% { box-shadow: 0 0 5px gold; }
+    50% { box-shadow: 0 0 20px gold; }
+    100% { box-shadow: 0 0 5px gold; }
+}
+
+.admin-console {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 400px;
+    max-width: calc(100% - 40px);
+    background: rgba(10, 15, 25, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid gold;
+    border-radius: 20px;
+    padding: 20px;
+    z-index: 15000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px gold;
+    animation: adminSlideIn 0.3s ease;
+}
+
+@keyframes adminSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid gold;
+}
+
+.admin-header h2 {
+    color: gold;
+    font-size: 1.5rem;
+    text-shadow: 0 0 10px gold;
+}
+
+.admin-close-btn {
+    background: none;
+    border: none;
+    color: gold;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.admin-close-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.admin-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.admin-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.admin-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.admin-content::-webkit-scrollbar-thumb {
+    background: gold;
+    border-radius: 10px;
+}
+
+.admin-section {
+    margin-bottom: 25px;
+}
+
+.admin-section h3 {
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    border-left: 3px solid gold;
+    padding-left: 10px;
+}
+
+.admin-command-group {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.admin-command {
+    color: gold;
+    font-family: monospace;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.admin-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.admin-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.admin-input-group .glass-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.admin-execute-btn {
+    width: 100%;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid gold;
+    color: gold;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.admin-execute-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.admin-execute-btn:active {
+    transform: translateY(0);
+}
+
+.admin-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+}
+
+#adminUserId {
+    color: gold;
+    font-family: monospace;
+}
+
+/* ===== УЛУЧШЕНИЯ ДЛЯ ТАБ-НАВИГАЦИИ ===== */
+.admin-execute-btn:focus {
+    outline: 2px solid gold;
+    outline-offset: 2px;
+}
+
+.admin-execute-btn.tab-focused {
+    background: rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 20px gold;
+}
+
 /* Убираем желтый фон при нажатии в Telegram WebApp */
 button, 
 .glass-btn, 
@@ -2192,31 +2475,43 @@ a {
     -webkit-backdrop-filter: blur(8px) saturate(180%);
     border: 0.5px solid rgba(255, 255, 255, 0.08);
     border-radius: 30px;
-    padding: 6px 14px;
+    padding: 8px 16px;
     font-size: 14px;
     color: white;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     transition: all 0.2s ease;
 }
 
 .skin-tag:hover {
     background: rgba(255, 255, 255, 0.05);
     transform: scale(1.02);
+    border-color: rgba(255, 215, 0, 0.3);
 }
 
 .skin-tag.active {
     border-color: gold;
-    background: rgba(255, 215, 0, 0.05);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    background: rgba(255, 215, 0, 0.1);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .skin-tag img {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.skin-tag span {
+    color: white;
+    font-weight: 500;
+}
+
+.skin-tag.active span {
+    color: gold;
+    text-shadow: 0 0 10px gold;
 }
 
 .achievement-notification {
@@ -2754,6 +3049,174 @@ a {
     .modal-buttons {
         gap: 10px;
     }
+
+    /* ===== УЛУЧШЕННОЕ КОЛЕСО ДЛЯ МОБИЛОК ===== */
+    .wheel-wrapper {
+        width: 240px !important;
+        height: 240px !important;
+        margin: 5px auto !important;
+    }
+
+    .wheel-prizes {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        padding: 12px !important;
+        margin: 10px 0 !important;
+        background: rgba(0, 0, 0, 0.35) !important;
+        backdrop-filter: blur(15px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
+        border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    }
+
+    .wheel-prize-item {
+        padding: 10px 8px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 215, 0, 0.15) !important;
+        border-radius: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .wheel-prize-dot {
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        border-radius: 50% !important;
+        box-shadow: 0 0 12px currentColor !important;
+    }
+
+    .wheel-prize-text {
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        color: white !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .wheel-prize-text strong {
+        color: gold !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        text-shadow: 0 0 8px gold !important;
+        margin-right: 2px !important;
+        background: rgba(255, 215, 0, 0.15) !important;
+        padding: 2px 6px !important;
+        border-radius: 20px !important;
+    }
+
+    .wheel-prize-text img {
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .wheel-skin-btn {
+        width: 24px !important;
+        height: 24px !important;
+        background: rgba(255, 215, 0, 0.2) !important;
+        border: 1.5px solid gold !important;
+        color: gold !important;
+        font-weight: bold !important;
+        font-size: 1rem !important;
+        box-shadow: 0 0 15px gold !important;
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
+    }
+
+    .wheel-header h2 {
+        font-size: 1.6rem !important;
+    }
+
+    .wheel-price {
+        padding: 8px 20px !important;
+        font-size: 0.95rem !important;
+        background: rgba(255, 215, 0, 0.15) !important;
+        border: 1px solid gold !important;
+    }
+
+    .wheel-price span {
+        font-weight: 700 !important;
+    }
+
+    .wheel-spin-btn {
+        font-size: 1.4rem !important;
+        padding: 12px 30px !important;
+        width: 100% !important;
+        background: rgba(255, 215, 0, 0.15) !important;
+        border: 1px solid gold !important;
+    }
+
+    .wheel-balance {
+        font-size: 1.1rem !important;
+        background: rgba(0, 0, 0, 0.3) !important;
+        padding: 8px 20px !important;
+        border-radius: 40px !important;
+        border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    }
+
+    .wheel-balance span {
+        font-size: 1.2rem !important;
+        font-weight: 700 !important;
+    }
+
+    .wheel-result {
+        padding: 15px !important;
+        margin-top: 10px !important;
+        background: rgba(0, 0, 0, 0.35) !important;
+        border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    }
+
+    .wheel-result-label {
+        font-size: 0.85rem !important;
+        letter-spacing: 2px !important;
+    }
+
+    .wheel-result-value {
+        font-size: 1.3rem !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .wheel-result-value img {
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    /* АДМИН-КОНСОЛЬ НА МОБИЛКАХ */
+    .admin-console {
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: none;
+    }
+    
+    .admin-content {
+        max-height: 300px;
+    }
+    
+    .admin-btn {
+        font-size: 16px !important;
+        padding: 6px 12px !important;
+    }
+    
+    /* ЭКРАН ТЕХРАБОТ НА МОБИЛКАХ */
+    .maintenance-card {
+        width: 90%;
+        padding: 25px 15px;
+    }
+    
+    .maintenance-title {
+        font-size: 1.5rem;
+    }
+    
+    .maintenance-timer {
+        font-size: 2rem;
+    }
 }
 
 @media (max-width: 500px) {
@@ -2790,6 +3253,36 @@ a {
         padding: 6px 12px;
         font-size: 12px;
     }
+
+    /* Еще более компактное колесо */
+    .wheel-wrapper {
+        width: 200px !important;
+        height: 200px !important;
+    }
+
+    .wheel-prize-item {
+        padding: 8px 6px !important;
+    }
+
+    .wheel-prize-text {
+        font-size: 0.8rem !important;
+    }
+
+    .wheel-prize-text strong {
+        font-size: 0.85rem !important;
+        padding: 2px 4px !important;
+    }
+
+    .wheel-prize-dot {
+        width: 14px !important;
+        height: 14px !important;
+        min-width: 14px !important;
+    }
+
+    .wheel-prize-text img {
+        width: 14px !important;
+        height: 14px !important;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2824,16 +3317,10 @@ a {
 }
 
 /* ===== КОЛЕСО ФОРТУНЫ ===== */
-.wheel-container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
 .wheel-card {
     background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 40px;
     border: 0.5px solid rgba(255, 255, 255, 0.08);
     padding: 25px 20px 30px;
@@ -2842,414 +3329,17 @@ a {
     overflow: hidden;
 }
 
-.wheel-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
-    pointer-events: none;
-    opacity: 0.5;
-    z-index: 0;
-}
-
 .wheel-header {
     text-align: center;
     margin-bottom: 15px;
-    position: relative;
-    z-index: 1;
 }
 
 .wheel-header h2 {
     font-size: 2.2rem;
-    background: linear-gradient(135deg, #fff, #aaddff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 5px;
-}
-
-.wheel-header p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1rem;
-}
-
-.wheel-price {
-    display: inline-block;
-    background: rgba(255, 215, 0, 0.1);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    border-radius: 40px;
-    padding: 6px 20px;
-    margin-top: 5px;
-    color: gold;
-    font-weight: 600;
-}
-
-.wheel-price img {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    margin-right: 5px;
-    vertical-align: middle;
-}
-
-.wheel-wrapper {
-    position: relative;
-    width: 280px;
-    height: 280px;
-    margin: 15px auto;
-    position: relative;
-    z-index: 2;
-}
-
-@media (min-width: 768px) {
-    .wheel-wrapper {
-        width: 320px;
-        height: 320px;
-    }
-}
-
-.wheel-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    border-radius: 50%;
-    box-shadow: 
-        0 20px 30px -10px rgba(0, 0, 0, 0.5),
-        0 0 0 2px rgba(255, 255, 255, 0.1) inset,
-        0 0 0 3px rgba(255, 215, 0, 0.2);
-    background: rgba(0, 0, 0, 0.3);
-    transition: transform 0.1s linear;
-    cursor: pointer;
-}
-
-.wheel-pointer {
-    position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 20px solid transparent;
-    border-right: 20px solid transparent;
-    border-top: 40px solid gold;
-    filter: drop-shadow(0 8px 6px #00000099);
-    z-index: 10;
-}
-
-.wheel-pointer::after {
-    content: '';
-    position: absolute;
-    top: -45px;
-    left: -12px;
-    width: 24px;
-    height: 24px;
-    background: radial-gradient(circle, #ffd966, #b8860b);
-    border-radius: 50%;
-    box-shadow: 0 0 20px gold;
-    z-index: 11;
-}
-
-.wheel-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    margin: 15px 0;
-    position: relative;
-    z-index: 1;
-}
-
-.wheel-balance {
-    color: white;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.wheel-balance span {
-    color: gold;
-    font-weight: 600;
-}
-
-.wheel-prizes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px) saturate(180%);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    border-radius: 30px;
-    border: 0.5px solid rgba(255, 255, 255, 0.08);
-    padding: 12px;
-    margin: 15px 0;
-    position: relative;
-    z-index: 1;
-}
-
-.wheel-prize-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 30px;
-    border: 0.5px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.2s ease;
-}
-
-.wheel-prize-item:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 215, 0, 0.15);
-}
-
-.wheel-prize-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    box-shadow: 0 0 8px currentColor;
-}
-
-.wheel-prize-text {
-    color: white;
-    font-size: 0.85rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.wheel-prize-text strong {
-    color: gold;
-    font-size: 0.95rem;
-    margin-right: 2px;
-}
-
-.wheel-prize-icon {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.wheel-skin-btn {
-    background: rgba(255, 215, 0, 0.1);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    color: gold;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-left: auto;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.85rem;
-    backdrop-filter: blur(8px) saturate(180%);
-    -webkit-backdrop-filter: blur(8px) saturate(180%);
-}
-
-.wheel-skin-btn:hover {
-    background: rgba(255, 215, 0, 0.2);
-    border-color: rgba(255, 215, 0, 0.3);
-    transform: scale(1.1);
-    box-shadow: 0 0 10px gold;
-}
-
-.wheel-result {
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px) saturate(180%);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    border-radius: 40px;
-    border: 0.5px solid rgba(255, 255, 255, 0.08);
-    padding: 18px;
-    text-align: center;
-    margin-top: 15px;
-    position: relative;
-    z-index: 1;
-}
-
-.wheel-result-label {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-}
-
-.wheel-result-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: gold;
-    text-shadow: 0 0 15px gold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.wheel-result-skin {
-    color: #ffb7c5;
-    text-shadow: 0 0 20px #ff69b4;
-}
-
-.wheel-result-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.wheel-skin-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(15px) saturate(180%);
-    -webkit-backdrop-filter: blur(15px) saturate(180%);
-    z-index: 10000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.wheel-skin-modal.active {
-    display: flex;
-}
-
-.wheel-modal-content {
-    max-width: 380px;
-    width: 100%;
-    background: rgba(20, 25, 35, 0.95);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    border-radius: 40px;
-    padding: 25px 20px;
-    text-align: center;
-    position: relative;
-    animation: modalAppear 0.3s ease;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
-}
-
-.wheel-modal-close {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 2rem;
-    color: gold;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.wheel-modal-close:hover {
-    transform: scale(1.1);
-}
-
-.wheel-modal-title {
-    color: gold;
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-    text-shadow: 0 0 15px gold;
-}
-
-.wheel-skin-preview {
-    width: 140px;
-    height: 140px;
-    margin: 10px auto;
-    border-radius: 50%;
-    border: 3px solid gold;
-    overflow: hidden;
-    box-shadow: 0 0 30px gold;
-}
-
-.wheel-skin-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.wheel-skin-description {
-    color: white;
-    font-size: 1rem;
-    margin: 15px 0;
-    line-height: 1.5;
-}
-
-.wheel-multiplier {
-    display: inline-block;
-    background: linear-gradient(145deg, #ffd966, #b8860b);
-    padding: 6px 20px;
-    border-radius: 30px;
-    color: #1a0f00;
-    font-weight: bold;
-    font-size: 1.1rem;
-    margin-top: 5px;
-    box-shadow: 0 3px 0 #7a4f00;
-}
-
-@keyframes modalAppear {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* Адаптация под мобилки */
-@media (max-width: 768px) {
-    .wheel-wrapper {
-        width: 240px;
-        height: 240px;
-    }
-    
-    .wheel-prizes {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .wheel-header h2 {
-        font-size: 1.8rem;
-    }
-    
-    .wheel-spin-btn {
-        font-size: 1.3rem;
-        padding: 12px 25px;
-    }
-}
-
-/* Для мобильной навигации */
-@media (max-width: 768px) {
-    .nav-btn[data-tab="wheel"]::before {
-        content: "🎡";
-    }
-}
-
-/* ===== КОЛЕСО ФОРТУНЫ - СТИЛИ ДЛЯ TELEGRAM ===== */
-.wheel-card {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 40px;
-    border: 0.5px solid rgba(255, 255, 255, 0.08);
-    padding: 20px 15px 25px;
-    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.4);
-}
-
-.wheel-header {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.wheel-header h2 {
-    font-size: 1.8rem;
-    margin-bottom: 3px;
     background: linear-gradient(135deg, #fff, #ffd700);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
 }
 
 .wheel-subtitle {
@@ -3281,9 +3371,9 @@ a {
 }
 
 .wheel-wrapper {
-    width: 260px;
-    height: 260px;
-    margin: 5px auto;
+    width: 280px;
+    height: 280px;
+    margin: 10px auto;
     position: relative;
 }
 
@@ -3324,18 +3414,18 @@ a {
 }
 
 .wheel-controls {
-    margin: 10px 0;
+    margin: 15px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .wheel-spin-btn {
     background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1));
     border: 1px solid gold;
     color: white;
-    padding: 12px 30px;
+    padding: 12px 35px;
     border-radius: 50px;
     font-size: 1.4rem;
     font-weight: 600;
@@ -3360,7 +3450,7 @@ a {
     align-items: center;
     gap: 5px;
     background: rgba(0,0,0,0.3);
-    padding: 6px 20px;
+    padding: 8px 20px;
     border-radius: 40px;
     border: 1px solid rgba(255,215,0,0.2);
 }
@@ -3372,22 +3462,23 @@ a {
 }
 
 .wheel-balance-icon {
-    width: 18px;
-    height: 18px;
+    width: 18px !important;
+    height: 18px !important;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 .wheel-prizes {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 30px;
     border: 1px solid rgba(255,215,0,0.2);
     padding: 12px;
-    margin: 15px 0 10px;
+    margin: 15px 0;
 }
 
 .wheel-prize-item {
@@ -3396,7 +3487,7 @@ a {
     gap: 6px;
     padding: 8px 10px;
     background: rgba(255,255,255,0.03);
-    border-radius: 40px;
+    border-radius: 30px;
     border: 1px solid rgba(255,215,0,0.1);
 }
 
@@ -3405,6 +3496,7 @@ a {
     height: 14px;
     min-width: 14px;
     border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
 }
 
 .wheel-prize-text {
@@ -3432,16 +3524,16 @@ a {
 }
 
 .wheel-prize-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px !important;
+    height: 14px !important;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 .skin-prize {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 4px;
 }
 
 .wheel-prize-skin-content {
@@ -3454,15 +3546,15 @@ a {
     background: rgba(255,215,0,0.2);
     border: 1.5px solid gold;
     color: gold;
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.9rem;
     flex-shrink: 0;
     box-shadow: 0 0 10px gold;
 }
@@ -3475,7 +3567,7 @@ a {
     border: 1px solid rgba(255,215,0,0.2);
     padding: 15px;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .wheel-result-label {
@@ -3499,9 +3591,10 @@ a {
 }
 
 .wheel-result-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px !important;
+    height: 22px !important;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 .wheel-skin-modal {
@@ -3541,7 +3634,6 @@ a {
     font-size: 2rem;
     color: gold;
     cursor: pointer;
-    z-index: 10;
 }
 
 .wheel-modal-title {
@@ -3596,11 +3688,15 @@ a {
     to { transform: scale(1); opacity: 1; }
 }
 
-/* Мобильная версия для Telegram */
+/* Адаптация под мобилки */
 @media (max-width: 768px) {
     .wheel-wrapper {
         width: 220px !important;
         height: 220px !important;
+    }
+    
+    .wheel-prizes {
+        grid-template-columns: repeat(2, 1fr) !important;
     }
     
     .wheel-header h2 {
@@ -3612,27 +3708,579 @@ a {
         padding: 10px 20px !important;
     }
     
-    .wheel-prize-item {
-        padding: 6px 8px !important;
-    }
-    
-    .wheel-prize-percent {
-        font-size: 0.85rem !important;
-        padding: 2px 6px !important;
-    }
-    
-    .wheel-prize-value {
-        font-size: 0.85rem !important;
+    .wheel-balance-icon {
+        width: 16px !important;
+        height: 16px !important;
     }
     
     .wheel-prize-icon {
-        width: 14px !important;
-        height: 14px !important;
+        width: 12px !important;
+        height: 12px !important;
     }
     
-    .wheel-skin-btn {
-        width: 22px !important;
-        height: 22px !important;
-        font-size: 0.9rem !important;
+    .wheel-result-icon {
+        width: 18px !important;
+        height: 18px !important;
     }
+}
+
+/* Для мобильной навигации */
+@media (max-width: 768px) {
+    .nav-btn[data-tab="wheel"]::before {
+        content: "🎡";
+    }
+}
+
+/* ===== ЭКРАН ТЕХНИЧЕСКИХ РАБОТ ===== */
+.maintenance-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: maintenanceFadeIn 0.3s ease;
+}
+
+@keyframes maintenanceFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0); }
+    to { opacity: 1; backdrop-filter: blur(12px); }
+}
+
+.maintenance-card {
+    max-width: 400px;
+    width: 90%;
+    padding: 35px 25px;
+    text-align: center;
+    background: rgba(20, 25, 35, 0.95);
+    border: 2px solid gold;
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+    animation: maintenancePulse 2s infinite;
+}
+
+@keyframes maintenancePulse {
+    0% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.5); }
+    100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+}
+
+.maintenance-icon {
+    font-size: 5rem;
+    margin-bottom: 15px;
+    animation: maintenanceSpin 3s linear infinite;
+}
+
+@keyframes maintenanceSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.maintenance-title {
+    color: gold;
+    font-size: 2rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px gold;
+}
+
+.maintenance-text {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.maintenance-timer {
+    color: gold;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px gold;
+    font-family: monospace;
+}
+
+.maintenance-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.maintenance-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, gold, #ffaa00, gold);
+    width: 0%;
+    transition: width 1s linear;
+    border-radius: 10px;
+    box-shadow: 0 0 10px gold;
+}
+
+/* ===== АДМИН-КОНСОЛЬ ===== */
+.admin-btn {
+    background: rgba(255, 215, 0, 0.2) !important;
+    border: 1px solid gold !important;
+    color: gold !important;
+    font-size: 18px !important;
+    padding: 8px 15px !important;
+    margin-right: 10px;
+    animation: adminGlow 2s infinite;
+}
+
+@keyframes adminGlow {
+    0% { box-shadow: 0 0 5px gold; }
+    50% { box-shadow: 0 0 20px gold; }
+    100% { box-shadow: 0 0 5px gold; }
+}
+
+.admin-console {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 400px;
+    max-width: calc(100% - 40px);
+    background: rgba(10, 15, 25, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid gold;
+    border-radius: 20px;
+    padding: 20px;
+    z-index: 15000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px gold;
+    animation: adminSlideIn 0.3s ease;
+}
+
+@keyframes adminSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid gold;
+}
+
+.admin-header h2 {
+    color: gold;
+    font-size: 1.5rem;
+    text-shadow: 0 0 10px gold;
+}
+
+.admin-close-btn {
+    background: none;
+    border: none;
+    color: gold;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.admin-close-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.admin-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.admin-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.admin-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.admin-content::-webkit-scrollbar-thumb {
+    background: gold;
+    border-radius: 10px;
+}
+
+.admin-section {
+    margin-bottom: 25px;
+}
+
+.admin-section h3 {
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    border-left: 3px solid gold;
+    padding-left: 10px;
+}
+
+.admin-command-group {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.admin-command {
+    color: gold;
+    font-family: monospace;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.admin-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.admin-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.admin-input-group .glass-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.admin-execute-btn {
+    width: 100%;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid gold;
+    color: gold;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.admin-execute-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.admin-execute-btn:active {
+    transform: translateY(0);
+}
+
+.admin-execute-btn:focus {
+    outline: 2px solid gold;
+    outline-offset: 2px;
+}
+
+.admin-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+}
+
+#adminUserId {
+    color: gold;
+    font-family: monospace;
+}
+
+/* ===== ЭКРАН ТЕХНИЧЕСКИХ РАБОТ ===== */
+.maintenance-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: maintenanceFadeIn 0.3s ease;
+}
+
+@keyframes maintenanceFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0); }
+    to { opacity: 1; backdrop-filter: blur(12px); }
+}
+
+.maintenance-card {
+    max-width: 400px;
+    width: 90%;
+    padding: 35px 25px;
+    text-align: center;
+    background: rgba(20, 25, 35, 0.95);
+    border: 2px solid gold;
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+    animation: maintenancePulse 2s infinite;
+}
+
+@keyframes maintenancePulse {
+    0% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.5); }
+    100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+}
+
+.maintenance-icon {
+    font-size: 5rem;
+    margin-bottom: 15px;
+    animation: maintenanceSpin 3s linear infinite;
+}
+
+@keyframes maintenanceSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.maintenance-title {
+    color: gold;
+    font-size: 2rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px gold;
+}
+
+.maintenance-text {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.maintenance-timer {
+    color: gold;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px gold;
+    font-family: monospace;
+}
+
+.maintenance-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.maintenance-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, gold, #ffaa00, gold);
+    width: 0%;
+    transition: width 1s linear;
+    border-radius: 10px;
+    box-shadow: 0 0 10px gold;
+}
+
+/* ===== АДМИН-КОНСОЛЬ ===== */
+.admin-btn {
+    background: rgba(255, 215, 0, 0.2) !important;
+    border: 1px solid gold !important;
+    color: gold !important;
+    font-size: 18px !important;
+    padding: 8px 15px !important;
+    margin-right: 10px;
+    animation: adminGlow 2s infinite;
+}
+
+@keyframes adminGlow {
+    0% { box-shadow: 0 0 5px gold; }
+    50% { box-shadow: 0 0 20px gold; }
+    100% { box-shadow: 0 0 5px gold; }
+}
+
+.admin-console {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 400px;
+    max-width: calc(100% - 40px);
+    background: rgba(10, 15, 25, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid gold;
+    border-radius: 20px;
+    padding: 20px;
+    z-index: 15000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px gold;
+    animation: adminSlideIn 0.3s ease;
+}
+
+@keyframes adminSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid gold;
+}
+
+.admin-header h2 {
+    color: gold;
+    font-size: 1.5rem;
+    text-shadow: 0 0 10px gold;
+}
+
+.admin-close-btn {
+    background: none;
+    border: none;
+    color: gold;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.admin-close-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.admin-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.admin-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.admin-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.admin-content::-webkit-scrollbar-thumb {
+    background: gold;
+    border-radius: 10px;
+}
+
+.admin-section {
+    margin-bottom: 25px;
+}
+
+.admin-section h3 {
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    border-left: 3px solid gold;
+    padding-left: 10px;
+}
+
+.admin-command-group {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.admin-command {
+    color: gold;
+    font-family: monospace;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.admin-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.admin-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.admin-input-group .glass-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.admin-execute-btn {
+    width: 100%;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid gold;
+    color: gold;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.admin-execute-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.admin-execute-btn:active {
+    transform: translateY(0);
+}
+
+.admin-execute-btn:focus {
+    outline: 2px solid gold;
+    outline-offset: 2px;
+}
+
+.admin-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+}
+
+#adminUserId {
+    color: gold;
+    font-family: monospace;
 }

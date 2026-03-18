@@ -22,8 +22,21 @@
     </script>
 </head>
 <body>
+    <!-- ЭКРАН ТЕХНИЧЕСКИХ РАБОТ -->
+    <div id="maintenanceOverlay" class="maintenance-overlay" style="display: none;">
+        <div class="maintenance-card glass-card liquid-glass">
+            <div class="maintenance-icon">🔧</div>
+            <h2 class="maintenance-title">Технические работы</h2>
+            <p class="maintenance-text">Ведутся технические работы. Скоро всё заработает!</p>
+            <div id="maintenanceTimer" class="maintenance-timer" style="display: none;"></div>
+            <div class="maintenance-progress">
+                <div class="maintenance-progress-bar" id="maintenanceProgressBar"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="game-container">
-        <!-- Навигация с эффектом liquid-glass -->
+        <!-- Навигация -->
         <nav class="glass-nav liquid-glass">
             <!-- Кнопка скрытия/показа навигации -->
             <button class="nav-toggle-btn liquid-glass" id="navToggleBtn">
@@ -58,15 +71,16 @@
                 <button class="nav-btn liquid-glass" data-tab="leaderboard">
                     <span class="nav-text">Лидеры</span>
                 </button>
-                <!-- 🎡 КНОПКА КОЛЕСА ФОРТУНЫ -->
                 <button class="nav-btn liquid-glass" data-tab="wheel">
                     <span class="nav-text">Колесо 🎡</span>
                 </button>
             </div>
             
-            <!-- USER-INFO С КНОПКОЙ ВЫХОДА -->
+            <!-- USER-INFO -->
             <div class="user-info">
                 <div class="user-info-top">
+                    <!-- АДМИН-КНОПКА (только для создателя) -->
+                    <button id="adminBtn" class="glass-btn small liquid-glass admin-btn" style="display: none;">🛠️</button>
                     <button id="logoutBtn" class="glass-btn small liquid-glass">Выйти</button>
                 </div>
                 <div class="user-info-bottom">
@@ -82,6 +96,40 @@
                 </div>
             </div>
         </nav>
+
+        <!-- АДМИН-КОНСОЛЬ -->
+        <div id="adminConsole" class="admin-console glass-card liquid-glass" style="display: none;">
+            <div class="admin-header">
+                <h2>🛠️ АДМИН-КОНСОЛЬ</h2>
+                <button class="admin-close-btn" id="adminCloseBtn">✕</button>
+            </div>
+            <div class="admin-content">
+                <div class="admin-section">
+                    <h3>Технические работы</h3>
+                    <div class="admin-command-group">
+                        <div class="admin-command">/technical work</div>
+                        <div class="admin-description">Включить бесконечный экран техработ</div>
+                        <button class="admin-execute-btn" data-command="tech_work">ВЫПОЛНИТЬ</button>
+                    </div>
+                    <div class="admin-command-group">
+                        <div class="admin-command">/technical work time &lt;секунды&gt;</div>
+                        <div class="admin-description">Включить экран техработ на время</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="techWorkTimeInput" class="glass-input" placeholder="секунды" min="1" max="3600">
+                            <button class="admin-execute-btn" data-command="tech_work_time">ВЫПОЛНИТЬ</button>
+                        </div>
+                    </div>
+                    <div class="admin-command-group">
+                        <div class="admin-command">/not technical work</div>
+                        <div class="admin-description">Выключить экран техработ</div>
+                        <button class="admin-execute-btn" data-command="tech_work_off">ВЫПОЛНИТЬ</button>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-footer">
+                <p>ID: <span id="adminUserId"></span></p>
+            </div>
+        </div>
 
         <!-- Основной контент -->
         <div class="content">
@@ -103,82 +151,57 @@
                 </div>
             </div>
 
-            <!-- ЕДИНЫЙ ОСТРОВ СО ВСЕМИ ФУНКЦИЯМИ (только для ПК) -->
+            <!-- Остров Возможностей -->
             <div id="feature-island" class="tab feature-island-container">
                 <div class="feature-island glass-effect liquid-glass">
-                    <div class="water-surface"></div>
                     <h2 class="island-main-title">🏝️ Остров Возможностей</h2>
-                    
                     <div class="feature-grid">
                         <div class="feature-card liquid-glass" data-tab="shop">
                             <div class="feature-icon">🛒</div>
                             <h3>Магазин</h3>
                             <p>4 скина</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
                         <div class="feature-card liquid-glass" data-tab="upgrades">
                             <div class="feature-icon">⚡</div>
                             <h3>Улучшения</h3>
                             <p>Прокачка</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
                         <div class="feature-card liquid-glass" data-tab="profile">
                             <div class="feature-icon">👤</div>
                             <h3>Профиль</h3>
                             <p>Статистика</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
                         <div class="feature-card liquid-glass" data-tab="promocodes">
                             <div class="feature-icon">🎁</div>
                             <h3>Промокоды</h3>
                             <p>Бонусы</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
                         <div class="feature-card liquid-glass" data-tab="leaderboard">
                             <div class="feature-icon">🏆</div>
                             <h3>Лидеры</h3>
                             <p>Топ игроков</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
                         <div class="feature-card liquid-glass" data-tab="season">
                             <div class="feature-icon">🎫</div>
                             <h3>Сезон</h3>
                             <p>Награды</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
                         <div class="feature-card liquid-glass" data-tab="settings">
                             <div class="feature-icon">⚙️</div>
                             <h3>Настройки</h3>
                             <p>Управление</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
                         <div class="feature-card liquid-glass" data-tab="inventory">
                             <div class="feature-icon">📦</div>
                             <h3>Инвентарь</h3>
                             <p>Скины</p>
-                            <div class="feature-glow"></div>
                         </div>
-                        
-                        <!-- 🎡 КАРТОЧКА КОЛЕСА НА ОСТРОВЕ -->
                         <div class="feature-card liquid-glass" data-tab="wheel">
                             <div class="feature-icon">🎡</div>
                             <h3>Колесо</h3>
                             <p>2500💎 за крутку</p>
-                            <div class="feature-glow"></div>
                         </div>
                     </div>
-                    
-                    <div class="bubble b1"></div>
-                    <div class="bubble b2"></div>
-                    <div class="bubble b3"></div>
-                    <div class="bubble b4"></div>
                 </div>
             </div>
 
