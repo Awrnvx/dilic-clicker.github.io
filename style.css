@@ -3822,188 +3822,82 @@ a {
     box-shadow: 0 0 10px gold;
 }
 
-/* ===== АДМИН-КОНСОЛЬ ===== */
-.admin-btn {
-    background: rgba(255, 215, 0, 0.2) !important;
-    border: 1px solid gold !important;
+/* ===== БЕЛЫЙ ТЕКСТ ДЛЯ ВАЛЮТ И НИКА ===== */
+#usernameDisplay {
+    color: white !important;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.currency span, .dilic span,
+#money, #dilicks {
+    color: white !important;
+    font-weight: 600;
+}
+
+#logoutBtn {
+    color: white !important;
+}
+
+/* Цифры в статистике кликов */
+.stats p span,
+#clicks, #clickPower, #playtime {
+    color: white !important;
+    font-weight: 600;
+}
+
+/* Цифры в профиле */
+.profile-stat-item .stat-value,
+#profileMoney, #profileDilicks, #profileClicks, #profilePlaytime {
+    color: white !important;
+    font-weight: 700;
+}
+
+/* Цифры в магазине и улучшениях */
+.skin-price .price-value,
+.upgrade-price .price-value,
+.reward-price span {
+    color: white !important;
+}
+
+/* Цифры в инвентаре */
+.skin-tag span {
+    color: white !important;
+}
+
+.skin-tag.active span {
     color: gold !important;
-    font-size: 18px !important;
-    padding: 8px 15px !important;
-    margin-right: 10px;
-    animation: adminGlow 2s infinite;
 }
 
-@keyframes adminGlow {
-    0% { box-shadow: 0 0 5px gold; }
-    50% { box-shadow: 0 0 20px gold; }
-    100% { box-shadow: 0 0 5px gold; }
+/* Цифры в лидерборде */
+.leaderboard-table td {
+    color: white !important;
 }
 
-.admin-console {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    width: 400px;
-    max-width: calc(100% - 40px);
-    background: rgba(10, 15, 25, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 2px solid gold;
-    border-radius: 20px;
-    padding: 20px;
-    z-index: 15000;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px gold;
-    animation: adminSlideIn 0.3s ease;
+/* Цифры в настройках */
+.settings-card p,
+.settings-card span {
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
-@keyframes adminSlideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+/* Цифры в сезонном пропуске */
+.season-pass p,
+.season-pass span {
+    color: white !important;
 }
 
-.admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid gold;
+/* Цифры в промокодах */
+.promocode-reward,
+.history-reward {
+    color: white !important;
 }
 
-.admin-header h2 {
-    color: gold;
-    font-size: 1.5rem;
-    text-shadow: 0 0 10px gold;
+/* Цифры в колесе фортуны */
+.wheel-balance span {
+    color: gold !important;
 }
 
-.admin-close-btn {
-    background: none;
-    border: none;
-    color: gold;
-    font-size: 24px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
+.wheel-result-value span {
+    color: gold !important;
 }
 
-.admin-close-btn:hover {
-    background: rgba(255, 215, 0, 0.2);
-    transform: scale(1.1);
-}
-
-.admin-content {
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 10px;
-}
-
-.admin-content::-webkit-scrollbar {
-    width: 5px;
-}
-
-.admin-content::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-}
-
-.admin-content::-webkit-scrollbar-thumb {
-    background: gold;
-    border-radius: 10px;
-}
-
-.admin-section {
-    margin-bottom: 25px;
-}
-
-.admin-section h3 {
-    color: white;
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-    border-left: 3px solid gold;
-    padding-left: 10px;
-}
-
-.admin-command-group {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.admin-command {
-    color: gold;
-    font-family: monospace;
-    font-size: 1rem;
-    margin-bottom: 5px;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 5px 10px;
-    border-radius: 6px;
-    display: inline-block;
-}
-
-.admin-description {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-}
-
-.admin-input-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.admin-input-group .glass-input {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-.admin-execute-btn {
-    width: 100%;
-    background: rgba(255, 215, 0, 0.1);
-    border: 1px solid gold;
-    color: gold;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-.admin-execute-btn:hover {
-    background: rgba(255, 215, 0, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
-}
-
-.admin-execute-btn:active {
-    transform: translateY(0);
-}
-
-.admin-execute-btn:focus {
-    outline: 2px solid gold;
-    outline-offset: 2px;
-}
-
-.admin-footer {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.8rem;
-}
-
-#adminUserId {
-    color: gold;
-    font-family: monospace;
-}
