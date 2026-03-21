@@ -11,11 +11,6 @@ class ClickerGame {
         this.wheel = null;
         this.compensationShown = false;
         
-        // ===== АДМИН-СВОЙСТВА =====
-        this.maintenanceInterval = null;
-        this.maintenanceListener = null; // 👈 ВАЖНО: для слушателя
-        this.CREATOR_ID = '-Oo1LCHNbWVm1HQZvR9J'; // ТВОЙ ID
-        
         // Данные скинов
         this.skinsData = {
             'classic': {
