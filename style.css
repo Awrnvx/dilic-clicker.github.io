@@ -3901,3 +3901,11 @@ a {
     color: gold !important;
 }
 
+/* Исправление цветов в статистике скинов */
+.skin-progress-text span {
+    color: gold !important;
+}
+.progress-current, 
+.progress-total {
+    color: white !important;
+}
