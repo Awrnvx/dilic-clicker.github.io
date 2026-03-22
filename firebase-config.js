@@ -9,12 +9,8 @@ const firebaseConfig = {
     appId: "1:651188156647:web:7ef858931f7fb4526b8a42"
 };
 
-// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// ТВОЙ АДМИН ID (не меняй!)
-const ADMIN_ID = "Onbl-wmWqYsAV-cYUWm";
-
-// Делаем доступным для всего сайта
-window.ADMIN_ID = ADMIN_ID;
+const CREATOR_ID = "-OoEwrjU2Mehwmv3qQcC";
+window.CREATOR_ID = CREATOR_ID;

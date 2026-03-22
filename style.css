@@ -3909,3 +3909,24 @@ a {
 .progress-total {
     color: white !important;
 }
+
+/* ===== КНОПКА АДМИНКИ ===== */
+.admin-btn {
+    background: rgba(255, 215, 0, 0.2) !important;
+    border: 1px solid gold !important;
+    color: gold !important;
+    font-size: 18px !important;
+    padding: 8px 15px !important;
+    margin-right: 10px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.admin-btn:hover {
+    background: rgba(255, 215, 0, 0.3) !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px gold;
+}

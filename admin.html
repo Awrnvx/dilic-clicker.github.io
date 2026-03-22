@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dilic Admin | Панель управления</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        .admin-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%);
+            padding: 20px;
+        }
+        .admin-panel { max-width: 800px; margin: 0 auto; }
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-radius: 60px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        .admin-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .admin-header p { color: rgba(255, 255, 255, 0.7); font-size: 1rem; }
+        .admin-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .admin-card h2 {
+            color: gold;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            border-left: 3px solid gold;
+            padding-left: 15px;
+        }
+        .admin-command {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+        }
+        .admin-command-code {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: gold;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 5px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .admin-command-desc { color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-bottom: 12px; }
+        .admin-input-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .admin-input-group input {
+            flex: 1;
+            min-width: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .admin-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .admin-status.active { background: rgba(244, 67, 54, 0.1); border: 1px solid #f44336; color: #f44336; }
+        .admin-status.inactive { background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; color: #4CAF50; }
+        .admin-timer { font-family: monospace; font-size: 1.3rem; font-weight: bold; color: gold; margin-top: 10px; text-align: center; }
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 0.5px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-1px); }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: gold;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover { text-shadow: 0 0 10px gold; }
+    </style>
+</head>
+<body>
+    <div class="admin-page">
+        <div class="admin-panel">
+            <div class="admin-header">
+                <h1>🛠️ DILIC ADMIN</h1>
+                <p>Панель управления техническими работами</p>
+            </div>
+            
+            <div class="admin-card">
+                <h2>📊 СТАТУС ТЕХРАБОТ</h2>
+                <div id="maintenanceStatus" class="admin-status inactive">✅ Технические работы ОТКЛЮЧЕНЫ</div>
+                <div id="maintenanceTimerDisplay" class="admin-timer" style="display: none;"></div>
+            </div>
+            
+            <div class="admin-card">
+                <h2>⚡ БЫСТРЫЕ КОМАНДЫ</h2>
+                
+                <div class="admin-command">
+                    <div class="admin-command-code">/update time &lt;секунды&gt;</div>
+                    <div class="admin-command-desc">⏱️ Включить экран техработ на указанное время (с надписью "До обновы:")</div>
+                    <div class="admin-input-group">
+                        <input type="number" id="techWorkSeconds" class="glass-input" placeholder="секунды" value="30" min="1" max="86400">
+                        <button class="glass-btn" id="updateTimeBtn">ВЫПОЛНИТЬ</button>
+                    </div>
+                </div>
+                
+                <div class="admin-command">
+                    <div class="admin-command-code">/technical work</div>
+                    <div class="admin-command-desc">🔧 Включить бесконечный экран техработ (обычная надпись)</div>
+                    <button class="glass-btn" id="techWorkBtn">ВЫПОЛНИТЬ</button>
+                </div>
+                
+                <div class="admin-command">
+                    <div class="admin-command-code">/not technical work</div>
+                    <div class="admin-command-desc">✅ Выключить экран техработ</div>
+                    <button class="glass-btn" id="notTechWorkBtn">ВЫПОЛНИТЬ</button>
+                </div>
+            </div>
+            
+            <a href="index.html" class="back-link">← Вернуться в игру</a>
+        </div>
+    </div>
+    
+    <script>
+        // Админ-логика
+        const maintRef = firebase.database().ref('maintenance');
+        let timerInterval = null;
+        
+        function updateStatusDisplay() {
+            maintRef.once('value').then(snapshot => {
+                const data = snapshot.val();
+                const statusDiv = document.getElementById('maintenanceStatus');
+                const timerDisplay = document.getElementById('maintenanceTimerDisplay');
+                
+                if (data && data.active === true) {
+                    statusDiv.className = 'admin-status active';
+                    if (data.endTime) {
+                        const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
+                        const hours = Math.floor(remaining / 3600);
+                        const minutes = Math.floor((remaining % 3600) / 60);
+                        const secs = remaining % 60;
+                        statusDiv.innerHTML = `🔧 Технические работы ВКЛЮЧЕНЫ (с таймером)<br><span style="font-size:0.8rem;">Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</span>`;
+                        timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                        timerDisplay.style.display = 'block';
+                    } else {
+                        statusDiv.innerHTML = '🔧 Технические работы ВКЛЮЧЕНЫ (без ограничений)';
+                        timerDisplay.style.display = 'none';
+                    }
+                } else {
+                    statusDiv.className = 'admin-status inactive';
+                    statusDiv.innerHTML = '✅ Технические работы ОТКЛЮЧЕНЫ';
+                    timerDisplay.style.display = 'none';
+                }
+            });
+        }
+        
+        function startTimerDisplay() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                maintRef.once('value').then(snapshot => {
+                    const data = snapshot.val();
+                    const timerDisplay = document.getElementById('maintenanceTimerDisplay');
+                    if (data && data.active === true && data.endTime) {
+                        const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
+                        if (remaining <= 0) {
+                            clearInterval(timerInterval);
+                            updateStatusDisplay();
+                            return;
+                        }
+                        const hours = Math.floor(remaining / 3600);
+                        const minutes = Math.floor((remaining % 3600) / 60);
+                        const secs = remaining % 60;
+                        timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                        timerDisplay.style.display = 'block';
+                    }
+                });
+            }, 1000);
+        }
+        
+        // Включение с таймером (/update time)
+        document.getElementById('updateTimeBtn').addEventListener('click', async () => {
+            const seconds = parseInt(document.getElementById('techWorkSeconds').value);
+            if (!seconds || seconds < 1) {
+                alert('❌ Введите корректное время');
+                return;
+            }
+            const endTime = Date.now() + (seconds * 1000);
+            await maintRef.set({
+                active: true,
+                type: 'timer',
+                startTime: Date.now(),
+                endTime: endTime,
+                duration: seconds
+            });
+            updateStatusDisplay();
+            startTimerDisplay();
+            alert(`🔧 Технические работы включены на ${seconds} секунд (с таймером)`);
+        });
+        
+        // Включение бесконечно (/technical work)
+        document.getElementById('techWorkBtn').addEventListener('click', async () => {
+            await maintRef.set({
+                active: true,
+                type: 'infinite',
+                startTime: Date.now(),
+                endTime: null,
+                duration: null
+            });
+            updateStatusDisplay();
+            alert('🔧 Технические работы включены (бесконечно)');
+        });
+        
+        // Выключение (/not technical work)
+        document.getElementById('notTechWorkBtn').addEventListener('click', async () => {
+            await maintRef.set({
+                active: false
+            });
+            updateStatusDisplay();
+            alert('✅ Технические работы отключены');
+        });
+        
+        // Слушаем изменения в реальном времени
+        maintRef.on('value', () => {
+            updateStatusDisplay();
+        });
+        
+        // Загрузка статуса при старте
+        updateStatusDisplay();
+        startTimerDisplay();
+    </script>
+</body>
+</html>

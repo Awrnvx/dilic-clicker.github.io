@@ -189,70 +189,57 @@ class ClickerGame {
         this.init();
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     async init() {
-        const userId = localStorage.getItem('userId');
-        const currentUser = localStorage.getItem('currentUser');
+    const userId = localStorage.getItem('userId');
+    const currentUser = localStorage.getItem('currentUser');
+    
+    console.log('🔍 Загрузка игры для пользователя:', currentUser, 'ID:', userId);
+    
+    if (!userId || !currentUser) {
+        console.log('❌ Нет данных авторизации, перенаправление на регистрацию');
+        window.location.href = 'register.html';
+        return;
+    }
+    
+    try {
+        // Загружаем данные ТОЛЬКО для этого userId
+        const userRef = firebase.database().ref('users/' + userId);
+        const snapshot = await userRef.once('value');
         
-        if (!userId || !currentUser) {
-            window.location.href = 'register.html';
-            return;
-        }
-        
-        try {
-            // ✅ БЕЗОПАСНО - только конкретный пользователь
-            const userRef = firebase.database().ref('users/' + userId);
-            const snapshot = await userRef.once('value');
+        if (snapshot.exists()) {
+            this.userData = snapshot.val();
+            console.log('✅ Данные загружены для:', this.userData.username, 'с ID:', userId);
             
-            if (snapshot.exists()) {
-                this.userData = snapshot.val();
-                console.log('✅ Данные загружены для:', this.userData.username);
-                
-                // Проверяем компенсацию
-                await this.checkCompensation();
-                
-                // ===== ВАЖНО: ПРОВЕРКА ТЕХРАБОТ =====
-                // Проверяем при загрузке
-                await this.checkMaintenanceStatus();
-                // Запускаем постоянный слушатель
-                this.listenForMaintenanceChanges();
-                
-            } else {
-                console.error('❌ Пользователь не найден');
+            // Проверяем, что загруженный username совпадает с currentUser
+            if (this.userData.username !== currentUser) {
+                console.warn('⚠️ Несоответствие username! Очищаем данные...');
                 localStorage.clear();
                 window.location.href = 'register.html';
                 return;
             }
-        } catch (error) {
-            console.error('❌ Ошибка загрузки из Firebase:', error);
+            
+            // Проверяем компенсацию
+            await this.checkCompensation();
+            
+            // Проверяем техработы
+            checkMaintenanceScreen();
+            listenMaintenanceChanges();
+            
+        } else {
+            console.error('❌ Пользователь не найден в Firebase');
             localStorage.clear();
             window.location.href = 'register.html';
             return;
         }
-        
-        this.loadElements();
-        this.setupEventListeners();
-        this.startAutoClicker();
-        this.startPlaytimeTracker();
-        this.startBubbles();
-        
-        if (this.clickIcon && this.userData.currentSkin) {
-            this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
-        }
-        
-        this.settings = new Settings(this);
-        
-        // Проверяем, создатель ли это
-        this.checkIfCreator();
-        
-        this.updateUI();
-        this.updateInventory();
-        this.updateShopStatus();
-        this.updateUpgradePrices();
-        this.updatePromocodesList();
-        this.updatePromocodesHistory();
-        this.updateLeaderboard('clicks');
+    } catch (error) {
+        console.error('❌ Ошибка загрузки из Firebase:', error);
+        localStorage.clear();
+        window.location.href = 'register.html';
+        return;
     }
+    
+    // ... остальной код
+}
 
     // ===== ПРОВЕРКА КОМПЕНСАЦИИ =====
     async checkCompensation() {
@@ -2572,4 +2559,249 @@ document.addEventListener('keydown', (e) => {
             }, 200);
         }
     }
+});
+
+// ===== СИСТЕМА ТЕХНИЧЕСКИХ РАБОТ =====
+
+function checkMaintenanceScreen() {
+    const userId = localStorage.getItem('userId');
+    
+    // Если это создатель - экран НЕ показываем
+    if (userId === CREATOR_ID) {
+        const overlay1 = document.getElementById('maintenanceOverlay');
+        const overlay2 = document.getElementById('updateOverlay');
+        if (overlay1) overlay1.style.display = 'none';
+        if (overlay2) overlay2.style.display = 'none';
+        return;
+    }
+    
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.once('value').then(snapshot => {
+        const data = snapshot.val();
+        const normalOverlay = document.getElementById('maintenanceOverlay');
+        const updateOverlay = document.getElementById('updateOverlay');
+        const timerDiv = document.getElementById('maintenanceTimer');
+        const updateTimerDiv = document.getElementById('updateTimer');
+        const progressBar = document.getElementById('maintenanceProgressBar');
+        const updateProgressBar = document.getElementById('updateProgressBar');
+        
+        if (!normalOverlay || !updateOverlay) return;
+        
+        // Скрываем оба экрана
+        normalOverlay.style.display = 'none';
+        updateOverlay.style.display = 'none';
+        
+        if (data && data.active === true) {
+            if (data.type === 'timer' && data.endTime) {
+                // Экран "До обновы:" с таймером
+                updateOverlay.style.display = 'flex';
+                
+                const updateTimer = () => {
+                    const remaining = data.endTime - Date.now();
+                    
+                    if (remaining <= 0) {
+                        updateOverlay.style.display = 'none';
+                        if (window.timerInterval) clearInterval(window.timerInterval);
+                        return;
+                    }
+                    
+                    const seconds = Math.floor(remaining / 1000);
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = seconds % 60;
+                    
+                    if (updateTimerDiv) {
+                        updateTimerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        updateTimerDiv.style.display = 'block';
+                    }
+                    
+                    const total = data.duration || 3600;
+                    const progress = ((total - seconds) / total) * 100;
+                    if (updateProgressBar) updateProgressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+                };
+                
+                updateTimer();
+                if (window.timerInterval) clearInterval(window.timerInterval);
+                window.timerInterval = setInterval(updateTimer, 1000);
+                
+            } else {
+                // Обычный экран "Технические работы"
+                normalOverlay.style.display = 'flex';
+                
+                if (data.endTime) {
+                    if (timerDiv) timerDiv.style.display = 'block';
+                    if (progressBar) progressBar.style.width = '100%';
+                    
+                    const endTime = data.endTime;
+                    
+                    const updateNormalTimer = () => {
+                        const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+                        
+                        if (remaining <= 0) {
+                            normalOverlay.style.display = 'none';
+                            if (window.timerInterval) clearInterval(window.timerInterval);
+                            return;
+                        }
+                        
+                        const hours = Math.floor(remaining / 3600);
+                        const minutes = Math.floor((remaining % 3600) / 60);
+                        const seconds = remaining % 60;
+                        
+                        if (timerDiv) timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        const total = data.duration || 3600;
+                        const progress = ((total - remaining) / total) * 100;
+                        if (progressBar) progressBar.style.width = progress + '%';
+                    };
+                    
+                    updateNormalTimer();
+                    if (window.timerInterval) clearInterval(window.timerInterval);
+                    window.timerInterval = setInterval(updateNormalTimer, 1000);
+                } else {
+                    if (timerDiv) timerDiv.style.display = 'none';
+                    if (progressBar) progressBar.style.width = '0%';
+                }
+            }
+        } else {
+            if (window.timerInterval) clearInterval(window.timerInterval);
+        }
+    }).catch(err => console.error('Ошибка проверки техработ:', err));
+}
+
+function listenMaintenanceChanges() {
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.on('value', () => {
+        checkMaintenanceScreen();
+    });
+}
+
+// Вызываем при загрузке страницы
+setTimeout(() => {
+    checkMaintenanceScreen();
+    listenMaintenanceChanges();
+}, 1000);
+
+// ===== СИСТЕМА ТЕХНИЧЕСКИХ РАБОТ (НЕ ПРОПАДАЕТ ПОСЛЕ ОБНОВЛЕНИЯ) =====
+
+function checkMaintenanceScreen() {
+    const userId = localStorage.getItem('userId');
+    
+    // Если это создатель - экран НЕ показываем
+    if (userId === CREATOR_ID) {
+        hideAllScreens();
+        return;
+    }
+    
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.once('value').then(snapshot => {
+        const data = snapshot.val();
+        const normalOverlay = document.getElementById('maintenanceOverlay');
+        const updateOverlay = document.getElementById('updateOverlay');
+        const timerDiv = document.getElementById('maintenanceTimer');
+        const updateTimerDiv = document.getElementById('updateTimer');
+        const progressBar = document.getElementById('maintenanceProgressBar');
+        const updateProgressBar = document.getElementById('updateProgressBar');
+        
+        if (!normalOverlay || !updateOverlay) return;
+        
+        // Скрываем оба экрана
+        hideAllScreens();
+        
+        if (data && data.active === true) {
+            if (data.type === 'timer' && data.endTime) {
+                // Экран "До обновы:" с таймером
+                updateOverlay.style.display = 'flex';
+                
+                const updateTimer = () => {
+                    const remaining = data.endTime - Date.now();
+                    
+                    if (remaining <= 0) {
+                        updateOverlay.style.display = 'none';
+                        if (window.timerInterval) clearInterval(window.timerInterval);
+                        return;
+                    }
+                    
+                    const seconds = Math.floor(remaining / 1000);
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = seconds % 60;
+                    
+                    if (updateTimerDiv) {
+                        updateTimerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        updateTimerDiv.style.display = 'block';
+                    }
+                    
+                    const total = data.duration || 3600;
+                    const progress = ((total - seconds) / total) * 100;
+                    if (updateProgressBar) updateProgressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+                };
+                
+                updateTimer();
+                if (window.timerInterval) clearInterval(window.timerInterval);
+                window.timerInterval = setInterval(updateTimer, 1000);
+                
+            } else {
+                // Обычный экран "Технические работы"
+                normalOverlay.style.display = 'flex';
+                
+                if (data.endTime) {
+                    if (timerDiv) timerDiv.style.display = 'block';
+                    if (progressBar) progressBar.style.width = '100%';
+                    
+                    const endTime = data.endTime;
+                    
+                    const updateNormalTimer = () => {
+                        const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+                        
+                        if (remaining <= 0) {
+                            normalOverlay.style.display = 'none';
+                            if (window.timerInterval) clearInterval(window.timerInterval);
+                            return;
+                        }
+                        
+                        const hours = Math.floor(remaining / 3600);
+                        const minutes = Math.floor((remaining % 3600) / 60);
+                        const seconds = remaining % 60;
+                        
+                        if (timerDiv) timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        const total = data.duration || 3600;
+                        const progress = ((total - remaining) / total) * 100;
+                        if (progressBar) progressBar.style.width = progress + '%';
+                    };
+                    
+                    updateNormalTimer();
+                    if (window.timerInterval) clearInterval(window.timerInterval);
+                    window.timerInterval = setInterval(updateNormalTimer, 1000);
+                } else {
+                    if (timerDiv) timerDiv.style.display = 'none';
+                    if (progressBar) progressBar.style.width = '0%';
+                }
+            }
+        }
+    }).catch(err => console.error('Ошибка проверки техработ:', err));
+}
+
+function hideAllScreens() {
+    const normalOverlay = document.getElementById('maintenanceOverlay');
+    const updateOverlay = document.getElementById('updateOverlay');
+    if (normalOverlay) normalOverlay.style.display = 'none';
+    if (updateOverlay) updateOverlay.style.display = 'none';
+    if (window.timerInterval) clearInterval(window.timerInterval);
+}
+
+function listenMaintenanceChanges() {
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.on('value', () => {
+        checkMaintenanceScreen();
+    });
+}
+
+// ЗАПУСК ПРИ ЗАГРУЗКЕ СТРАНИЦЫ (даже если код обновлен)
+document.addEventListener('DOMContentLoaded', function() {
+    // Небольшая задержка для уверенности
+    setTimeout(() => {
+        checkMaintenanceScreen();
+        listenMaintenanceChanges();
+    }, 500);
 });
