@@ -9,8 +9,12 @@ const firebaseConfig = {
     appId: "1:651188156647:web:7ef858931f7fb4526b8a42"
 };
 
+// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+// ТВОЙ ID (ВАЖНО! ТОЧНО ТАКОЙ ЖЕ КАК В localStorage)
 const CREATOR_ID = "-OoEwrjU2Mehwmv3qQcC";
+
+// Делаем глобально доступным
 window.CREATOR_ID = CREATOR_ID;
