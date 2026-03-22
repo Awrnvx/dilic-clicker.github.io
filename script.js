@@ -1,4 +1,4 @@
-// script.js - ПОЛНАЯ ВЕРСИЯ С ИСПРАВЛЕННОЙ ПРОВЕРКОЙ АДМИНА
+// script.js - ПОЛНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ
 
 class ClickerGame {
     constructor() {
@@ -189,94 +189,57 @@ class ClickerGame {
         this.init();
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     async init() {
-        const userId = localStorage.getItem('userId');
-        const currentUser = localStorage.getItem('currentUser');
+    const userId = localStorage.getItem('userId');
+    const currentUser = localStorage.getItem('currentUser');
+    
+    console.log('🔍 Загрузка игры для пользователя:', currentUser, 'ID:', userId);
+    
+    if (!userId || !currentUser) {
+        console.log('❌ Нет данных авторизации, перенаправление на регистрацию');
+        window.location.href = 'register.html';
+        return;
+    }
+    
+    try {
+        // Загружаем данные ТОЛЬКО для этого userId
+        const userRef = firebase.database().ref('users/' + userId);
+        const snapshot = await userRef.once('value');
         
-        console.log('🔍 Инициализация игры...');
-        console.log('userId из localStorage:', userId);
-        console.log('currentUser из localStorage:', currentUser);
-        
-        if (!userId || !currentUser) {
-            console.log('❌ Нет данных авторизации');
-            window.location.href = 'register.html';
-            return;
-        }
-        
-        try {
-            const userRef = firebase.database().ref('users/' + userId);
-            console.log('🔍 Загружаем данные по пути:', 'users/' + userId);
+        if (snapshot.exists()) {
+            this.userData = snapshot.val();
+            console.log('✅ Данные загружены для:', this.userData.username, 'с ID:', userId);
             
-            const snapshot = await userRef.once('value');
-            
-            if (snapshot.exists()) {
-                this.userData = snapshot.val();
-                console.log('✅ Данные загружены для:', this.userData.username);
-                
-                // Проверяем соответствие
-                if (this.userData.username !== currentUser) {
-                    console.error('❌ Несоответствие! Очищаем localStorage');
-                    localStorage.clear();
-                    window.location.href = 'register.html';
-                    return;
-                }
-                
-                await this.checkCompensation();
-                
-            } else {
-                console.error('❌ Пользователь не найден');
+            // Проверяем, что загруженный username совпадает с currentUser
+            if (this.userData.username !== currentUser) {
+                console.warn('⚠️ Несоответствие username! Очищаем данные...');
                 localStorage.clear();
                 window.location.href = 'register.html';
                 return;
             }
-        } catch (error) {
-            console.error('❌ Ошибка загрузки из Firebase:', error);
+            
+            // Проверяем компенсацию
+            await this.checkCompensation();
+            
+            // Проверяем техработы
+            checkMaintenanceScreen();
+            listenMaintenanceChanges();
+            
+        } else {
+            console.error('❌ Пользователь не найден в Firebase');
             localStorage.clear();
             window.location.href = 'register.html';
             return;
         }
-        
-        this.loadElements();
-        this.setupEventListeners();
-        this.startAutoClicker();
-        this.startPlaytimeTracker();
-        this.startBubbles();
-        
-        if (this.clickIcon && this.userData.currentSkin) {
-            this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
-        }
-        
-        this.settings = new Settings(this);
-        this.checkIfCreator();
-        
-        this.updateUI();
-        this.updateInventory();
-        this.updateShopStatus();
-        this.updateUpgradePrices();
-        this.updatePromocodesList();
-        this.updatePromocodesHistory();
-        this.updateLeaderboard('clicks');
-        
-        console.log('✅ Игра полностью загружена для:', this.userData.username);
+    } catch (error) {
+        console.error('❌ Ошибка загрузки из Firebase:', error);
+        localStorage.clear();
+        window.location.href = 'register.html';
+        return;
     }
-
-    // ===== ПРОВЕРКА СОЗДАТЕЛЯ =====
-    checkIfCreator() {
-        const userId = localStorage.getItem('userId');
-        const adminLink = document.getElementById('adminLinkBtn');
-        const creatorId = window.CREATOR_ID || "-OoEwrjU2Mehwmv3qQcC";
-        
-        console.log('🔍 Проверка админа:');
-        console.log('userId:', userId);
-        console.log('creatorId:', creatorId);
-        console.log('Совпадают?', userId === creatorId);
-        
-        if (userId === creatorId && adminLink) {
-            adminLink.style.display = 'inline-block';
-            console.log('👑 Админ-кнопка активирована');
-        }
-    }
+    
+    // ... остальной код
+}
 
     // ===== ПРОВЕРКА КОМПЕНСАЦИИ =====
     async checkCompensation() {
@@ -363,6 +326,208 @@ class ClickerGame {
         }, 3000);
     }
 
+    // ===== 👇 НОВЫЕ МЕТОДЫ ДЛЯ ТЕХРАБОТ =====
+
+    // ===== ПРОВЕРКА ТЕХРАБОТ ПРИ ЗАГРУЗКЕ =====
+    async checkMaintenanceStatus() {
+        try {
+            const maintRef = firebase.database().ref('maintenance');
+            const snapshot = await maintRef.once('value');
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                console.log('🔧 Статус техработ при загрузке:', data);
+                
+                if (data.active === true) {
+                    const userId = localStorage.getItem('userId');
+                    
+                    // Если это не создатель - показываем экран
+                    if (userId !== this.CREATOR_ID) {
+                        this.showMaintenanceScreen(data);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка проверки техработ:', error);
+        }
+    }
+
+    // ===== ПОСТОЯННЫЙ СЛУШАТЕЛЬ ТЕХРАБОТ =====
+    listenForMaintenanceChanges() {
+        const maintRef = firebase.database().ref('maintenance');
+        
+        // Удаляем старый слушатель если есть
+        if (this.maintenanceListener) {
+            maintRef.off('value', this.maintenanceListener);
+        }
+        
+        // Создаем новый слушатель
+        this.maintenanceListener = maintRef.on('value', (snapshot) => {
+            console.log('🔄 Изменение статуса техработ:', snapshot.val());
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                if (data.active === true) {
+                    const userId = localStorage.getItem('userId');
+                    
+                    if (userId !== this.CREATOR_ID) {
+                        this.showMaintenanceScreen(data);
+                    }
+                } else {
+                    // Техработы выключены - убираем экран
+                    const overlay = document.getElementById('maintenanceOverlay');
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                    }
+                    if (this.maintenanceInterval) {
+                        clearInterval(this.maintenanceInterval);
+                        this.maintenanceInterval = null;
+                    }
+                }
+            } else {
+                // Нет данных - убираем экран
+                const overlay = document.getElementById('maintenanceOverlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                }
+            }
+        }, (error) => {
+            console.error('Ошибка слушателя:', error);
+        });
+    }
+
+    // ===== ЭКРАН ТЕХРАБОТ =====
+    showMaintenanceScreen(data) {
+        const overlay = document.getElementById('maintenanceOverlay');
+        const timerDiv = document.getElementById('maintenanceTimer');
+        const progressBar = document.getElementById('maintenanceProgressBar');
+        
+        if (!overlay) return;
+        
+        console.log('🔧 Показываем экран техработ');
+        overlay.style.display = 'flex';
+        
+        if (data.endTime) {
+            timerDiv.style.display = 'block';
+            progressBar.style.width = '100%';
+            
+            const endTime = data.endTime;
+            
+            if (this.maintenanceInterval) {
+                clearInterval(this.maintenanceInterval);
+            }
+            
+            this.maintenanceInterval = setInterval(() => {
+                const now = Date.now();
+                const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+                
+                if (remaining <= 0) {
+                    clearInterval(this.maintenanceInterval);
+                    this.maintenanceInterval = null;
+                    
+                    // Автоматически выключаем в Firebase
+                    firebase.database().ref('maintenance').update({
+                        active: false
+                    }).catch(err => console.error('Ошибка отключения:', err));
+                    
+                    return;
+                }
+                
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = remaining % 60;
+                
+                timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                const total = data.duration || 3600;
+                const progress = ((total - remaining) / total) * 100;
+                progressBar.style.width = progress + '%';
+                
+            }, 1000);
+        } else {
+            timerDiv.style.display = 'none';
+            progressBar.style.width = '0%';
+        }
+    }
+
+    // ===== ПРОВЕРКА СОЗДАТЕЛЯ =====
+    checkIfCreator() {
+        const userId = localStorage.getItem('userId');
+        const adminBtn = document.getElementById('adminBtn');
+        
+        if (userId === this.CREATOR_ID && adminBtn) {
+            adminBtn.style.display = 'inline-block';
+            console.log('👑 Админ-кнопка активирована');
+        }
+    }
+
+    // ===== АДМИН-КОМАНДЫ (ТОЛЬКО ТЕХРАБОТЫ) =====
+    toggleAdminConsole() {
+        const adminConsole = document.getElementById('adminConsole');
+        if (!adminConsole) return;
+        
+        if (adminConsole.style.display === 'none' || !adminConsole.style.display) {
+            adminConsole.style.display = 'block';
+            
+            const adminUserId = document.getElementById('adminUserId');
+            if (adminUserId) {
+                adminUserId.textContent = localStorage.getItem('userId') || 'неизвестно';
+            }
+        } else {
+            adminConsole.style.display = 'none';
+        }
+    }
+
+    async executeAdminCommand(command) {
+        const userId = localStorage.getItem('userId');
+        
+        if (userId !== this.CREATOR_ID) {
+            this.showNotification('❌ Доступ запрещен', 'error');
+            return;
+        }
+        
+        const maintRef = firebase.database().ref('maintenance');
+        
+        switch(command) {
+            case 'tech_work':
+                // ✅ БЕЗОПАСНО - только узел maintenance
+                await maintRef.set({
+                    active: true,
+                    startTime: Date.now(),
+                    endTime: null,
+                    duration: null
+                });
+                this.showNotification('🔧 Техработы включены (бесконечно)', 'success');
+                break;
+                
+            case 'tech_work_time':
+                const seconds = document.getElementById('techWorkTimeInput')?.value;
+                if (!seconds || seconds < 1) {
+                    this.showNotification('❌ Введите корректное время', 'error');
+                    return;
+                }
+                const endTime = Date.now() + (seconds * 1000);
+                // ✅ БЕЗОПАСНО - только узел maintenance
+                await maintRef.set({
+                    active: true,
+                    startTime: Date.now(),
+                    endTime: endTime,
+                    duration: parseInt(seconds)
+                });
+                this.showNotification(`🔧 Техработы включены на ${seconds} сек`, 'success');
+                break;
+                
+            case 'tech_work_off':
+                // ✅ БЕЗОПАСНО - только узел maintenance
+                await maintRef.set({
+                    active: false
+                });
+                this.showNotification('✅ Техработы отключены', 'success');
+                break;
+        }
+    }
+
     // ===== ЗАГРУЗКА ЭЛЕМЕНТОВ =====
     loadElements() {
         this.usernameDisplay = document.getElementById('usernameDisplay');
@@ -412,12 +577,53 @@ class ClickerGame {
         this.navToggleBtn = document.getElementById('navToggleBtn');
         this.navLinks = document.querySelector('.nav-links');
         
-        this.adminLink = document.getElementById('adminLinkBtn');
+        // Админ-элементы
+        this.adminBtn = document.getElementById('adminBtn');
+        this.adminConsole = document.getElementById('adminConsole');
+        this.adminCloseBtn = document.getElementById('adminCloseBtn');
         
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => this.logout());
         }
+        
+        if (this.adminBtn) {
+            this.adminBtn.addEventListener('click', () => this.toggleAdminConsole());
+        }
+        
+        if (this.adminCloseBtn) {
+            this.adminCloseBtn.addEventListener('click', () => {
+                this.adminConsole.style.display = 'none';
+            });
+        }
+        
+        const execBtns = document.querySelectorAll('.admin-execute-btn');
+        execBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const command = btn.dataset.command;
+                this.executeAdminCommand(command);
+            });
+        });
+        
+        // Tab-навигация
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && this.adminConsole?.style.display === 'block') {
+                e.preventDefault();
+                
+                const focusable = this.adminConsole.querySelectorAll('button, input');
+                const currentIndex = Array.from(focusable).findIndex(el => el === document.activeElement);
+                
+                if (currentIndex === -1 || currentIndex === focusable.length - 1) {
+                    focusable[0]?.focus();
+                } else {
+                    focusable[currentIndex + 1]?.focus();
+                }
+            }
+            
+            if (e.key === 'Enter' && document.activeElement?.classList.contains('admin-execute-btn')) {
+                document.activeElement.click();
+            }
+        });
     }
 
     // ===== ОБРАБОТЧИКИ =====
@@ -481,7 +687,6 @@ class ClickerGame {
                 this.activatePromocode();
             });
         }
-        
         if (this.promocodeInput) {
             this.promocodeInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -907,9 +1112,10 @@ class ClickerGame {
     async updateLeaderboard(type) {
         if (!this.leaderboardBody) return;
         
-        this.leaderboardBody.innerHTML = '钱墏<td colspan="3" class="empty-history">Загрузка...</td> </tr>';
+        this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
         
         try {
+            // ✅ БЕЗОПАСНО - только ЧИТАЕМ всех пользователей
             const snapshot = await firebase.database().ref('users').once('value');
             
             if (!snapshot.exists()) {
@@ -1026,10 +1232,10 @@ class ClickerGame {
     // ===== СОХРАНЕНИЕ =====
     async saveGame() {
         const userId = localStorage.getItem('userId');
-        if (userId && this.userData) {
+        if (userId) {
             try {
+                // ✅ БЕЗОПАСНО - сохраняем только свои данные
                 await firebase.database().ref('users/' + userId).update(this.userData);
-                console.log('✅ Данные сохранены для:', this.userData.username);
             } catch (error) {
                 console.error('❌ Ошибка сохранения:', error);
             }
@@ -1046,6 +1252,14 @@ class ClickerGame {
         }
         if (this.playtimeInterval) {
             clearInterval(this.playtimeInterval);
+        }
+        if (this.maintenanceInterval) {
+            clearInterval(this.maintenanceInterval);
+        }
+        
+        // 👇 ВАЖНО: отключаем слушатель Firebase
+        if (this.maintenanceListener) {
+            firebase.database().ref('maintenance').off('value', this.maintenanceListener);
         }
         
         localStorage.removeItem('currentUser');
@@ -2347,29 +2561,19 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ===== СИСТЕМА ТЕХНИЧЕСКИХ РАБОТ (ФИКС ДЛЯ АДМИНА) =====
+// ===== СИСТЕМА ТЕХНИЧЕСКИХ РАБОТ =====
 
 function checkMaintenanceScreen() {
     const userId = localStorage.getItem('userId');
-    const creatorId = window.CREATOR_ID || "-OoEwrjU2Mehwmv3qQcC";
     
-    console.log("🔍 ПРОВЕРКА ТЕХРАБОТ:");
-    console.log("Твой userId:", userId);
-    console.log("CREATOR_ID:", creatorId);
-    console.log("Совпадают?", userId === creatorId);
-    
-    // Если это создатель - экран НЕ ПОКАЗЫВАЕМ
-    if (userId === creatorId) {
-        console.log("👑 ТЫ СОЗДАТЕЛЬ! Экран НЕ показываем");
-        const normalOverlay = document.getElementById('maintenanceOverlay');
-        const updateOverlay = document.getElementById('updateOverlay');
-        if (normalOverlay) normalOverlay.style.display = 'none';
-        if (updateOverlay) updateOverlay.style.display = 'none';
-        if (window.timerInterval) clearInterval(window.timerInterval);
+    // Если это создатель - экран НЕ показываем
+    if (userId === CREATOR_ID) {
+        const overlay1 = document.getElementById('maintenanceOverlay');
+        const overlay2 = document.getElementById('updateOverlay');
+        if (overlay1) overlay1.style.display = 'none';
+        if (overlay2) overlay2.style.display = 'none';
         return;
     }
-    
-    console.log("👤 Обычный игрок, проверяем статус техработ...");
     
     const maintRef = firebase.database().ref('maintenance');
     maintRef.once('value').then(snapshot => {
@@ -2388,8 +2592,6 @@ function checkMaintenanceScreen() {
         updateOverlay.style.display = 'none';
         
         if (data && data.active === true) {
-            console.log("🔧 Техработы активны, тип:", data.type);
-            
             if (data.type === 'timer' && data.endTime) {
                 // Экран "До обновы:" с таймером
                 updateOverlay.style.display = 'flex';
@@ -2461,7 +2663,7 @@ function checkMaintenanceScreen() {
                 }
             }
         } else {
-            console.log("✅ Техработы не активны");
+            if (window.timerInterval) clearInterval(window.timerInterval);
         }
     }).catch(err => console.error('Ошибка проверки техработ:', err));
 }
@@ -2473,8 +2675,133 @@ function listenMaintenanceChanges() {
     });
 }
 
-// Запуск при загрузке страницы
+// Вызываем при загрузке страницы
 setTimeout(() => {
     checkMaintenanceScreen();
     listenMaintenanceChanges();
-}, 500);
+}, 1000);
+
+// ===== СИСТЕМА ТЕХНИЧЕСКИХ РАБОТ (НЕ ПРОПАДАЕТ ПОСЛЕ ОБНОВЛЕНИЯ) =====
+
+function checkMaintenanceScreen() {
+    const userId = localStorage.getItem('userId');
+    
+    // Если это создатель - экран НЕ показываем
+    if (userId === CREATOR_ID) {
+        hideAllScreens();
+        return;
+    }
+    
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.once('value').then(snapshot => {
+        const data = snapshot.val();
+        const normalOverlay = document.getElementById('maintenanceOverlay');
+        const updateOverlay = document.getElementById('updateOverlay');
+        const timerDiv = document.getElementById('maintenanceTimer');
+        const updateTimerDiv = document.getElementById('updateTimer');
+        const progressBar = document.getElementById('maintenanceProgressBar');
+        const updateProgressBar = document.getElementById('updateProgressBar');
+        
+        if (!normalOverlay || !updateOverlay) return;
+        
+        // Скрываем оба экрана
+        hideAllScreens();
+        
+        if (data && data.active === true) {
+            if (data.type === 'timer' && data.endTime) {
+                // Экран "До обновы:" с таймером
+                updateOverlay.style.display = 'flex';
+                
+                const updateTimer = () => {
+                    const remaining = data.endTime - Date.now();
+                    
+                    if (remaining <= 0) {
+                        updateOverlay.style.display = 'none';
+                        if (window.timerInterval) clearInterval(window.timerInterval);
+                        return;
+                    }
+                    
+                    const seconds = Math.floor(remaining / 1000);
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = seconds % 60;
+                    
+                    if (updateTimerDiv) {
+                        updateTimerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        updateTimerDiv.style.display = 'block';
+                    }
+                    
+                    const total = data.duration || 3600;
+                    const progress = ((total - seconds) / total) * 100;
+                    if (updateProgressBar) updateProgressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+                };
+                
+                updateTimer();
+                if (window.timerInterval) clearInterval(window.timerInterval);
+                window.timerInterval = setInterval(updateTimer, 1000);
+                
+            } else {
+                // Обычный экран "Технические работы"
+                normalOverlay.style.display = 'flex';
+                
+                if (data.endTime) {
+                    if (timerDiv) timerDiv.style.display = 'block';
+                    if (progressBar) progressBar.style.width = '100%';
+                    
+                    const endTime = data.endTime;
+                    
+                    const updateNormalTimer = () => {
+                        const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+                        
+                        if (remaining <= 0) {
+                            normalOverlay.style.display = 'none';
+                            if (window.timerInterval) clearInterval(window.timerInterval);
+                            return;
+                        }
+                        
+                        const hours = Math.floor(remaining / 3600);
+                        const minutes = Math.floor((remaining % 3600) / 60);
+                        const seconds = remaining % 60;
+                        
+                        if (timerDiv) timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        const total = data.duration || 3600;
+                        const progress = ((total - remaining) / total) * 100;
+                        if (progressBar) progressBar.style.width = progress + '%';
+                    };
+                    
+                    updateNormalTimer();
+                    if (window.timerInterval) clearInterval(window.timerInterval);
+                    window.timerInterval = setInterval(updateNormalTimer, 1000);
+                } else {
+                    if (timerDiv) timerDiv.style.display = 'none';
+                    if (progressBar) progressBar.style.width = '0%';
+                }
+            }
+        }
+    }).catch(err => console.error('Ошибка проверки техработ:', err));
+}
+
+function hideAllScreens() {
+    const normalOverlay = document.getElementById('maintenanceOverlay');
+    const updateOverlay = document.getElementById('updateOverlay');
+    if (normalOverlay) normalOverlay.style.display = 'none';
+    if (updateOverlay) updateOverlay.style.display = 'none';
+    if (window.timerInterval) clearInterval(window.timerInterval);
+}
+
+function listenMaintenanceChanges() {
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.on('value', () => {
+        checkMaintenanceScreen();
+    });
+}
+
+// ЗАПУСК ПРИ ЗАГРУЗКЕ СТРАНИЦЫ (даже если код обновлен)
+document.addEventListener('DOMContentLoaded', function() {
+    // Небольшая задержка для уверенности
+    setTimeout(() => {
+        checkMaintenanceScreen();
+        listenMaintenanceChanges();
+    }, 500);
+});
