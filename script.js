@@ -10,7 +10,8 @@ class ClickerGame {
         this.settings = null;
         this.wheel = null;
         this.compensationShown = false;
-        this.isLoaded = false; // 👈 ДОБАВЛЕНО: флаг для оптимизации
+        this.isLoaded = false;
+        this.CREATOR_ID = "-Onbl-wmWqYsAV-cYUWm"; // ТВОЙ ID АДМИНА
         
         // Данные скинов
         this.skinsData = {
@@ -203,11 +204,9 @@ class ClickerGame {
             return;
         }
         
-        // ПОКАЗЫВАЕМ ЗАГРУЗОЧНЫЙ ЭКРАН
         this.showLoader(true);
         
         try {
-            // Загружаем данные ТОЛЬКО для этого userId (один запрос!)
             const userRef = firebase.database().ref('users/' + userId);
             const snapshot = await userRef.once('value');
             
@@ -215,7 +214,6 @@ class ClickerGame {
                 this.userData = snapshot.val();
                 console.log('✅ Данные загружены для:', this.userData.username);
                 
-                // Проверяем, что загруженный username совпадает с currentUser
                 if (this.userData.username !== currentUser) {
                     console.warn('⚠️ Несоответствие username! Очищаем данные...');
                     localStorage.clear();
@@ -235,28 +233,20 @@ class ClickerGame {
             return;
         }
         
-        // Быстрая загрузка элементов DOM
         this.loadElements();
         this.setupEventListeners();
-        
-        // МГНОВЕННОЕ ОБНОВЛЕНИЕ UI
         this.updateUI();
         this.updateInventory();
         this.updateShopStatus();
         this.updateUpgradePrices();
         
-        // Устанавливаем скин
         if (this.clickIcon && this.userData.currentSkin) {
             this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
         }
         
-        // Проверяем админа
         this.checkIfCreator();
-        
-        // Инициализируем настройки
         this.settings = new Settings(this);
         
-        // ФОНОВЫЕ ЗАДАЧИ (запускаем с задержкой, чтобы не блокировать UI)
         setTimeout(async () => {
             await this.checkCompensation();
             this.startAutoClicker();
@@ -266,7 +256,6 @@ class ClickerGame {
             this.updatePromocodesHistory();
             this.updateLeaderboard('clicks');
             
-            // Проверка техработ
             checkMaintenanceScreen();
             listenMaintenanceChanges();
             
@@ -274,13 +263,11 @@ class ClickerGame {
             this.showLoader(false);
         }, 100);
         
-        // Колесо создаем при первом открытии (ленивая загрузка)
         if (document.getElementById('wheel')?.classList.contains('active')) {
             this.wheel = new WheelOfFortune(this);
         }
     }
     
-    // ===== ЗАГРУЗОЧНЫЙ ЭКРАН =====
     showLoader(show) {
         let loader = document.getElementById('globalLoader');
         if (show) {
@@ -320,25 +307,18 @@ class ClickerGame {
         }
     }
 
-    // ===== ПРОВЕРКА КОМПЕНСАЦИИ =====
     async checkCompensation() {
-        if (this.userData.compensationReceived) {
-            console.log('✅ Компенсация уже была получена');
-            return;
-        }
+        if (this.userData.compensationReceived) return;
         
         const hasOldCollector = this.userData.completedAchievements && 
                                 this.userData.completedAchievements.includes('skinCollector');
-        
         const currentSkinCount = this.userData.inventory?.length || 0;
         
         if ((hasOldCollector || currentSkinCount >= 4) && !this.userData.compensationReceived) {
-            console.log('🎁 Игроку положена компенсация!');
             this.showCompensationDialog();
         }
     }
 
-    // ===== ПОКАЗ ДИАЛОГА КОМПЕНСАЦИИ =====
     showCompensationDialog() {
         if (this.compensationShown) return;
         this.compensationShown = true;
@@ -381,17 +361,14 @@ class ClickerGame {
         });
     }
 
-    // ===== ПОЛУЧЕНИЕ КОМПЕНСАЦИИ =====
     async claimCompensation() {
         this.userData.dilicks += 4500;
         this.userData.compensationReceived = true;
         await this.saveGame();
         this.updateUI();
         this.showNotification('✅ +4500 диликов получено!', 'success');
-        console.log('✅ Компенсация выдана:', this.userData.dilicks);
     }
 
-    // ===== УВЕДОМЛЕНИЕ =====
     showNotification(message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `settings-toast ${type}`;
@@ -405,7 +382,6 @@ class ClickerGame {
         }, 3000);
     }
 
-    // ===== ПРОВЕРКА СОЗДАТЕЛЯ =====
     checkIfCreator() {
         const userId = localStorage.getItem('userId');
         const adminBtn = document.getElementById('adminBtn');
@@ -416,14 +392,12 @@ class ClickerGame {
         }
     }
 
-    // ===== АДМИН-КОМАНДЫ =====
     toggleAdminConsole() {
         const adminConsole = document.getElementById('adminConsole');
         if (!adminConsole) return;
         
         if (adminConsole.style.display === 'none' || !adminConsole.style.display) {
             adminConsole.style.display = 'block';
-            
             const adminUserId = document.getElementById('adminUserId');
             if (adminUserId) {
                 adminUserId.textContent = localStorage.getItem('userId') || 'неизвестно';
@@ -479,7 +453,6 @@ class ClickerGame {
         }
     }
 
-    // ===== ЗАГРУЗКА ЭЛЕМЕНТОВ =====
     loadElements() {
         this.usernameDisplay = document.getElementById('usernameDisplay');
         this.moneySpan = document.getElementById('money');
@@ -528,7 +501,6 @@ class ClickerGame {
         this.navToggleBtn = document.getElementById('navToggleBtn');
         this.navLinks = document.querySelector('.nav-links');
         
-        // Админ-элементы
         this.adminBtn = document.getElementById('adminBtn');
         this.adminConsole = document.getElementById('adminConsole');
         this.adminCloseBtn = document.getElementById('adminCloseBtn');
@@ -556,28 +528,23 @@ class ClickerGame {
             });
         });
         
-        // Tab-навигация
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Tab' && this.adminConsole?.style.display === 'block') {
                 e.preventDefault();
-                
                 const focusable = this.adminConsole.querySelectorAll('button, input');
                 const currentIndex = Array.from(focusable).findIndex(el => el === document.activeElement);
-                
                 if (currentIndex === -1 || currentIndex === focusable.length - 1) {
                     focusable[0]?.focus();
                 } else {
                     focusable[currentIndex + 1]?.focus();
                 }
             }
-            
             if (e.key === 'Enter' && document.activeElement?.classList.contains('admin-execute-btn')) {
                 document.activeElement.click();
             }
         });
     }
 
-    // ===== ОБРАБОТЧИКИ =====
     setupEventListeners() {
         this.navBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -660,7 +627,6 @@ class ClickerGame {
         }
     }
 
-    // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
     switchTab(tabId) {
         this.navBtns.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabId);
@@ -670,18 +636,10 @@ class ClickerGame {
             tab.classList.toggle('active', tab.id === tabId);
         });
         
-        if (tabId === 'inventory') {
-            this.updateInventory();
-        }
-        if (tabId === 'upgrades') {
-            this.updateUpgradePrices();
-        }
-        if (tabId === 'profile') {
-            this.updateProfile();
-        }
-        if (tabId === 'settings' && this.settings) {
-            this.settings.updateUI();
-        }
+        if (tabId === 'inventory') this.updateInventory();
+        if (tabId === 'upgrades') this.updateUpgradePrices();
+        if (tabId === 'profile') this.updateProfile();
+        if (tabId === 'settings' && this.settings) this.settings.updateUI();
         if (tabId === 'promocodes') {
             this.updatePromocodesList();
             this.updatePromocodesHistory();
@@ -698,10 +656,8 @@ class ClickerGame {
         }
     }
 
-    // ===== КЛИК =====
     handleClick(e) {
         if (!this.isLoaded && this.userData) {
-            // Если еще не загружено, но данные есть - разрешаем клик
             this.isLoaded = true;
         }
         
@@ -749,7 +705,6 @@ class ClickerGame {
         }, 600);
     }
 
-    // ===== ПОКУПКА СКИНА =====
     async buyItem(item, price) {
         if (item === 'wheel_dragon_skin') {
             alert('❌ Этот скин можно получить только в колесе фортуны!');
@@ -790,7 +745,6 @@ class ClickerGame {
         alert(`✅ Куплен скин: ${this.skinsData[item].name}`);
     }
 
-    // ===== ПОКУПКА УЛУЧШЕНИЯ =====
     async buyUpgrade(upgradeType) {
         let currentLevel;
         let price;
@@ -847,7 +801,6 @@ class ClickerGame {
         }
     }
 
-    // ===== ОБНОВЛЕНИЕ ЦЕН УЛУЧШЕНИЙ =====
     updateUpgradePrices() {
         document.querySelectorAll('.upgrade-item').forEach(item => {
             const upgradeType = item.dataset.upgrade;
@@ -884,7 +837,6 @@ class ClickerGame {
         });
     }
 
-    // ===== ОБНОВЛЕНИЕ СТАТУСА МАГАЗИНА =====
     updateShopStatus() {
         document.querySelectorAll('.shop-item').forEach(item => {
             const skinId = item.dataset.skin;
@@ -909,7 +861,6 @@ class ClickerGame {
         });
     }
 
-    // ===== ОБНОВЛЕНИЕ ИНВЕНТАРЯ =====
     updateInventory() {
         if (!this.inventoryGrid) return;
         
@@ -956,7 +907,6 @@ class ClickerGame {
         });
     }
 
-    // ===== ЭКИПИРОВКА СКИНА =====
     async equipSkin(skinId) {
         this.userData.currentSkin = skinId;
         if (this.clickIcon) {
@@ -981,7 +931,6 @@ class ClickerGame {
         }
     }
 
-    // ===== АВТОКЛИКЕР =====
     startAutoClicker() {
         if (this.autoClickerInterval) {
             clearInterval(this.autoClickerInterval);
@@ -1012,7 +961,6 @@ class ClickerGame {
         this.startAutoClicker();
     }
 
-    // ===== ТРЕКЕР ВРЕМЕНИ =====
     startPlaytimeTracker() {
         this.playtimeInterval = setInterval(() => {
             if (this.isLoaded) {
@@ -1034,7 +982,6 @@ class ClickerGame {
             `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // ===== СЕЗОННЫЙ ОПЫТ =====
     addSeasonExp(amount) {
         this.userData.seasonExp += amount;
         const expNeeded = 100 + (this.userData.seasonLevel * 50);
@@ -1053,7 +1000,6 @@ class ClickerGame {
         }
     }
 
-    // ===== ПРЕМИУМ ПРОПУСК =====
     async buyPremiumPass() {
         if (this.userData.dilicks >= 500) {
             this.userData.dilicks -= 500;
@@ -1066,17 +1012,17 @@ class ClickerGame {
         }
     }
 
-    // ===== ЛИДЕРБОРД =====
+    // ===== ИСПРАВЛЕННЫЙ ЛИДЕРБОРД (БЕЗ КИТАЙСКИХ ИЕРОГЛИФОВ) =====
     async updateLeaderboard(type) {
         if (!this.leaderboardBody) return;
         
-        this.leaderboardBody.innerHTML = '得到了<td colspan="3" class="empty-history">Загрузка...得到了⁠';
+        this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
         
         try {
             const snapshot = await firebase.database().ref('users').once('value');
             
             if (!snapshot.exists()) {
-                this.leaderboardBody.innerHTML = '得到了<td colspan="3" class="empty-history">Нет данных得到了⁠';
+                this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Нет данных</td></tr>';
                 return;
             }
             
@@ -1108,7 +1054,7 @@ class ClickerGame {
             this.leaderboardBody.innerHTML = '';
             
             if (topPlayers.length === 0) {
-                this.leaderboardBody.innerHTML = '得到了<td colspan="3" class="empty-history">Нет данных得到了⁠';
+                this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Нет данных</td></tr>';
                 return;
             }
             
@@ -1135,7 +1081,7 @@ class ClickerGame {
             
         } catch (error) {
             console.error('Ошибка загрузки лидерборда:', error);
-            this.leaderboardBody.innerHTML = '得到了<td colspan="3" class="empty-history">Ошибка загрузки得到了⁠';
+            this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Ошибка загрузки</td></tr>';
         }
     }
 
@@ -1150,7 +1096,6 @@ class ClickerGame {
         }
     }
 
-    // ===== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА =====
     async updateUI() {
         const displayName = this.userData.settings?.displayName || this.userData.username;
         if (this.usernameDisplay) {
@@ -1186,7 +1131,6 @@ class ClickerGame {
         }
     }
 
-    // ===== СОХРАНЕНИЕ =====
     async saveGame() {
         const userId = localStorage.getItem('userId');
         if (userId && this.isLoaded) {
@@ -1198,7 +1142,6 @@ class ClickerGame {
         }
     }
 
-    // ===== ВЫХОД =====
     async logout() {
         if (this.bubbleFrame) {
             cancelAnimationFrame(this.bubbleFrame);
@@ -1223,7 +1166,6 @@ class ClickerGame {
         window.location.href = 'register.html';
     }
 
-    // ===== ПУЗЫРЬКИ =====
     createBubble() {
         const existingBubbles = document.querySelectorAll('.bubble').length;
         if (existingBubbles > 10) return;
@@ -1263,7 +1205,6 @@ class ClickerGame {
         this.bubbleFrame = requestAnimationFrame(createBubbleOptimized);
     }
 
-    // ===== ДОСТИЖЕНИЯ =====
     checkAchievements() {
         if (!this.userData.completedAchievements) {
             this.userData.completedAchievements = [];
@@ -1459,7 +1400,6 @@ class ClickerGame {
         });
     }
 
-    // ===== ПРОМОКОДЫ =====
     activatePromocode() {
         if (!this.promocodeInput) return;
         
@@ -1684,113 +1624,75 @@ class Settings {
 
     setupEventListeners() {
         const saveDisplayName = document.getElementById('saveDisplayName');
-        if (saveDisplayName) {
-            saveDisplayName.addEventListener('click', () => this.saveDisplayName());
-        }
+        if (saveDisplayName) saveDisplayName.addEventListener('click', () => this.saveDisplayName());
 
         const changePasswordBtn = document.getElementById('changePasswordBtn');
-        if (changePasswordBtn) {
-            changePasswordBtn.addEventListener('click', () => this.changePassword());
-        }
+        if (changePasswordBtn) changePasswordBtn.addEventListener('click', () => this.changePassword());
 
         const themeSelect = document.getElementById('themeSelect');
-        if (themeSelect) {
-            themeSelect.addEventListener('change', (e) => this.saveTheme(e.target.value));
-        }
+        if (themeSelect) themeSelect.addEventListener('change', (e) => this.saveTheme(e.target.value));
 
         const notificationsEnabled = document.getElementById('notificationsEnabled');
-        if (notificationsEnabled) {
-            notificationsEnabled.addEventListener('change', (e) => {
-                this.game.userData.settings.notifications = e.target.checked;
-                this.game.saveGame();
-                this.showToast('✅ Настройки уведомлений сохранены', 'success');
-            });
-        }
+        if (notificationsEnabled) notificationsEnabled.addEventListener('change', (e) => {
+            this.game.userData.settings.notifications = e.target.checked;
+            this.game.saveGame();
+            this.showToast('✅ Настройки уведомлений сохранены', 'success');
+        });
 
         const soundEnabled = document.getElementById('soundEnabled');
-        if (soundEnabled) {
-            soundEnabled.addEventListener('change', (e) => {
-                this.game.userData.settings.sound = e.target.checked;
-                this.game.saveGame();
-                this.showToast('✅ Настройки звука сохранены', 'success');
-            });
-        }
+        if (soundEnabled) soundEnabled.addEventListener('change', (e) => {
+            this.game.userData.settings.sound = e.target.checked;
+            this.game.saveGame();
+            this.showToast('✅ Настройки звука сохранены', 'success');
+        });
 
         const animationsEnabled = document.getElementById('animationsEnabled');
-        if (animationsEnabled) {
-            animationsEnabled.addEventListener('change', (e) => {
-                this.game.userData.settings.animations = e.target.checked;
-                this.game.saveGame();
-                this.showToast('✅ Настройки анимаций сохранены', 'success');
-            });
-        }
+        if (animationsEnabled) animationsEnabled.addEventListener('change', (e) => {
+            this.game.userData.settings.animations = e.target.checked;
+            this.game.saveGame();
+            this.showToast('✅ Настройки анимаций сохранены', 'success');
+        });
 
         const languageSelect = document.getElementById('languageSelect');
-        if (languageSelect) {
-            languageSelect.addEventListener('change', (e) => this.saveLanguage(e.target.value));
-        }
+        if (languageSelect) languageSelect.addEventListener('change', (e) => this.saveLanguage(e.target.value));
 
         const exportDataBtn = document.getElementById('exportDataBtn');
-        if (exportDataBtn) {
-            exportDataBtn.addEventListener('click', () => this.exportData());
-        }
+        if (exportDataBtn) exportDataBtn.addEventListener('click', () => this.exportData());
 
         const importDataBtn = document.getElementById('importDataBtn');
-        if (importDataBtn) {
-            importDataBtn.addEventListener('click', () => this.importData());
-        }
+        if (importDataBtn) importDataBtn.addEventListener('click', () => this.importData());
 
         const resetProgressBtn = document.getElementById('resetProgressBtn');
-        if (resetProgressBtn) {
-            resetProgressBtn.addEventListener('click', () => this.confirmResetProgress());
-        }
+        if (resetProgressBtn) resetProgressBtn.addEventListener('click', () => this.confirmResetProgress());
 
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
-        if (deleteAccountBtn) {
-            deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
-        }
+        if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
 
         const checkUpdatesBtn = document.getElementById('checkUpdatesBtn');
-        if (checkUpdatesBtn) {
-            checkUpdatesBtn.addEventListener('click', () => this.checkUpdates());
-        }
+        if (checkUpdatesBtn) checkUpdatesBtn.addEventListener('click', () => this.checkUpdates());
     }
 
     updateUI() {
         const displayNameInput = document.getElementById('displayName');
-        if (displayNameInput) {
-            displayNameInput.value = this.game.userData.settings.displayName || this.game.userData.username;
-        }
+        if (displayNameInput) displayNameInput.value = this.game.userData.settings.displayName || this.game.userData.username;
 
         const usernameInput = document.getElementById('username');
-        if (usernameInput) {
-            usernameInput.value = this.game.userData.username;
-        }
+        if (usernameInput) usernameInput.value = this.game.userData.username;
 
         const themeSelect = document.getElementById('themeSelect');
-        if (themeSelect) {
-            themeSelect.value = this.game.userData.settings.theme || 'dark';
-        }
+        if (themeSelect) themeSelect.value = this.game.userData.settings.theme || 'dark';
 
         const notificationsEnabled = document.getElementById('notificationsEnabled');
-        if (notificationsEnabled) {
-            notificationsEnabled.checked = this.game.userData.settings.notifications !== false;
-        }
+        if (notificationsEnabled) notificationsEnabled.checked = this.game.userData.settings.notifications !== false;
 
         const soundEnabled = document.getElementById('soundEnabled');
-        if (soundEnabled) {
-            soundEnabled.checked = this.game.userData.settings.sound !== false;
-        }
+        if (soundEnabled) soundEnabled.checked = this.game.userData.settings.sound !== false;
 
         const animationsEnabled = document.getElementById('animationsEnabled');
-        if (animationsEnabled) {
-            animationsEnabled.checked = this.game.userData.settings.animations !== false;
-        }
+        if (animationsEnabled) animationsEnabled.checked = this.game.userData.settings.animations !== false;
 
         const languageSelect = document.getElementById('languageSelect');
-        if (languageSelect) {
-            languageSelect.value = this.game.userData.settings.language || 'ru';
-        }
+        if (languageSelect) languageSelect.value = this.game.userData.settings.language || 'ru';
     }
 
     async saveDisplayName() {
@@ -1811,14 +1713,10 @@ class Settings {
         await this.game.saveGame();
         
         const profileUsername = document.getElementById('profileUsername');
-        if (profileUsername) {
-            profileUsername.textContent = newName;
-        }
+        if (profileUsername) profileUsername.textContent = newName;
         
         const usernameDisplay = document.getElementById('usernameDisplay');
-        if (usernameDisplay) {
-            usernameDisplay.textContent = newName;
-        }
+        if (usernameDisplay) usernameDisplay.textContent = newName;
         
         this.showToast(`✅ Никнейм изменен на "${newName}"`, 'success');
     }
@@ -2521,7 +2419,6 @@ document.addEventListener('keydown', (e) => {
 function checkMaintenanceScreen() {
     const userId = localStorage.getItem('userId');
     
-    // Если это создатель - экран НЕ показываем
     if (userId === CREATOR_ID) {
         const overlay1 = document.getElementById('maintenanceOverlay');
         const overlay2 = document.getElementById('updateOverlay');
@@ -2542,13 +2439,11 @@ function checkMaintenanceScreen() {
         
         if (!normalOverlay || !updateOverlay) return;
         
-        // Скрываем оба экрана
         normalOverlay.style.display = 'none';
         updateOverlay.style.display = 'none';
         
         if (data && data.active === true) {
             if (data.type === 'timer' && data.endTime) {
-                // Экран "До обновы:" с таймером
                 updateOverlay.style.display = 'flex';
                 
                 const updateTimer = () => {
@@ -2580,7 +2475,6 @@ function checkMaintenanceScreen() {
                 window.timerInterval = setInterval(updateTimer, 1000);
                 
             } else {
-                // Обычный экран "Технические работы"
                 normalOverlay.style.display = 'flex';
                 
                 if (data.endTime) {
@@ -2630,7 +2524,6 @@ function listenMaintenanceChanges() {
     });
 }
 
-// Вызываем при загрузке страницы
 setTimeout(() => {
     checkMaintenanceScreen();
     listenMaintenanceChanges();
