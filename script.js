@@ -1,4 +1,4 @@
-// script.js - ПОЛНАЯ ВЕРСИЯ С ПРОВЕРКОЙ АДМИНА
+// script.js - ПОЛНАЯ ВЕРСИЯ С ПРОВЕРКОЙ АДМИНА И ЭКРАНОМ ТЕХРАБОТ
 
 class ClickerGame {
     constructor() {
@@ -78,6 +78,7 @@ class ClickerGame {
         this.init();
     }
 
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
     async init() {
         const userId = localStorage.getItem('userId');
         const currentUser = localStorage.getItem('currentUser');
@@ -95,6 +96,8 @@ class ClickerGame {
                 this.userData = snapshot.val();
                 console.log('✅ Данные загружены');
                 await this.checkCompensation();
+                await this.checkMaintenanceStatus(); // Проверка техработ
+                this.listenForMaintenanceChanges(); // Слушатель техработ
             } else {
                 localStorage.clear();
                 window.location.href = 'register.html';
@@ -118,7 +121,7 @@ class ClickerGame {
         }
         
         this.settings = new Settings(this);
-        this.checkIfCreator(); // 👈 ПРОВЕРКА АДМИНА
+        this.checkIfCreator(); // Проверка админа для кнопки 🛠️
         
         this.updateUI();
         this.updateInventory();
@@ -133,14 +136,108 @@ class ClickerGame {
     checkIfCreator() {
         const userId = localStorage.getItem('userId');
         const adminLink = document.getElementById('adminLinkBtn');
-        const creatorId = '-Onbl-wmWqYsAV-cYUWm'; // ТВОЙ ID
         
-        if (userId === creatorId && adminLink) {
+        if (userId === CREATOR_ID && adminLink) {
             adminLink.style.display = 'inline-block';
             console.log('👑 Админ-кнопка активирована');
         }
     }
 
+    // ===== ПРОВЕРКА ТЕХРАБОТ =====
+    async checkMaintenanceStatus() {
+        try {
+            const maintRef = firebase.database().ref('maintenance');
+            const snapshot = await maintRef.once('value');
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                if (data.active === true) {
+                    const userId = localStorage.getItem('userId');
+                    if (userId !== CREATOR_ID) {
+                        this.showMaintenanceScreen(data);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка проверки техработ:', error);
+        }
+    }
+
+    // ===== СЛУШАТЕЛЬ ТЕХРАБОТ =====
+    listenForMaintenanceChanges() {
+        const maintRef = firebase.database().ref('maintenance');
+        
+        if (this.maintenanceListener) {
+            maintRef.off('value', this.maintenanceListener);
+        }
+        
+        this.maintenanceListener = maintRef.on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                if (data.active === true) {
+                    const userId = localStorage.getItem('userId');
+                    if (userId !== CREATOR_ID) {
+                        this.showMaintenanceScreen(data);
+                    }
+                } else {
+                    const overlay = document.getElementById('maintenanceOverlay');
+                    if (overlay) overlay.style.display = 'none';
+                    if (this.maintenanceInterval) {
+                        clearInterval(this.maintenanceInterval);
+                        this.maintenanceInterval = null;
+                    }
+                }
+            } else {
+                const overlay = document.getElementById('maintenanceOverlay');
+                if (overlay) overlay.style.display = 'none';
+            }
+        });
+    }
+
+    // ===== ЭКРАН ТЕХРАБОТ =====
+    showMaintenanceScreen(data) {
+        const overlay = document.getElementById('maintenanceOverlay');
+        const timerDiv = document.getElementById('maintenanceTimer');
+        const progressBar = document.getElementById('maintenanceProgressBar');
+        
+        if (!overlay) return;
+        
+        overlay.style.display = 'flex';
+        
+        if (data.endTime) {
+            timerDiv.style.display = 'block';
+            progressBar.style.width = '100%';
+            const endTime = data.endTime;
+            
+            if (this.maintenanceInterval) clearInterval(this.maintenanceInterval);
+            
+            this.maintenanceInterval = setInterval(() => {
+                const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+                
+                if (remaining <= 0) {
+                    clearInterval(this.maintenanceInterval);
+                    this.maintenanceInterval = null;
+                    firebase.database().ref('maintenance').update({ active: false });
+                    return;
+                }
+                
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = remaining % 60;
+                
+                timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                const total = data.duration || 3600;
+                const progress = ((total - remaining) / total) * 100;
+                progressBar.style.width = progress + '%';
+            }, 1000);
+        } else {
+            timerDiv.style.display = 'none';
+            progressBar.style.width = '0%';
+        }
+    }
+
+    // ===== КОМПЕНСАЦИЯ =====
     async checkCompensation() {
         if (this.userData.compensationReceived) return;
         
@@ -171,8 +268,8 @@ class ClickerGame {
                     </div>
                 </div>
                 <div style="display:flex; gap:15px; justify-content:center;">
-                    <button class="modal-btn confirm" id="claimCompensation" style="background:rgba(76,175,80,0.2); border:1px solid #4CAF50; padding:12px 30px; border-radius:40px;">ПОЛУЧИТЬ</button>
-                    <button class="modal-btn cancel" id="closeCompensation" style="background:rgba(255,255,255,0.1); padding:12px 30px; border-radius:40px;">ПОЗЖЕ</button>
+                    <button class="modal-btn confirm" id="claimCompensation">ПОЛУЧИТЬ</button>
+                    <button class="modal-btn cancel" id="closeCompensation">ПОЗЖЕ</button>
                 </div>
             </div>
         `;
@@ -199,6 +296,7 @@ class ClickerGame {
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
     }
 
+    // ===== ЗАГРУЗКА ЭЛЕМЕНТОВ =====
     loadElements() {
         this.usernameDisplay = document.getElementById('usernameDisplay');
         this.moneySpan = document.getElementById('money');
@@ -478,10 +576,10 @@ class ClickerGame {
 
     async updateLeaderboard(type) {
         if (!this.leaderboardBody) return;
-        this.leaderboardBody.innerHTML = '得到了<td colspan="3">Загрузка...</td>⁠';
+        this.leaderboardBody.innerHTML = '得到了<td colspan="3">Загрузка...得到了⁠';
         try {
             const snapshot = await firebase.database().ref('users').once('value');
-            if (!snapshot.exists()) { this.leaderboardBody.innerHTML = '<tr><td colspan="3">Нет данных</td></tr>'; return; }
+            if (!snapshot.exists()) { this.leaderboardBody.innerHTML = '得到了<td colspan="3">Нет данных得到了⁠'; return; }
             const users = snapshot.val();
             const leaderboard = [];
             for (let [id, userData] of Object.entries(users)) {
@@ -498,11 +596,11 @@ class ClickerGame {
                 const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
                 const row = document.createElement('tr');
                 if (entry.real === localStorage.getItem('currentUser')) row.style.background = 'rgba(255,215,0,0.1)';
-                row.innerHTML = `<td>${medal}</td><td>${entry.username}${entry.real === localStorage.getItem('currentUser') ? ' 👑' : ''}</td><td>${this.formatLeaderboardValue(entry.value, type)}</td>`;
+                row.innerHTML = `得到了${medal}得到了得到了${entry.username}${entry.real === localStorage.getItem('currentUser') ? ' 👑' : ''}得到了得到了${this.formatLeaderboardValue(entry.value, type)}得到了`;
                 this.leaderboardBody.appendChild(row);
             });
         } catch (error) {
-            this.leaderboardBody.innerHTML = '<tr><td colspan="3">Ошибка загрузки</td></tr>';
+            this.leaderboardBody.innerHTML = '得到了<td colspan="3">Ошибка загрузки得到了⁠';
         }
     }
 
@@ -535,6 +633,8 @@ class ClickerGame {
         if (this.bubbleFrame) cancelAnimationFrame(this.bubbleFrame);
         if (this.autoClickerInterval) clearInterval(this.autoClickerInterval);
         if (this.playtimeInterval) clearInterval(this.playtimeInterval);
+        if (this.maintenanceInterval) clearInterval(this.maintenanceInterval);
+        if (this.maintenanceListener) firebase.database().ref('maintenance').off('value', this.maintenanceListener);
         localStorage.clear();
         window.location.href = 'register.html';
     }
