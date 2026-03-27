@@ -63,6 +63,11 @@
             display: inline-block;
             margin-bottom: 10px;
         }
+        .admin-command-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
         .admin-input-group {
             display: flex;
             gap: 10px;
@@ -107,6 +112,7 @@
             transition: all 0.15s ease;
         }
         .glass-btn:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-1px); }
+        .glass-btn:active { transform: scale(0.96); }
         .back-link {
             display: inline-block;
             margin-top: 20px;
@@ -125,6 +131,15 @@
             text-align: center;
         }
         .admin-info span { color: gold; font-family: monospace; }
+        .error-message {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -138,34 +153,40 @@
                 </div>
             </div>
             
-            <div class="admin-card liquid-glass">
-                <h2>📊 СТАТУС ТЕХРАБОТ</h2>
-                <div id="maintenanceStatus" class="admin-status inactive">✅ Технические работы ОТКЛЮЧЕНЫ</div>
-                <div id="maintenanceTimerDisplay" class="admin-timer" style="display: none;"></div>
+            <div id="accessError" class="error-message" style="display: none;">
+                ⚠️ У вас нет доступа к админ-панели
             </div>
             
-            <div class="admin-card liquid-glass">
-                <h2>⚡ БЫСТРЫЕ КОМАНДЫ</h2>
-                
-                <div class="admin-command">
-                    <div class="admin-command-code">/technical work</div>
-                    <div class="admin-command-desc">🔧 Включить бесконечный экран техработ</div>
-                    <button class="glass-btn" id="techWorkBtn">ВЫПОЛНИТЬ</button>
+            <div id="adminContent" style="display: none;">
+                <div class="admin-card liquid-glass">
+                    <h2>📊 СТАТУС ТЕХРАБОТ</h2>
+                    <div id="maintenanceStatus" class="admin-status inactive">✅ Технические работы ОТКЛЮЧЕНЫ</div>
+                    <div id="maintenanceTimerDisplay" class="admin-timer" style="display: none;"></div>
                 </div>
                 
-                <div class="admin-command">
-                    <div class="admin-command-code">/technical work time &lt;секунды&gt;</div>
-                    <div class="admin-command-desc">⏱️ Включить техработы на указанное время</div>
-                    <div class="admin-input-group">
-                        <input type="number" id="techWorkSeconds" placeholder="секунды" value="30" min="1" max="86400">
-                        <button class="glass-btn" id="updateTimeBtn">ВЫПОЛНИТЬ</button>
+                <div class="admin-card liquid-glass">
+                    <h2>⚡ БЫСТРЫЕ КОМАНДЫ</h2>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/technical work</div>
+                        <div class="admin-command-desc">🔧 Включить бесконечный экран техработ</div>
+                        <button class="glass-btn" id="techWorkBtn">ВЫПОЛНИТЬ</button>
                     </div>
-                </div>
-                
-                <div class="admin-command">
-                    <div class="admin-command-code">/not technical work</div>
-                    <div class="admin-command-desc">✅ Выключить экран техработ</div>
-                    <button class="glass-btn" id="notTechWorkBtn">ВЫПОЛНИТЬ</button>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/technical work time &lt;секунды&gt;</div>
+                        <div class="admin-command-desc">⏱️ Включить техработы на указанное время</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="techWorkSeconds" placeholder="секунды" value="30" min="1" max="86400">
+                            <button class="glass-btn" id="updateTimeBtn">ВЫПОЛНИТЬ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/not technical work</div>
+                        <div class="admin-command-desc">✅ Выключить экран техработ</div>
+                        <button class="glass-btn" id="notTechWorkBtn">ВЫПОЛНИТЬ</button>
+                    </div>
                 </div>
             </div>
             
@@ -174,88 +195,144 @@
     </div>
     
     <script>
-        const maintRef = firebase.database().ref('maintenance');
-        let timerInterval = null;
-        
-        const adminIdSpan = document.getElementById('adminUserId');
-        if (adminIdSpan) adminIdSpan.textContent = CREATOR_ID;
-        
-        function updateStatusDisplay() {
-            maintRef.once('value').then(snapshot => {
-                const data = snapshot.val();
-                const statusDiv = document.getElementById('maintenanceStatus');
-                const timerDisplay = document.getElementById('maintenanceTimerDisplay');
-                
-                if (data && data.active === true) {
-                    statusDiv.className = 'admin-status active';
-                    if (data.endTime) {
-                        const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
-                        const hours = Math.floor(remaining / 3600);
-                        const minutes = Math.floor((remaining % 3600) / 60);
-                        const secs = remaining % 60;
-                        statusDiv.innerHTML = `🔧 Технические работы ВКЛЮЧЕНЫ<br><span style="font-size:0.8rem;">Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</span>`;
-                        timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-                        timerDisplay.style.display = 'block';
-                    } else {
-                        statusDiv.innerHTML = '🔧 Технические работы ВКЛЮЧЕНЫ (без ограничений)';
-                        timerDisplay.style.display = 'none';
-                    }
-                } else {
-                    statusDiv.className = 'admin-status inactive';
-                    statusDiv.innerHTML = '✅ Технические работы ОТКЛЮЧЕНЫ';
-                    timerDisplay.style.display = 'none';
+        // Ждем загрузки Firebase
+        setTimeout(() => {
+            const userId = localStorage.getItem('userId');
+            const adminContent = document.getElementById('adminContent');
+            const accessError = document.getElementById('accessError');
+            const adminIdSpan = document.getElementById('adminUserId');
+            
+            console.log('🔍 Проверка доступа. UserID:', userId);
+            console.log('🔍 CREATOR_ID:', typeof CREATOR_ID !== 'undefined' ? CREATOR_ID : 'не определен');
+            
+            // Проверяем, что CREATOR_ID существует
+            if (typeof CREATOR_ID === 'undefined') {
+                console.error('❌ CREATOR_ID не определен в firebase-config.js');
+                if (accessError) {
+                    accessError.style.display = 'block';
+                    accessError.innerHTML = '⚠️ Ошибка конфигурации: CREATOR_ID не найден. Проверьте firebase-config.js';
                 }
-            });
-        }
-        
-        function startTimerDisplay() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
+                if (adminIdSpan) adminIdSpan.textContent = userId || 'не авторизован';
+                return;
+            }
+            
+            // Проверяем доступ
+            if (userId !== CREATOR_ID) {
+                console.log('❌ Доступ запрещен. Ваш ID:', userId);
+                if (accessError) {
+                    accessError.style.display = 'block';
+                    accessError.innerHTML = '⚠️ У вас нет доступа к админ-панели. Только создатель игры имеет доступ.';
+                }
+                if (adminIdSpan) adminIdSpan.textContent = userId || 'не авторизован';
+                return;
+            }
+            
+            // Доступ разрешен
+            console.log('✅ Доступ разрешен');
+            if (adminContent) adminContent.style.display = 'block';
+            if (adminIdSpan) adminIdSpan.textContent = userId;
+            
+            const maintRef = firebase.database().ref('maintenance');
+            let timerInterval = null;
+            
+            function updateStatusDisplay() {
                 maintRef.once('value').then(snapshot => {
                     const data = snapshot.val();
+                    const statusDiv = document.getElementById('maintenanceStatus');
                     const timerDisplay = document.getElementById('maintenanceTimerDisplay');
-                    if (data && data.active === true && data.endTime) {
-                        const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
-                        if (remaining <= 0) {
-                            clearInterval(timerInterval);
-                            updateStatusDisplay();
-                            return;
+                    
+                    if (data && data.active === true) {
+                        statusDiv.className = 'admin-status active';
+                        if (data.endTime) {
+                            const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
+                            const hours = Math.floor(remaining / 3600);
+                            const minutes = Math.floor((remaining % 3600) / 60);
+                            const secs = remaining % 60;
+                            statusDiv.innerHTML = `🔧 Технические работы ВКЛЮЧЕНЫ<br><span style="font-size:0.8rem;">Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</span>`;
+                            timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                            timerDisplay.style.display = 'block';
+                        } else {
+                            statusDiv.innerHTML = '🔧 Технические работы ВКЛЮЧЕНЫ (без ограничений)';
+                            timerDisplay.style.display = 'none';
                         }
-                        const hours = Math.floor(remaining / 3600);
-                        const minutes = Math.floor((remaining % 3600) / 60);
-                        const secs = remaining % 60;
-                        timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-                        timerDisplay.style.display = 'block';
+                    } else {
+                        statusDiv.className = 'admin-status inactive';
+                        statusDiv.innerHTML = '✅ Технические работы ОТКЛЮЧЕНЫ';
+                        timerDisplay.style.display = 'none';
+                    }
+                }).catch(err => {
+                    console.error('Ошибка получения статуса:', err);
+                    const statusDiv = document.getElementById('maintenanceStatus');
+                    if (statusDiv) {
+                        statusDiv.className = 'admin-status inactive';
+                        statusDiv.innerHTML = '❌ Ошибка подключения к Firebase';
                     }
                 });
-            }, 1000);
-        }
-        
-        document.getElementById('updateTimeBtn').addEventListener('click', async () => {
-            const seconds = parseInt(document.getElementById('techWorkSeconds').value);
-            if (!seconds || seconds < 1) { alert('❌ Введите корректное время'); return; }
-            const endTime = Date.now() + (seconds * 1000);
-            await maintRef.set({ active: true, startTime: Date.now(), endTime: endTime, duration: seconds });
+            }
+            
+            function startTimerDisplay() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    maintRef.once('value').then(snapshot => {
+                        const data = snapshot.val();
+                        const timerDisplay = document.getElementById('maintenanceTimerDisplay');
+                        if (data && data.active === true && data.endTime) {
+                            const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
+                            if (remaining <= 0) {
+                                clearInterval(timerInterval);
+                                updateStatusDisplay();
+                                return;
+                            }
+                            const hours = Math.floor(remaining / 3600);
+                            const minutes = Math.floor((remaining % 3600) / 60);
+                            const secs = remaining % 60;
+                            timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                            timerDisplay.style.display = 'block';
+                        }
+                    });
+                }, 1000);
+            }
+            
+            // Кнопки управления
+            document.getElementById('updateTimeBtn').addEventListener('click', async () => {
+                const seconds = parseInt(document.getElementById('techWorkSeconds').value);
+                if (!seconds || seconds < 1) { alert('❌ Введите корректное время'); return; }
+                const endTime = Date.now() + (seconds * 1000);
+                await maintRef.set({ 
+                    active: true, 
+                    startTime: Date.now(), 
+                    endTime: endTime, 
+                    duration: seconds,
+                    type: 'timer'
+                });
+                updateStatusDisplay();
+                startTimerDisplay();
+                alert(`🔧 Технические работы включены на ${seconds} секунд`);
+            });
+            
+            document.getElementById('techWorkBtn').addEventListener('click', async () => {
+                await maintRef.set({ 
+                    active: true, 
+                    startTime: Date.now(), 
+                    endTime: null, 
+                    duration: null,
+                    type: 'infinite'
+                });
+                updateStatusDisplay();
+                alert('🔧 Технические работы включены (бесконечно)');
+            });
+            
+            document.getElementById('notTechWorkBtn').addEventListener('click', async () => {
+                await maintRef.set({ active: false });
+                updateStatusDisplay();
+                alert('✅ Технические работы отключены');
+            });
+            
+            maintRef.on('value', () => updateStatusDisplay());
             updateStatusDisplay();
             startTimerDisplay();
-            alert(`🔧 Технические работы включены на ${seconds} секунд`);
-        });
-        
-        document.getElementById('techWorkBtn').addEventListener('click', async () => {
-            await maintRef.set({ active: true, startTime: Date.now(), endTime: null, duration: null });
-            updateStatusDisplay();
-            alert('🔧 Технические работы включены (бесконечно)');
-        });
-        
-        document.getElementById('notTechWorkBtn').addEventListener('click', async () => {
-            await maintRef.set({ active: false });
-            updateStatusDisplay();
-            alert('✅ Технические работы отключены');
-        });
-        
-        maintRef.on('value', () => updateStatusDisplay());
-        updateStatusDisplay();
-        startTimerDisplay();
+            
+        }, 500);
     </script>
 </body>
 </html>
