@@ -144,6 +144,13 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
+            'SOONBIGUPDATE!!???': {
+                code: 'SOONBIGUPDATE!!???',
+                reward: { money: 10000000, dilicks: 10000000 },
+                description: '10000000 диликов и 10000000 монет в подарок за долгое ожидание обновы прошу меня понять(3 активации)',
+                maxActivations: 3,
+                expiryDate: null
+            },
             'MONEY1000': {
                 code: 'MONEY1000',
                 reward: { money: 1000, dilicks: 0 },
