@@ -628,33 +628,38 @@ class ClickerGame {
     }
 
     switchTab(tabId) {
-        this.navBtns.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabId);
-        });
-        
-        this.tabs.forEach(tab => {
-            tab.classList.toggle('active', tab.id === tabId);
-        });
-        
-        if (tabId === 'inventory') this.updateInventory();
-        if (tabId === 'upgrades') this.updateUpgradePrices();
-        if (tabId === 'profile') this.updateProfile();
-        if (tabId === 'settings' && this.settings) this.settings.updateUI();
-        if (tabId === 'promocodes') {
-            this.updatePromocodesList();
-            this.updatePromocodesHistory();
+    this.navBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+    
+    this.tabs.forEach(tab => {
+        tab.classList.toggle('active', tab.id === tabId);
+    });
+    
+    if (tabId === 'inventory') this.updateInventory();
+    if (tabId === 'upgrades') this.updateUpgradePrices();
+    if (tabId === 'profile') this.updateProfile();
+    if (tabId === 'settings' && this.settings) this.settings.updateUI();
+    if (tabId === 'promocodes') {
+        this.updatePromocodesList();
+        this.updatePromocodesHistory();
+    }
+    if (tabId === 'leaderboard') {
+        const activeTab = document.querySelector('.leaderboard-tabs .active');
+        const type = activeTab ? activeTab.dataset.leaderboard : 'clicks';
+        this.updateLeaderboard(type);
+    }
+    // ========== ДОБАВЬ ЭТОТ БЛОК ==========
+    if (tabId === 'wheel') {
+        if (!this.wheel) {
+            this.wheel = new WheelOfFortune(this);
         }
-        if (tabId === 'leaderboard') {
-            const activeTab = document.querySelector('.leaderboard-tabs .active');
-            const type = activeTab ? activeTab.dataset.leaderboard : 'clicks';
-            this.updateLeaderboard(type);
-        }
-        if (tabId === 'wheel') {
-            if (!this.wheel) {
-                this.wheel = new WheelOfFortune(this);
-            }
+        if (this.wheel && this.wheel.balanceSpan) {
+            this.wheel.balanceSpan.textContent = this.userData.dilicks.toLocaleString();
         }
     }
+    // ========== КОНЕЦ БЛОКА ==========
+}
 
     handleClick(e) {
         if (!this.isLoaded && this.userData) {
@@ -2382,7 +2387,7 @@ class WheelOfFortune {
     }
 }
 
-// ===== ЗАПУСК ИГРЫ =====
+// ========== ЗАПУСК ИГРЫ ==========
 document.addEventListener('DOMContentLoaded', () => {
     window.clickerGame = new ClickerGame();
 });
@@ -2414,122 +2419,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ===== СИСТЕМА ТЕХНИЧЕСКИХ РАБОТ =====
-
-function checkMaintenanceScreen() {
-    const userId = localStorage.getItem('userId');
-    
-    if (userId === CREATOR_ID) {
-        const overlay1 = document.getElementById('maintenanceOverlay');
-        const overlay2 = document.getElementById('updateOverlay');
-        if (overlay1) overlay1.style.display = 'none';
-        if (overlay2) overlay2.style.display = 'none';
-        return;
-    }
-    
-    const maintRef = firebase.database().ref('maintenance');
-    maintRef.once('value').then(snapshot => {
-        const data = snapshot.val();
-        const normalOverlay = document.getElementById('maintenanceOverlay');
-        const updateOverlay = document.getElementById('updateOverlay');
-        const timerDiv = document.getElementById('maintenanceTimer');
-        const updateTimerDiv = document.getElementById('updateTimer');
-        const progressBar = document.getElementById('maintenanceProgressBar');
-        const updateProgressBar = document.getElementById('updateProgressBar');
-        
-        if (!normalOverlay || !updateOverlay) return;
-        
-        normalOverlay.style.display = 'none';
-        updateOverlay.style.display = 'none';
-        
-        if (data && data.active === true) {
-            if (data.type === 'timer' && data.endTime) {
-                updateOverlay.style.display = 'flex';
-                
-                const updateTimer = () => {
-                    const remaining = data.endTime - Date.now();
-                    
-                    if (remaining <= 0) {
-                        updateOverlay.style.display = 'none';
-                        if (window.timerInterval) clearInterval(window.timerInterval);
-                        return;
-                    }
-                    
-                    const seconds = Math.floor(remaining / 1000);
-                    const hours = Math.floor(seconds / 3600);
-                    const minutes = Math.floor((seconds % 3600) / 60);
-                    const secs = seconds % 60;
-                    
-                    if (updateTimerDiv) {
-                        updateTimerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                        updateTimerDiv.style.display = 'block';
-                    }
-                    
-                    const total = data.duration || 3600;
-                    const progress = ((total - seconds) / total) * 100;
-                    if (updateProgressBar) updateProgressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
-                };
-                
-                updateTimer();
-                if (window.timerInterval) clearInterval(window.timerInterval);
-                window.timerInterval = setInterval(updateTimer, 1000);
-                
-            } else {
-                normalOverlay.style.display = 'flex';
-                
-                if (data.endTime) {
-                    if (timerDiv) timerDiv.style.display = 'block';
-                    if (progressBar) progressBar.style.width = '100%';
-                    
-                    const endTime = data.endTime;
-                    
-                    const updateNormalTimer = () => {
-                        const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-                        
-                        if (remaining <= 0) {
-                            normalOverlay.style.display = 'none';
-                            if (window.timerInterval) clearInterval(window.timerInterval);
-                            return;
-                        }
-                        
-                        const hours = Math.floor(remaining / 3600);
-                        const minutes = Math.floor((remaining % 3600) / 60);
-                        const seconds = remaining % 60;
-                        
-                        if (timerDiv) timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                        
-                        const total = data.duration || 3600;
-                        const progress = ((total - remaining) / total) * 100;
-                        if (progressBar) progressBar.style.width = progress + '%';
-                    };
-                    
-                    updateNormalTimer();
-                    if (window.timerInterval) clearInterval(window.timerInterval);
-                    window.timerInterval = setInterval(updateNormalTimer, 1000);
-                } else {
-                    if (timerDiv) timerDiv.style.display = 'none';
-                    if (progressBar) progressBar.style.width = '0%';
-                }
-            }
-        } else {
-            if (window.timerInterval) clearInterval(window.timerInterval);
-        }
-    }).catch(err => console.error('Ошибка проверки техработ:', err));
-}
-
-function listenMaintenanceChanges() {
-    const maintRef = firebase.database().ref('maintenance');
-    maintRef.on('value', () => {
-        checkMaintenanceScreen();
-    });
-}
-
-setTimeout(() => {
-    checkMaintenanceScreen();
-    listenMaintenanceChanges();
-}, 1000);
-
-// ========== УПРАВЛЕНИЕ ЭКРАНАМИ (РАБОТАЕТ С НОВОЙ АДМИНКОЙ) ==========
+// ========== СИСТЕМА ТЕХНИЧЕСКИХ РАБОТ ==========
 
 function checkMaintenanceScreen() {
     const userId = localStorage.getItem('userId');
