@@ -144,13 +144,6 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
-            'SOONBIGUPDATE!!???': {
-                code: 'SOONBIGUPDATE!!???',
-                reward: { money: 10000000, dilicks: 10000000 },
-                description: '10000000 диликов и 10000000 монет в подарок за долгое ожидание обновы прошу меня понять(3 активации)',
-                maxActivations: 1,
-                expiryDate: null
-            },
             'MONEY1000': {
                 code: 'MONEY1000',
                 reward: { money: 1000, dilicks: 0 },
@@ -158,17 +151,17 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
-            'CLICKER2024': {
-                code: 'CLICKER2024',
+            'CLICKER2026': {
+                code: 'CLICKER2026',
                 reward: { money: 500, dilicks: 50 },
                 description: 'Новогодний промокод',
                 maxActivations: 1,
                 expiryDate: new Date('2024-12-31').getTime()
             },
-            'SUPERBONUS': {
+            'SOONBIGUPDATE!!???': {
                 code: 'SUPERBONUS',
                 reward: { money: 2000, dilicks: 200 },
-                description: 'Супер бонус',
+                description: '10000000 диликов и 10000000 монет в подарок за долгое ожидание обновы прошу меня понять',
                 maxActivations: 1,
                 expiryDate: null
             },
@@ -2536,46 +2529,54 @@ setTimeout(() => {
     listenMaintenanceChanges();
 }, 1000);
 
-// ========== УПРАВЛЕНИЕ ЭКРАНАМИ (РАБОТАЕТ ДАЖЕ ПОСЛЕ ОБНОВЛЕНИЯ СТРАНИЦЫ) ==========
+// ========== УПРАВЛЕНИЕ ЭКРАНАМИ (РАБОТАЕТ С НОВОЙ АДМИНКОЙ) ==========
 
-let screenCheckInterval = null;
-
-function checkAndShowScreens() {
-    const techWorkOverlay = document.getElementById('techWorkOverlay');
-    const updateOverlay = document.getElementById('updateOverlay');
+function checkMaintenanceScreen() {
+    const userId = localStorage.getItem('userId');
     
-    if (!techWorkOverlay || !updateOverlay) return;
+    // Админ всегда видит игру
+    if (userId === CREATOR_ID) {
+        const overlay1 = document.getElementById('maintenanceOverlay');
+        const overlay2 = document.getElementById('updateOverlay');
+        if (overlay1) overlay1.style.display = 'none';
+        if (overlay2) overlay2.style.display = 'none';
+        return;
+    }
     
-    // Проверяем Firebase
-    firebase.database().ref('maintenance').once('value').then(snapshot => {
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.once('value').then(snapshot => {
         const data = snapshot.val();
+        const normalOverlay = document.getElementById('maintenanceOverlay');
+        const updateOverlay = document.getElementById('updateOverlay');
+        const timerDiv = document.getElementById('maintenanceTimer');
+        const updateTimerDiv = document.getElementById('updateTimer');
+        const progressBar = document.getElementById('maintenanceProgressBar');
+        const updateProgressBar = document.getElementById('updateProgressBar');
         
-        // Сначала скрываем оба
-        techWorkOverlay.style.display = 'none';
+        if (!normalOverlay || !updateOverlay) return;
+        
+        // Скрываем оба экрана
+        normalOverlay.style.display = 'none';
         updateOverlay.style.display = 'none';
         
         // Останавливаем старые интервалы
-        if (window._timerInterval) clearInterval(window._timerInterval);
+        if (window._screenInterval) clearInterval(window._screenInterval);
         
         // Если техработы не активны — выходим
         if (!data || data.active !== true) return;
         
-        // ЭКРАН ОБНОВЛЕНИЯ (с таймером)
+        // ЭКРАН ОБНОВЛЕНИЯ (с таймером) — type === 'timer'
         if (data.type === 'timer' && data.endTime) {
             updateOverlay.style.display = 'flex';
             
-            const timerDiv = document.getElementById('updateTimer');
-            const progressBar = document.getElementById('updateProgressBar');
-            
-            if (!timerDiv) return;
+            if (!updateTimerDiv) return;
             
             const updateTimer = () => {
                 const remaining = data.endTime - Date.now();
                 
                 if (remaining <= 0) {
-                    // Таймер закончился — экран пропадает
                     updateOverlay.style.display = 'none';
-                    if (window._timerInterval) clearInterval(window._timerInterval);
+                    if (window._screenInterval) clearInterval(window._screenInterval);
                     return;
                 }
                 
@@ -2584,47 +2585,39 @@ function checkAndShowScreens() {
                 const minutes = Math.floor((seconds % 3600) / 60);
                 const secs = seconds % 60;
                 
-                timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                timerDiv.style.display = 'block';
+                updateTimerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                updateTimerDiv.style.display = 'block';
                 
-                if (progressBar) {
+                if (updateProgressBar) {
                     const total = data.duration || 3600;
                     const progress = ((total - seconds) / total) * 100;
-                    progressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+                    updateProgressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
                 }
             };
             
             updateTimer();
-            if (window._timerInterval) clearInterval(window._timerInterval);
-            window._timerInterval = setInterval(updateTimer, 1000);
+            if (window._screenInterval) clearInterval(window._screenInterval);
+            window._screenInterval = setInterval(updateTimer, 1000);
         }
-        // ЭКРАН ТЕХРАБОТ (бесконечный)
+        // ЭКРАН ТЕХРАБОТ (бесконечный или без таймера)
         else {
-            techWorkOverlay.style.display = 'flex';
-            const timerDiv = document.getElementById('techWorkTimer');
+            normalOverlay.style.display = 'flex';
             if (timerDiv) timerDiv.style.display = 'none';
+            if (progressBar) progressBar.style.width = '0%';
         }
         
-    }).catch(err => console.error('Ошибка проверки экранов:', err));
+    }).catch(err => console.error('Ошибка проверки техработ:', err));
 }
 
-// Слушаем изменения в Firebase (мгновенно)
-function listenScreenChanges() {
-    firebase.database().ref('maintenance').on('value', () => {
-        checkAndShowScreens();
+function listenMaintenanceChanges() {
+    const maintRef = firebase.database().ref('maintenance');
+    maintRef.on('value', () => {
+        checkMaintenanceScreen();
     });
 }
 
-// Запускаем при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    checkAndShowScreens();
-    listenScreenChanges();
-});
-
-// ДОПОЛНИТЕЛЬНО: проверяем при каждой загрузке страницы (на случай если Firebase еще не инициализирован)
+// Запускаем при загрузке
 setTimeout(() => {
-    checkAndShowScreens();
+    checkMaintenanceScreen();
+    listenMaintenanceChanges();
 }, 1000);
-setTimeout(() => {
-    checkAndShowScreens();
-}, 3000);
