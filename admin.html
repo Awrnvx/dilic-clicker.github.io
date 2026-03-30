@@ -9,305 +9,226 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="firebase-config.js"></script>
     <style>
-        .admin-page { min-height: 100vh; background: linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%); padding: 20px; }
-        .admin-panel { max-width: 1000px; margin: 0 auto; }
-        .admin-header { text-align: center; margin-bottom: 30px; padding: 30px; background: rgba(255,255,255,0.02); backdrop-filter: blur(20px); border-radius: 60px; border: 1px solid rgba(255,215,0,0.2); }
-        .admin-header h1 { font-size: 2.5rem; background: linear-gradient(135deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .admin-card { background: rgba(255,255,255,0.02); backdrop-filter: blur(15px); border-radius: 32px; border: 1px solid rgba(255,215,0,0.2); padding: 25px; margin-bottom: 20px; }
-        .admin-card h2 { color: gold; font-size: 1.5rem; margin-bottom: 20px; border-left: 3px solid gold; padding-left: 15px; }
-        .admin-command-group { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,215,0,0.15); }
-        .admin-command { font-family: monospace; font-size: 1.1rem; color: gold; background: rgba(255,215,0,0.1); padding: 5px 12px; border-radius: 30px; display: inline-block; margin-bottom: 10px; }
-        .admin-description { color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 10px; }
-        .admin-input-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
-        .admin-input-group input, .admin-input-group select { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,215,0,0.3); color: white; padding: 10px; border-radius: 8px; }
-        .glass-btn { background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.1); color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s ease; }
-        .glass-btn:hover { background: rgba(255,255,255,0.08); transform: translateY(-1px); }
-        .admin-status-info { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px; color: rgba(255,255,255,0.8); font-size: 0.9rem; }
-        .back-link { display: inline-block; margin-top: 20px; color: gold; text-decoration: none; }
-        .error-message { background: rgba(244,67,54,0.2); border: 1px solid #f44336; color: #f44336; padding: 15px; border-radius: 16px; text-align: center; margin-bottom: 20px; }
-        .success-message { background: rgba(76,175,80,0.2); border: 1px solid #4CAF50; color: #4CAF50; padding: 15px; border-radius: 16px; text-align: center; margin-bottom: 20px; display: none; }
-        .admin-section { margin-bottom: 25px; }
-        .admin-section h3 { color: white; font-size: 1.2rem; margin-bottom: 15px; border-left: 3px solid gold; padding-left: 10px; }
-        .admin-footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.8rem; text-align: center; }
+        .admin-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%);
+            padding: 20px;
+        }
+        .admin-panel { max-width: 800px; margin: 0 auto; }
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-radius: 60px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        .admin-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .admin-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .admin-card h2 {
+            color: gold;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            border-left: 3px solid gold;
+            padding-left: 15px;
+        }
+        .admin-command {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+        }
+        .admin-command-code {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: gold;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 5px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .admin-command-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .admin-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .admin-input-group input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .admin-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .admin-status.active { background: rgba(244, 67, 54, 0.1); border: 1px solid #f44336; color: #f44336; }
+        .admin-status.inactive { background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; color: #4CAF50; }
+        .admin-timer {
+            font-family: monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: gold;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 0.5px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-1px); }
+        .glass-btn:active { transform: scale(0.96); }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: gold;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover { text-shadow: 0 0 10px gold; }
+        .admin-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+        }
+        .admin-info span { color: gold; font-family: monospace; }
+        .error-message {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .debug-info {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #888;
+            text-align: left;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
     <div class="admin-page">
         <div class="admin-panel">
             <div class="admin-header liquid-glass">
-                <h1>🛠️ DILIC ADMIN PANEL</h1>
-                <p>Расширенное управление игрой и ивентами</p>
-                <div class="admin-info" style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 20px;">
-                    🔐 Твой ID: <span id="adminUserId" style="color: gold;">-</span>
+                <h1>🛠️ DILIC ADMIN</h1>
+                <p>Панель управления техническими работами</p>
+                <div class="admin-info">
+                    🔐 Твой ID: <span id="adminUserId">-</span>
                 </div>
             </div>
             
-            <div id="accessError" class="error-message" style="display: none;"></div>
-            <div id="successMessage" class="success-message"></div>
+            <div id="accessError" class="error-message" style="display: none;">
+                ⚠️ У вас нет доступа к админ-панели
+            </div>
             
             <div id="adminContent" style="display: none;">
-                <!-- ТЕХНИЧЕСКИЕ РАБОТЫ -->
-                <div class="admin-card">
-                    <h2>🔧 ТЕХНИЧЕСКИЕ РАБОТЫ</h2>
-                    <div id="maintenanceStatus" class="admin-status-info" style="margin-bottom: 15px;">Загрузка...</div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/technical work</div>
-                        <div class="admin-description">Включить бесконечный экран техработ</div>
-                        <button class="glass-btn admin-execute-btn" data-command="tech_work">ВЫПОЛНИТЬ</button>
+                <div class="admin-card liquid-glass">
+                    <h2>📊 СТАТУС ТЕХРАБОТ</h2>
+                    <div id="maintenanceStatus" class="admin-status inactive">✅ Технические работы ОТКЛЮЧЕНЫ</div>
+                    <div id="maintenanceTimerDisplay" class="admin-timer" style="display: none;"></div>
+                </div>
+                
+                <div class="admin-card liquid-glass">
+                    <h2>⚡ БЫСТРЫЕ КОМАНДЫ</h2>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/technical work</div>
+                        <div class="admin-command-desc">🔧 Включить бесконечный экран техработ</div>
+                        <button class="glass-btn" id="techWorkBtn">ВЫПОЛНИТЬ</button>
                     </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/technical work time &lt;секунды&gt;</div>
-                        <div class="admin-description">Включить техработы на время</div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/technical work time &lt;секунды&gt;</div>
+                        <div class="admin-command-desc">⏱️ Включить техработы на указанное время</div>
                         <div class="admin-input-group">
-                            <input type="number" id="techWorkSeconds" placeholder="секунды" value="60">
-                            <button class="glass-btn admin-execute-btn" data-command="tech_work_time">ВЫПОЛНИТЬ</button>
+                            <input type="number" id="techWorkSeconds" placeholder="секунды" value="30" min="1" max="86400">
+                            <button class="glass-btn" id="updateTimeBtn">ВЫПОЛНИТЬ</button>
                         </div>
                     </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/not technical work</div>
-                        <div class="admin-description">Выключить экран техработ</div>
-                        <button class="glass-btn admin-execute-btn" data-command="tech_work_off">ВЫПОЛНИТЬ</button>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/not technical work</div>
+                        <div class="admin-command-desc">✅ Выключить экран техработ</div>
+                        <button class="glass-btn" id="notTechWorkBtn">ВЫПОЛНИТЬ</button>
                     </div>
                 </div>
                 
-                <!-- ДИЛИКОВЫЙ УРАГАН -->
-                <div class="admin-card">
-                    <h2>💎 ДИЛИКОВЫЙ УРАГАН</h2>
-                    <div id="uraganStatus" class="admin-status-info" style="margin-bottom: 15px;">Загрузка...</div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/start event dilicks &lt;дней&gt;</div>
-                        <div class="admin-description">Запустить ивент на N дней</div>
-                        <div class="admin-input-group">
-                            <input type="number" id="uraganDays" placeholder="дней" value="7" min="1" max="365">
-                            <button class="glass-btn admin-execute-btn" data-command="start_uragan">ЗАПУСТИТЬ</button>
-                        </div>
+                <div class="admin-card liquid-glass">
+                    <h2>🎮 УПРАВЛЕНИЕ ИВЕНТАМИ</h2>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/start event dilicks</div>
+                        <div class="admin-command-desc">💎 Запустить ивент "Диликовый Ураган" на 200 дней</div>
+                        <button class="glass-btn" id="startDilicksEventBtn">ЗАПУСТИТЬ</button>
                     </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/stop event dilicks</div>
-                        <div class="admin-description">Остановить ивент</div>
-                        <button class="glass-btn admin-execute-btn" data-command="stop_uragan">ОСТАНОВИТЬ</button>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/stop event dilicks</div>
+                        <div class="admin-command-desc">⏹️ Остановить ивент "Диликовый Ураган"</div>
+                        <button class="glass-btn" id="stopDilicksEventBtn">ОСТАНОВИТЬ</button>
                     </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/set multiplier &lt;x2/x3/x5&gt;</div>
-                        <div class="admin-description">Установить множитель диликов</div>
-                        <div class="admin-input-group">
-                            <select id="multiplierSelect"><option value="2">x2</option><option value="3">x3</option><option value="5">x5</option></select>
-                            <button class="glass-btn admin-execute-btn" data-command="set_multiplier">УСТАНОВИТЬ</button>
-                        </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/start event wheel</div>
+                        <div class="admin-command-desc">🎡 Запустить ивент "Колесо Фортуны" на 150 дней</div>
+                        <button class="glass-btn" id="startWheelEventBtn">ЗАПУСТИТЬ</button>
                     </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/add pool &lt;количество&gt;</div>
-                        <div class="admin-description">Добавить дилики в общую копилку</div>
-                        <div class="admin-input-group">
-                            <input type="number" id="addPoolAmount" placeholder="количество" value="1000000" min="1">
-                            <button class="glass-btn admin-execute-btn" data-command="add_pool">ДОБАВИТЬ</button>
-                        </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/stop event wheel</div>
+                        <div class="admin-command-desc">⏹️ Остановить ивент "Колесо Фортуны"</div>
+                        <button class="glass-btn" id="stopWheelEventBtn">ОСТАНОВИТЬ</button>
                     </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/set day &lt;день&gt;</div>
-                        <div class="admin-description">Установить текущий день ивента</div>
-                        <div class="admin-input-group">
-                            <input type="number" id="uraganDay" placeholder="день" value="1" min="1">
-                            <button class="glass-btn admin-execute-btn" data-command="set_uragan_day">УСТАНОВИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/force end dilicks</div>
-                        <div class="admin-description">Принудительно завершить ивент</div>
-                        <button class="glass-btn admin-execute-btn" data-command="force_end_uragan">ЗАВЕРШИТЬ</button>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/reset pool</div>
-                        <div class="admin-description">Сбросить общую копилку</div>
-                        <button class="glass-btn admin-execute-btn" data-command="reset_pool">СБРОСИТЬ</button>
-                    </div>
-                </div>
-                
-                <!-- КОЛЕСО ФОРТУНЫ -->
-                <div class="admin-card">
-                    <h2>🎡 КОЛЕСО ФОРТУНЫ</h2>
-                    <div id="wheelStatus" class="admin-status-info" style="margin-bottom: 15px;">Загрузка...</div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/start event wheel &lt;дней&gt;</div>
-                        <div class="admin-description">Запустить ивент на N дней</div>
-                        <div class="admin-input-group">
-                            <input type="number" id="wheelDays" placeholder="дней" value="150" min="1" max="365">
-                            <button class="glass-btn admin-execute-btn" data-command="start_wheel">ЗАПУСТИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/stop event wheel</div>
-                        <div class="admin-description">Остановить ивент</div>
-                        <button class="glass-btn admin-execute-btn" data-command="stop_wheel">ОСТАНОВИТЬ</button>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/set spin cost &lt;стоимость&gt;</div>
-                        <div class="admin-description">Изменить стоимость крутки</div>
-                        <div class="admin-input-group">
-                            <input type="number" id="spinCostInput" placeholder="стоимость" value="2500" min="1">
-                            <button class="glass-btn admin-execute-btn" data-command="set_spin_cost">УСТАНОВИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/force end wheel</div>
-                        <div class="admin-description">Принудительно завершить ивент</div>
-                        <button class="glass-btn admin-execute-btn" data-command="force_end_wheel">ЗАВЕРШИТЬ</button>
-                    </div>
-                </div>
-                
-                <!-- УПРАВЛЕНИЕ ИГРОКАМИ -->
-                <div class="admin-card">
-                    <h2>👥 УПРАВЛЕНИЕ ИГРОКАМИ</h2>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/give money &lt;ID&gt; &lt;сумма&gt;</div>
-                        <div class="admin-description">Выдать монеты игроку</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="giveMoneyUserId" placeholder="ID игрока">
-                            <input type="number" id="giveMoneyAmount" placeholder="сумма">
-                            <button class="glass-btn admin-execute-btn" data-command="give_money">ВЫДАТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/give dilicks &lt;ID&gt; &lt;сумма&gt;</div>
-                        <div class="admin-description">Выдать дилики игроку</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="giveDilicksUserId" placeholder="ID игрока">
-                            <input type="number" id="giveDilicksAmount" placeholder="сумма">
-                            <button class="glass-btn admin-execute-btn" data-command="give_dilicks">ВЫДАТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/give skin &lt;ID&gt; &lt;скин&gt;</div>
-                        <div class="admin-description">Выдать скин игроку</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="giveSkinUserId" placeholder="ID игрока">
-                            <select id="giveSkinSelect">
-                                <option value="wheel_dragon_skin">Колесный дракон (x250)</option>
-                                <option value="dragon_skin">Драконий скин</option>
-                                <option value="neon">Неоновый скин</option>
-                                <option value="monsters_skin">Монстр скин</option>
-                            </select>
-                            <button class="glass-btn admin-execute-btn" data-command="give_skin">ВЫДАТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/set level &lt;ID&gt; &lt;уровень&gt;</div>
-                        <div class="admin-description">Установить сезонный уровень</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="setLevelUserId" placeholder="ID игрока">
-                            <input type="number" id="setLevelValue" placeholder="уровень" min="1" max="50">
-                            <button class="glass-btn admin-execute-btn" data-command="set_level">УСТАНОВИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/add season exp &lt;ID&gt; &lt;опыт&gt;</div>
-                        <div class="admin-description">Добавить опыт сезона</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="addExpUserId" placeholder="ID игрока">
-                            <input type="number" id="addExpAmount" placeholder="опыт">
-                            <button class="glass-btn admin-execute-btn" data-command="add_season_exp">ДОБАВИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/reset quests &lt;ID&gt;</div>
-                        <div class="admin-description">Сбросить квесты игрока</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="resetQuestsUserId" placeholder="ID игрока (оставьте пустым для всех)">
-                            <button class="glass-btn admin-execute-btn" data-command="reset_quests">СБРОСИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/ban &lt;ID&gt;</div>
-                        <div class="admin-description">Забанить игрока</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="banUserId" placeholder="ID игрока">
-                            <button class="glass-btn admin-execute-btn" data-command="ban_user">ЗАБАНИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/unban &lt;ID&gt;</div>
-                        <div class="admin-description">Разбанить игрока</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="unbanUserId" placeholder="ID игрока">
-                            <button class="glass-btn admin-execute-btn" data-command="unban_user">РАЗБАНИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/list players</div>
-                        <div class="admin-description">Показать список игроков</div>
-                        <button class="glass-btn admin-execute-btn" data-command="list_players">ПОКАЗАТЬ</button>
-                    </div>
-                </div>
-                
-                <!-- ГЛОБАЛЬНЫЕ КОМАНДЫ -->
-                <div class="admin-card">
-                    <h2>📢 ГЛОБАЛЬНЫЕ КОМАНДЫ</h2>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/announce &lt;сообщение&gt;</div>
-                        <div class="admin-description">Отправить уведомление всем игрокам</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="announceMessage" placeholder="сообщение">
-                            <button class="glass-btn admin-execute-btn" data-command="announce">ОТПРАВИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/reset all quests</div>
-                        <div class="admin-description">Сбросить квесты у всех игроков</div>
-                        <button class="glass-btn admin-execute-btn" data-command="reset_all_quests">СБРОСИТЬ ВСЕ</button>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/add promo &lt;код&gt; &lt;награда&gt;</div>
-                        <div class="admin-description">Добавить промокод</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="promoCode" placeholder="код">
-                            <input type="text" id="promoReward" placeholder="money:500,dilicks:100">
-                            <button class="glass-btn admin-execute-btn" data-command="add_promo">ДОБАВИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/remove promo &lt;код&gt;</div>
-                        <div class="admin-description">Удалить промокод</div>
-                        <div class="admin-input-group">
-                            <input type="text" id="removePromoCode" placeholder="код">
-                            <button class="glass-btn admin-execute-btn" data-command="remove_promo">УДАЛИТЬ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/give all money &lt;сумма&gt;</div>
-                        <div class="admin-description">Выдать монеты всем игрокам</div>
-                        <div class="admin-input-group">
-                            <input type="number" id="giveAllMoneyAmount" placeholder="сумма">
-                            <button class="glass-btn admin-execute-btn" data-command="give_all_money">ВЫДАТЬ ВСЕМ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/give all dilicks &lt;сумма&gt;</div>
-                        <div class="admin-description">Выдать дилики всем игрокам</div>
-                        <div class="admin-input-group">
-                            <input type="number" id="giveAllDilicksAmount" placeholder="сумма">
-                            <button class="glass-btn admin-execute-btn" data-command="give_all_dilicks">ВЫДАТЬ ВСЕМ</button>
-                        </div>
-                    </div>
-                    <div class="admin-command-group">
-                        <div class="admin-command">/save all</div>
-                        <div class="admin-description">Принудительно сохранить всех игроков</div>
-                        <button class="glass-btn admin-execute-btn" data-command="save_all">СОХРАНИТЬ</button>
-                    </div>
-                </div>
-                
-                <!-- СТАТУС -->
-                <div class="admin-card">
-                    <h2>📊 СТАТУС ИВЕНТОВ</h2>
-                    <div id="eventsStatus" class="admin-status-info">Загрузка...</div>
-                    <button class="glass-btn admin-execute-btn" data-command="refresh_status" style="margin-top: 15px;">🔄 ОБНОВИТЬ</button>
-                </div>
-                
-                <!-- ЛОГИ -->
-                <div class="admin-card">
-                    <h2>📋 ЛОГИ КОМАНД</h2>
-                    <div id="adminLogs" class="admin-status-info" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px;"></div>
                 </div>
             </div>
+            
+            <div id="debugInfo" class="debug-info"></div>
             
             <a href="index.html" class="back-link">← Вернуться в игру</a>
         </div>
@@ -315,112 +236,123 @@
     
     <script>
         (function() {
-            let adminLogsDiv = document.getElementById('adminLogs');
+            const debugDiv = document.getElementById('debugInfo');
             
-            function addLog(msg, isError = false) {
-                const time = new Date().toLocaleTimeString();
-                const logEntry = document.createElement('div');
-                logEntry.innerHTML = `[${time}] ${msg}`;
-                logEntry.style.color = isError ? '#f44336' : '#888';
-                if (adminLogsDiv) {
-                    adminLogsDiv.appendChild(logEntry);
-                    adminLogsDiv.scrollTop = adminLogsDiv.scrollHeight;
-                    // Ограничиваем количество логов
-                    while (adminLogsDiv.children.length > 50) {
-                        adminLogsDiv.removeChild(adminLogsDiv.firstChild);
-                    }
-                }
+            function logDebug(msg) {
                 console.log(msg);
-            }
-            
-            function showSuccessMessage(text) {
-                const msgDiv = document.getElementById('successMessage');
-                if (msgDiv) {
-                    msgDiv.textContent = text;
-                    msgDiv.style.display = 'block';
-                    setTimeout(() => {
-                        msgDiv.style.display = 'none';
-                    }, 3000);
+                if (debugDiv) {
+                    debugDiv.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
                 }
             }
             
+            logDebug('🔍 Загрузка админ-панели...');
+            
+            // Функция проверки доступа с задержкой
+            function checkAccessWithDelay() {
+                const userId = localStorage.getItem('userId');
+                logDebug(`📱 UserID из localStorage: ${userId || 'не найден'}`);
+                logDebug(`👑 CREATOR_ID из конфига: ${typeof CREATOR_ID !== 'undefined' ? CREATOR_ID : 'НЕ ОПРЕДЕЛЕН'}`);
+                
+                const adminContent = document.getElementById('adminContent');
+                const accessError = document.getElementById('accessError');
+                const adminIdSpan = document.getElementById('adminUserId');
+                
+                if (typeof CREATOR_ID === 'undefined') {
+                    logDebug('❌ ОШИБКА: CREATOR_ID не определен в firebase-config.js');
+                    if (accessError) {
+                        accessError.style.display = 'block';
+                        accessError.innerHTML = '⚠️ Ошибка: CREATOR_ID не найден в firebase-config.js. Проверьте файл!';
+                    }
+                    if (adminIdSpan) adminIdSpan.textContent = userId || 'не авторизован';
+                    return false;
+                }
+                
+                if (!userId) {
+                    logDebug('❌ UserID не найден. Возможно, вы не авторизованы в игре.');
+                    if (accessError) {
+                        accessError.style.display = 'block';
+                        accessError.innerHTML = '⚠️ Вы не авторизованы. Сначала войдите в игру через index.html';
+                    }
+                    if (adminIdSpan) adminIdSpan.textContent = 'не авторизован';
+                    return false;
+                }
+                
+                if (userId !== CREATOR_ID) {
+                    logDebug(`❌ ДОСТУП ЗАПРЕЩЕН! Ваш ID: ${userId} не совпадает с CREATOR_ID: ${CREATOR_ID}`);
+                    if (accessError) {
+                        accessError.style.display = 'block';
+                        accessError.innerHTML = `⚠️ У вас нет доступа к админ-панели.<br>Ваш ID: ${userId}<br>ID создателя: ${CREATOR_ID}<br><br>Только создатель игры имеет доступ.`;
+                    }
+                    if (adminIdSpan) adminIdSpan.textContent = userId;
+                    return false;
+                }
+                
+                logDebug('✅ ДОСТУП РАЗРЕШЕН!');
+                if (adminContent) adminContent.style.display = 'block';
+                if (adminIdSpan) adminIdSpan.textContent = userId;
+                return true;
+            }
+            
+            // Ждем загрузки firebase-config.js
             let attempts = 0;
             const maxAttempts = 20;
             
             const waitForConfig = setInterval(() => {
                 attempts++;
+                logDebug(`⏳ Попытка ${attempts}: проверка CREATOR_ID...`);
+                
                 if (typeof CREATOR_ID !== 'undefined') {
                     clearInterval(waitForConfig);
-                    checkAccess();
+                    logDebug('✅ CREATOR_ID загружен!');
+                    const hasAccess = checkAccessWithDelay();
+                    
+                    if (hasAccess) {
+                        initAdminControls();
+                    }
                 } else if (attempts >= maxAttempts) {
                     clearInterval(waitForConfig);
-                    document.getElementById('accessError').style.display = 'block';
-                    document.getElementById('accessError').innerHTML = '⚠️ Ошибка: CREATOR_ID не найден в firebase-config.js';
+                    logDebug('❌ Таймаут: CREATOR_ID не загрузился');
+                    const accessError = document.getElementById('accessError');
+                    if (accessError) {
+                        accessError.style.display = 'block';
+                        accessError.innerHTML = '⚠️ Ошибка загрузки конфигурации. Проверьте файл firebase-config.js';
+                    }
                 }
             }, 500);
             
-            function checkAccess() {
-                const userId = localStorage.getItem('userId');
-                if (!userId) {
-                    document.getElementById('accessError').style.display = 'block';
-                    document.getElementById('accessError').innerHTML = '⚠️ Вы не авторизованы. Сначала войдите в игру';
-                    return;
-                }
-                if (userId !== CREATOR_ID) {
-                    document.getElementById('accessError').style.display = 'block';
-                    document.getElementById('accessError').innerHTML = `⚠️ У вас нет доступа.<br>Ваш ID: ${userId}<br>ID создателя: ${CREATOR_ID}`;
-                    return;
-                }
-                document.getElementById('adminContent').style.display = 'block';
-                document.getElementById('adminUserId').textContent = userId;
-                initAdminControls();
-            }
-            
-            async function getAllUsers() {
-                const snapshot = await firebase.database().ref('users').once('value');
-                return snapshot.val();
-            }
-            
-            async function updateUserField(userId, field, value) {
-                await firebase.database().ref('users/' + userId).update({ [field]: value });
-                addLog(`✅ Обновлено поле ${field} для ${userId}: ${value}`);
-            }
-            
-            async function showPlayersList() {
-                const users = await getAllUsers();
-                if (!users) {
-                    addLog('Нет зарегистрированных игроков');
-                    return;
-                }
-                addLog('=== СПИСОК ИГРОКОВ ===');
-                for (const [id, user] of Object.entries(users)) {
-                    const name = user.settings?.displayName || user.username;
-                    addLog(`ID: ${id} | ${name} | Кликов: ${user.clicks || 0} | Диликов: ${user.dilicks || 0} | Монет: ${user.money || 0}`);
-                }
-            }
-            
             function initAdminControls() {
-                addLog('🚀 Админ-панель инициализирована');
+                logDebug('🚀 Инициализация админ-панели...');
                 
                 const maintRef = firebase.database().ref('maintenance');
-                const eventsRef = firebase.database().ref('events');
                 let timerInterval = null;
                 
                 function updateStatusDisplay() {
                     maintRef.once('value').then(snapshot => {
                         const data = snapshot.val();
                         const statusDiv = document.getElementById('maintenanceStatus');
+                        const timerDisplay = document.getElementById('maintenanceTimerDisplay');
+                        
                         if (data && data.active === true) {
+                            statusDiv.className = 'admin-status active';
                             if (data.endTime) {
                                 const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
-                                const hours = Math.floor(remaining/3600), minutes = Math.floor((remaining%3600)/60), secs = remaining%60;
-                                statusDiv.innerHTML = `🔧 АКТИВНЫ<br>⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                                const hours = Math.floor(remaining / 3600);
+                                const minutes = Math.floor((remaining % 3600) / 60);
+                                const secs = remaining % 60;
+                                statusDiv.innerHTML = `🔧 Технические работы ВКЛЮЧЕНЫ<br><span style="font-size:0.8rem;">Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</span>`;
+                                timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                                timerDisplay.style.display = 'block';
                             } else {
-                                statusDiv.innerHTML = `🔧 АКТИВНЫ (бесконечно)`;
+                                statusDiv.innerHTML = '🔧 Технические работы ВКЛЮЧЕНЫ (без ограничений)';
+                                timerDisplay.style.display = 'none';
                             }
                         } else {
-                            statusDiv.innerHTML = `✅ НЕ АКТИВНЫ`;
+                            statusDiv.className = 'admin-status inactive';
+                            statusDiv.innerHTML = '✅ Технические работы ОТКЛЮЧЕНЫ';
+                            timerDisplay.style.display = 'none';
                         }
+                    }).catch(err => {
+                        logDebug('❌ Ошибка получения статуса: ' + err.message);
                     });
                 }
                 
@@ -429,6 +361,7 @@
                     timerInterval = setInterval(() => {
                         maintRef.once('value').then(snapshot => {
                             const data = snapshot.val();
+                            const timerDisplay = document.getElementById('maintenanceTimerDisplay');
                             if (data && data.active === true && data.endTime) {
                                 const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
                                 if (remaining <= 0) {
@@ -436,404 +369,122 @@
                                     updateStatusDisplay();
                                     return;
                                 }
-                                const hours = Math.floor(remaining/3600), minutes = Math.floor((remaining%3600)/60), secs = remaining%60;
-                                const statusDiv = document.getElementById('maintenanceStatus');
-                                if (statusDiv) statusDiv.innerHTML = `🔧 АКТИВНЫ<br>⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                                const hours = Math.floor(remaining / 3600);
+                                const minutes = Math.floor((remaining % 3600) / 60);
+                                const secs = remaining % 60;
+                                timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                                timerDisplay.style.display = 'block';
                             }
                         });
                     }, 1000);
                 }
                 
-                function updateEventsStatus() {
-                    Promise.all([
-                        eventsRef.child('dilicksHurricane').once('value'),
-                        eventsRef.child('wheelEvent').once('value')
-                    ]).then(([dilickSnap, wheelSnap]) => {
-                        const dilickData = dilickSnap.val();
-                        const wheelData = wheelSnap.val();
-                        let html = '';
-                        if (dilickData && dilickData.active) {
-                            const remaining = Math.max(0, dilickData.endTime - Date.now());
-                            const days = Math.floor(remaining / (1000*3600*24));
-                            html += `💎 ДИЛИКОВЫЙ УРАГАН: <span style="color:gold;">АКТИВЕН</span><br>`;
-                            html += `📊 Множитель: x${dilickData.multiplier || 2}<br>`;
-                            html += `⏰ Осталось: ${days} дней<br>`;
-                            html += `💰 Копилка: ${(dilickData.totalPool || 0).toLocaleString()} 💎<br>`;
-                            html += `📅 День: ${dilickData.day || 1}<br><br>`;
-                        } else {
-                            html += `💎 ДИЛИКОВЫЙ УРАГАН: <span style="color:#f44336;">НЕ АКТИВЕН</span><br><br>`;
-                        }
-                        if (wheelData && wheelData.active) {
-                            const remaining = Math.max(0, wheelData.endTime - Date.now());
-                            const days = Math.floor(remaining / (1000*3600*24));
-                            html += `🎡 КОЛЕСО ФОРТУНЫ: <span style="color:gold;">АКТИВЕН</span><br>`;
-                            html += `⏰ Осталось: ${days} дней<br>`;
-                            html += `💰 Стоимость крутки: ${wheelData.spinCost || 2500} 💎`;
-                        } else {
-                            html += `🎡 КОЛЕСО ФОРТУНЫ: <span style="color:#f44336;">НЕ АКТИВЕН</span>`;
-                        }
-                        document.getElementById('eventsStatus').innerHTML = html;
-                        
-                        // Обновляем отдельные статусы
-                        const uraganStatusDiv = document.getElementById('uraganStatus');
-                        if (uraganStatusDiv) {
-                            if (dilickData && dilickData.active) {
-                                uraganStatusDiv.innerHTML = `🎮 АКТИВЕН | Множитель: x${dilickData.multiplier || 2} | День: ${dilickData.day || 1}`;
-                            } else {
-                                uraganStatusDiv.innerHTML = `⭕ НЕ АКТИВЕН`;
-                            }
-                        }
-                        const wheelStatusDiv = document.getElementById('wheelStatus');
-                        if (wheelStatusDiv) {
-                            if (wheelData && wheelData.active) {
-                                wheelStatusDiv.innerHTML = `🎮 АКТИВЕН | Стоимость: ${wheelData.spinCost || 2500} 💎`;
-                            } else {
-                                wheelStatusDiv.innerHTML = `⭕ НЕ АКТИВЕН`;
-                            }
-                        }
+                // Кнопки техработ
+                const updateTimeBtn = document.getElementById('updateTimeBtn');
+                const techWorkBtn = document.getElementById('techWorkBtn');
+                const notTechWorkBtn = document.getElementById('notTechWorkBtn');
+                
+                if (updateTimeBtn) {
+                    updateTimeBtn.addEventListener('click', async () => {
+                        const seconds = parseInt(document.getElementById('techWorkSeconds').value);
+                        if (!seconds || seconds < 1) { alert('❌ Введите корректное время'); return; }
+                        const endTime = Date.now() + (seconds * 1000);
+                        await maintRef.set({ 
+                            active: true, 
+                            startTime: Date.now(), 
+                            endTime: endTime, 
+                            duration: seconds,
+                            type: 'timer'
+                        });
+                        updateStatusDisplay();
+                        startTimerDisplay();
+                        alert(`🔧 Технические работы включены на ${seconds} секунд`);
                     });
                 }
                 
-                // Обработчик команд
-                document.querySelectorAll('.admin-execute-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const command = btn.dataset.command;
-                        addLog(`📢 Выполнение команды: ${command}`);
-                        
-                        try {
-                            switch(command) {
-                                // Техработы
-                                case 'tech_work':
-                                    await maintRef.set({ active: true, startTime: Date.now(), endTime: null, type: 'infinite' });
-                                    updateStatusDisplay();
-                                    showSuccessMessage('🔧 Техработы включены (бесконечно)');
-                                    addLog('✅ Техработы включены бесконечно');
-                                    break;
-                                    
-                                case 'tech_work_time':
-                                    const seconds = parseInt(document.getElementById('techWorkSeconds').value);
-                                    if (!seconds || seconds < 1) throw new Error('Введите время');
-                                    const endTime = Date.now() + seconds * 1000;
-                                    await maintRef.set({ active: true, startTime: Date.now(), endTime, duration: seconds, type: 'timer' });
-                                    updateStatusDisplay();
-                                    startTimerDisplay();
-                                    showSuccessMessage(`🔧 Техработы включены на ${seconds} сек`);
-                                    addLog(`✅ Техработы включены на ${seconds} сек`);
-                                    break;
-                                    
-                                case 'tech_work_off':
-                                    await maintRef.set({ active: false });
-                                    updateStatusDisplay();
-                                    showSuccessMessage('✅ Техработы отключены');
-                                    addLog('✅ Техработы отключены');
-                                    break;
-                                    
-                                // Ураган
-                                case 'start_uragan':
-                                    const days = parseInt(document.getElementById('uraganDays').value) || 7;
-                                    const uraganEndTime = Date.now() + days * 24*60*60*1000;
-                                    await eventsRef.child('dilicksHurricane').set({
-                                        active: true, startTime: Date.now(), endTime: uraganEndTime, duration: days,
-                                        type: 'dilicks', multiplier: 2, day: 1, totalPool: 0
-                                    });
-                                    showSuccessMessage(`💎 Ураган запущен на ${days} дней`);
-                                    addLog(`✅ Ураган запущен на ${days} дней`);
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'stop_uragan':
-                                    await eventsRef.child('dilicksHurricane').set({ active: false });
-                                    showSuccessMessage('⏹️ Ураган остановлен');
-                                    addLog('✅ Ураган остановлен');
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'set_multiplier':
-                                    const mult = parseInt(document.getElementById('multiplierSelect').value);
-                                    await eventsRef.child('dilicksHurricane').update({ multiplier: mult });
-                                    showSuccessMessage(`⚡ Множитель изменен на x${mult}`);
-                                    addLog(`✅ Множитель урагана: x${mult}`);
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'add_pool':
-                                    const amount = parseInt(document.getElementById('addPoolAmount').value);
-                                    if (!amount || amount < 1) throw new Error('Введите сумму');
-                                    const snap = await eventsRef.child('dilicksHurricane').once('value');
-                                    const current = snap.val()?.totalPool || 0;
-                                    await eventsRef.child('dilicksHurricane').update({ totalPool: current + amount });
-                                    showSuccessMessage(`💰 Добавлено ${amount.toLocaleString()} 💎 в копилку`);
-                                    addLog(`✅ Добавлено ${amount.toLocaleString()} в копилку урагана`);
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'set_uragan_day':
-                                    const day = parseInt(document.getElementById('uraganDay').value);
-                                    if (!day || day < 1) throw new Error('Введите день');
-                                    await eventsRef.child('dilicksHurricane').update({ day: day });
-                                    showSuccessMessage(`📅 День урагана установлен на ${day}`);
-                                    addLog(`✅ День урагана: ${day}`);
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'force_end_uragan':
-                                    await eventsRef.child('dilicksHurricane').set({ active: false });
-                                    showSuccessMessage('💀 Ураган принудительно завершен');
-                                    addLog('💀 Ураган принудительно завершен');
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'reset_pool':
-                                    await eventsRef.child('dilicksHurricane').update({ totalPool: 0 });
-                                    showSuccessMessage('🔄 Копилка сброшена');
-                                    addLog('🔄 Копилка урагана сброшена');
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                // Колесо
-                                case 'start_wheel':
-                                    const wheelDays = parseInt(document.getElementById('wheelDays').value) || 150;
-                                    const wheelEndTime = Date.now() + wheelDays * 24*60*60*1000;
-                                    await eventsRef.child('wheelEvent').set({
-                                        active: true, startTime: Date.now(), endTime: wheelEndTime, duration: wheelDays,
-                                        type: 'wheel', spinCost: 2500
-                                    });
-                                    showSuccessMessage(`🎡 Колесо запущено на ${wheelDays} дней`);
-                                    addLog(`✅ Колесо запущено на ${wheelDays} дней`);
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'stop_wheel':
-                                    await eventsRef.child('wheelEvent').set({ active: false });
-                                    showSuccessMessage('⏹️ Колесо остановлено');
-                                    addLog('✅ Колесо остановлено');
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'set_spin_cost':
-                                    const cost = parseInt(document.getElementById('spinCostInput').value);
-                                    if (!cost || cost < 1) throw new Error('Введите стоимость');
-                                    await eventsRef.child('wheelEvent').update({ spinCost: cost });
-                                    showSuccessMessage(`🎡 Стоимость крутки: ${cost} 💎`);
-                                    addLog(`✅ Стоимость крутки: ${cost}`);
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                case 'force_end_wheel':
-                                    await eventsRef.child('wheelEvent').set({ active: false });
-                                    showSuccessMessage('💀 Колесо принудительно завершено');
-                                    addLog('💀 Колесо принудительно завершено');
-                                    updateEventsStatus();
-                                    break;
-                                    
-                                // Управление игроками
-                                case 'give_money':
-                                    const userIdMoney = document.getElementById('giveMoneyUserId').value;
-                                    const moneyAmount = parseInt(document.getElementById('giveMoneyAmount').value);
-                                    if (!userIdMoney || !moneyAmount) throw new Error('Введите ID и сумму');
-                                    const userMoneySnap = await firebase.database().ref('users/' + userIdMoney).once('value');
-                                    if (!userMoneySnap.exists()) throw new Error('Игрок не найден');
-                                    const currentMoney = userMoneySnap.val().money || 0;
-                                    await updateUserField(userIdMoney, 'money', currentMoney + moneyAmount);
-                                    showSuccessMessage(`💰 Выдано ${moneyAmount} монет игроку ${userIdMoney}`);
-                                    addLog(`💰 Выдано ${moneyAmount} монет ${userIdMoney}`);
-                                    break;
-                                    
-                                case 'give_dilicks':
-                                    const userIdDil = document.getElementById('giveDilicksUserId').value;
-                                    const dilAmount = parseInt(document.getElementById('giveDilicksAmount').value);
-                                    if (!userIdDil || !dilAmount) throw new Error('Введите ID и сумму');
-                                    const userDilSnap = await firebase.database().ref('users/' + userIdDil).once('value');
-                                    if (!userDilSnap.exists()) throw new Error('Игрок не найден');
-                                    const currentDil = userDilSnap.val().dilicks || 0;
-                                    await updateUserField(userIdDil, 'dilicks', currentDil + dilAmount);
-                                    showSuccessMessage(`💎 Выдано ${dilAmount} диликов игроку ${userIdDil}`);
-                                    addLog(`💎 Выдано ${dilAmount} диликов ${userIdDil}`);
-                                    break;
-                                    
-                                case 'give_skin':
-                                    const userIdSkin = document.getElementById('giveSkinUserId').value;
-                                    const skinId = document.getElementById('giveSkinSelect').value;
-                                    if (!userIdSkin) throw new Error('Введите ID игрока');
-                                    const userSkinSnap = await firebase.database().ref('users/' + userIdSkin).once('value');
-                                    if (!userSkinSnap.exists()) throw new Error('Игрок не найден');
-                                    const inventory = userSkinSnap.val().inventory || [];
-                                    if (!inventory.includes(skinId)) {
-                                        inventory.push(skinId);
-                                        await updateUserField(userIdSkin, 'inventory', inventory);
-                                        showSuccessMessage(`✨ Выдан скин ${skinId} игроку ${userIdSkin}`);
-                                        addLog(`✨ Выдан скин ${skinId} игроку ${userIdSkin}`);
-                                    } else {
-                                        showSuccessMessage(`⚠️ Скин уже есть у игрока`);
-                                        addLog(`⚠️ Скин ${skinId} уже есть у ${userIdSkin}`);
-                                    }
-                                    break;
-                                    
-                                case 'set_level':
-                                    const userIdLevel = document.getElementById('setLevelUserId').value;
-                                    const level = parseInt(document.getElementById('setLevelValue').value);
-                                    if (!userIdLevel || !level) throw new Error('Введите ID и уровень');
-                                    await updateUserField(userIdLevel, 'seasonLevel', level);
-                                    showSuccessMessage(`📊 Уровень игрока ${userIdLevel} установлен на ${level}`);
-                                    addLog(`📊 Уровень ${userIdLevel} = ${level}`);
-                                    break;
-                                    
-                                case 'add_season_exp':
-                                    const userIdExp = document.getElementById('addExpUserId').value;
-                                    const exp = parseInt(document.getElementById('addExpAmount').value);
-                                    if (!userIdExp || !exp) throw new Error('Введите ID и опыт');
-                                    const userExpSnap = await firebase.database().ref('users/' + userIdExp).once('value');
-                                    if (!userExpSnap.exists()) throw new Error('Игрок не найден');
-                                    const currentExp = userExpSnap.val().seasonExp || 0;
-                                    await updateUserField(userIdExp, 'seasonExp', currentExp + exp);
-                                    showSuccessMessage(`✨ Добавлено ${exp} опыта игроку ${userIdExp}`);
-                                    addLog(`✨ Добавлено ${exp} опыта ${userIdExp}`);
-                                    break;
-                                    
-                                case 'reset_quests':
-                                    const userIdQuest = document.getElementById('resetQuestsUserId').value;
-                                    if (userIdQuest) {
-                                        await updateUserField(userIdQuest, 'eventQuests', { lastReset: 0, quests: [] });
-                                        showSuccessMessage(`🔄 Квесты сброшены для ${userIdQuest}`);
-                                        addLog(`🔄 Квесты сброшены для ${userIdQuest}`);
-                                    } else {
-                                        // Сброс для всех
-                                        const allUsers = await getAllUsers();
-                                        for (const [id, user] of Object.entries(allUsers)) {
-                                            await firebase.database().ref('users/' + id).update({ eventQuests: { lastReset: 0, quests: [] } });
-                                        }
-                                        showSuccessMessage(`🔄 Квесты сброшены для ВСЕХ игроков`);
-                                        addLog(`🔄 Квесты сброшены для ВСЕХ игроков`);
-                                    }
-                                    break;
-                                    
-                                case 'reset_all_quests':
-                                    const allUsers2 = await getAllUsers();
-                                    for (const [id, user] of Object.entries(allUsers2)) {
-                                        await firebase.database().ref('users/' + id).update({ eventQuests: { lastReset: 0, quests: [] } });
-                                    }
-                                    showSuccessMessage(`🔄 Квесты сброшены для ВСЕХ игроков`);
-                                    addLog(`🔄 Квесты сброшены для ВСЕХ игроков`);
-                                    break;
-                                    
-                                case 'ban_user':
-                                    const userIdBan = document.getElementById('banUserId').value;
-                                    if (!userIdBan) throw new Error('Введите ID');
-                                    await updateUserField(userIdBan, 'banned', true);
-                                    showSuccessMessage(`🔨 Игрок ${userIdBan} забанен`);
-                                    addLog(`🔨 Игрок ${userIdBan} забанен`);
-                                    break;
-                                    
-                                case 'unban_user':
-                                    const userIdUnban = document.getElementById('unbanUserId').value;
-                                    if (!userIdUnban) throw new Error('Введите ID');
-                                    await updateUserField(userIdUnban, 'banned', false);
-                                    showSuccessMessage(`🔓 Игрок ${userIdUnban} разбанен`);
-                                    addLog(`🔓 Игрок ${userIdUnban} разбанен`);
-                                    break;
-                                    
-                                case 'list_players':
-                                    await showPlayersList();
-                                    showSuccessMessage('📋 Список игроков в консоли и логах');
-                                    break;
-                                    
-                                // Глобальные
-                                case 'announce':
-                                    const message = document.getElementById('announceMessage').value;
-                                    if (!message) throw new Error('Введите сообщение');
-                                    const allUsersAnnounce = await getAllUsers();
-                                    let count = 0;
-                                    for (const [id, user] of Object.entries(allUsersAnnounce)) {
-                                        const notif = user.notifications || [];
-                                        notif.push({ message, date: Date.now(), type: 'announce' });
-                                        await firebase.database().ref('users/' + id).update({ notifications: notif });
-                                        count++;
-                                    }
-                                    showSuccessMessage(`📢 Уведомление отправлено ${count} игрокам`);
-                                    addLog(`📢 Уведомление "${message}" отправлено ${count} игрокам`);
-                                    break;
-                                    
-                                case 'give_all_money':
-                                    const allMoney = parseInt(document.getElementById('giveAllMoneyAmount').value);
-                                    if (!allMoney) throw new Error('Введите сумму');
-                                    const allUsersMoney = await getAllUsers();
-                                    let countMoney = 0;
-                                    for (const [id, user] of Object.entries(allUsersMoney)) {
-                                        const current = user.money || 0;
-                                        await firebase.database().ref('users/' + id).update({ money: current + allMoney });
-                                        countMoney++;
-                                    }
-                                    showSuccessMessage(`💰 Выдано ${allMoney} монет ${countMoney} игрокам`);
-                                    addLog(`💰 Выдано ${allMoney} монет ${countMoney} игрокам`);
-                                    break;
-                                    
-                                case 'give_all_dilicks':
-                                    const allDil = parseInt(document.getElementById('giveAllDilicksAmount').value);
-                                    if (!allDil) throw new Error('Введите сумму');
-                                    const allUsersDil = await getAllUsers();
-                                    let countDil = 0;
-                                    for (const [id, user] of Object.entries(allUsersDil)) {
-                                        const current = user.dilicks || 0;
-                                        await firebase.database().ref('users/' + id).update({ dilicks: current + allDil });
-                                        countDil++;
-                                    }
-                                    showSuccessMessage(`💎 Выдано ${allDil} диликов ${countDil} игрокам`);
-                                    addLog(`💎 Выдано ${allDil} диликов ${countDil} игрокам`);
-                                    break;
-                                    
-                                case 'save_all':
-                                    showSuccessMessage('💾 Сохранение всех игроков... (нет необходимости, данные автосохраняются)');
-                                    addLog('💾 Запрос на сохранение (данные уже в Firebase)');
-                                    break;
-                                    
-                                case 'add_promo':
-                                    const code = document.getElementById('promoCode').value.toUpperCase();
-                                    const rewardStr = document.getElementById('promoReward').value;
-                                    if (!code || !rewardStr) throw new Error('Введите код и награду');
-                                    const reward = { money: 0, dilicks: 0 };
-                                    const parts = rewardStr.split(',');
-                                    parts.forEach(part => {
-                                        const [key, val] = part.split(':');
-                                        if (key === 'money') reward.money = parseInt(val);
-                                        if (key === 'dilicks') reward.dilicks = parseInt(val);
-                                    });
-                                    await firebase.database().ref('promocodes/' + code).set({
-                                        code, reward, description: 'Админский промокод', maxActivations: 1, expiryDate: null
-                                    });
-                                    showSuccessMessage(`🎁 Промокод ${code} добавлен`);
-                                    addLog(`🎁 Добавлен промокод ${code} с наградой ${rewardStr}`);
-                                    break;
-                                    
-                                case 'remove_promo':
-                                    const removeCode = document.getElementById('removePromoCode').value.toUpperCase();
-                                    await firebase.database().ref('promocodes/' + removeCode).remove();
-                                    showSuccessMessage(`🗑️ Промокод ${removeCode} удален`);
-                                    addLog(`🗑️ Удален промокод ${removeCode}`);
-                                    break;
-                                    
-                                case 'refresh_status':
-                                    updateEventsStatus();
-                                    updateStatusDisplay();
-                                    showSuccessMessage('🔄 Статус обновлен');
-                                    addLog('🔄 Статус обновлен');
-                                    break;
-                                    
-                                default:
-                                    addLog(`⚠️ Неизвестная команда: ${command}`, true);
-                            }
-                        } catch (error) {
-                            addLog(`❌ Ошибка: ${error.message}`, true);
-                            showSuccessMessage(`❌ Ошибка: ${error.message}`);
-                        }
+                if (techWorkBtn) {
+                    techWorkBtn.addEventListener('click', async () => {
+                        await maintRef.set({ 
+                            active: true, 
+                            startTime: Date.now(), 
+                            endTime: null, 
+                            duration: null,
+                            type: 'infinite'
+                        });
+                        updateStatusDisplay();
+                        alert('🔧 Технические работы включены (бесконечно)');
                     });
-                });
+                }
                 
+                if (notTechWorkBtn) {
+                    notTechWorkBtn.addEventListener('click', async () => {
+                        await maintRef.set({ active: false });
+                        updateStatusDisplay();
+                        alert('✅ Технические работы отключены');
+                    });
+                }
+                
+                // ===== УПРАВЛЕНИЕ ИВЕНТАМИ =====
+                const eventsRef = firebase.database().ref('events');
+                
+                const startDilicksBtn = document.getElementById('startDilicksEventBtn');
+                const stopDilicksBtn = document.getElementById('stopDilicksEventBtn');
+                const startWheelBtn = document.getElementById('startWheelEventBtn');
+                const stopWheelBtn = document.getElementById('stopWheelEventBtn');
+                
+                if (startDilicksBtn) {
+                    startDilicksBtn.addEventListener('click', async () => {
+                        const endTime = Date.now() + (200 * 24 * 60 * 60 * 1000);
+                        await eventsRef.child('dilicksHurricane').set({
+                            active: true,
+                            startTime: Date.now(),
+                            endTime: endTime,
+                            duration: 200,
+                            type: 'dilicks',
+                            multiplier: 2,
+                            day: 1
+                        });
+                        alert('💎 Ивент "Диликовый Ураган" запущен на 200 дней!');
+                    });
+                }
+                
+                if (stopDilicksBtn) {
+                    stopDilicksBtn.addEventListener('click', async () => {
+                        await eventsRef.child('dilicksHurricane').set({ active: false });
+                        alert('⏹️ Ивент "Диликовый Ураган" остановлен');
+                    });
+                }
+                
+                if (startWheelBtn) {
+                    startWheelBtn.addEventListener('click', async () => {
+                        const endTime = Date.now() + (150 * 24 * 60 * 60 * 1000);
+                        await eventsRef.child('wheelEvent').set({
+                            active: true,
+                            startTime: Date.now(),
+                            endTime: endTime,
+                            duration: 150,
+                            type: 'wheel',
+                            discount: true,
+                            spinCost: 2500
+                        });
+                        alert('🎡 Ивент "Колесо Фортуны" запущен на 150 дней!');
+                    });
+                }
+                
+                if (stopWheelBtn) {
+                    stopWheelBtn.addEventListener('click', async () => {
+                        await eventsRef.child('wheelEvent').set({ active: false });
+                        alert('⏹️ Ивент "Колесо Фортуны" остановлен');
+                    });
+                }
+                
+                // Подписка на изменения
                 maintRef.on('value', () => updateStatusDisplay());
+                
                 updateStatusDisplay();
                 startTimerDisplay();
-                updateEventsStatus();
                 
-                addLog('✅ Админ-панель полностью готова!');
+                logDebug('✅ Админ-панель полностью инициализирована!');
             }
         })();
     </script>
