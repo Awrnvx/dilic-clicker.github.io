@@ -22,15 +22,28 @@
     </script>
 </head>
 <body>
-    <!-- ЭКРАН ТЕХНИЧЕСКИХ РАБОТ -->
-    <div id="maintenanceOverlay" class="maintenance-overlay" style="display: none;">
-        <div class="maintenance-card glass-card liquid-glass" id="maintenanceCard">
+        <!-- ЭКРАН ТЕХНИЧЕСКИХ РАБОТ (обычный) -->
+    <div id="techWorkOverlay" class="maintenance-overlay" style="display: none;">
+        <div class="maintenance-card glass-card liquid-glass">
             <div class="maintenance-icon">🔧</div>
             <h2 class="maintenance-title">Технические работы</h2>
             <p class="maintenance-text">Ведутся технические работы. Скоро всё заработает!</p>
-            <div id="maintenanceTimer" class="maintenance-timer" style="display: none;"></div>
+            <div id="techWorkTimer" class="maintenance-timer" style="display: none;"></div>
             <div class="maintenance-progress">
-                <div class="maintenance-progress-bar" id="maintenanceProgressBar"></div>
+                <div class="maintenance-progress-bar" id="techWorkProgressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ОБНОВЛЕНИЙ (таймер до обновы) -->
+    <div id="updateOverlay" class="maintenance-overlay" style="display: none;">
+        <div class="maintenance-card glass-card liquid-glass">
+            <div class="maintenance-icon">🆙</div>
+            <h2 class="maintenance-title">До обновы</h2>
+            <p class="maintenance-text">Ведутся технические работы. Скоро обнова появится!</p>
+            <div id="updateTimer" class="maintenance-timer" style="display: none;"></div>
+            <div class="maintenance-progress">
+                <div class="maintenance-progress-bar" id="updateProgressBar"></div>
             </div>
         </div>
     </div>
