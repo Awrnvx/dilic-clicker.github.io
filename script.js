@@ -2535,3 +2535,96 @@ setTimeout(() => {
     checkMaintenanceScreen();
     listenMaintenanceChanges();
 }, 1000);
+
+// ========== УПРАВЛЕНИЕ ЭКРАНАМИ (РАБОТАЕТ ДАЖЕ ПОСЛЕ ОБНОВЛЕНИЯ СТРАНИЦЫ) ==========
+
+let screenCheckInterval = null;
+
+function checkAndShowScreens() {
+    const techWorkOverlay = document.getElementById('techWorkOverlay');
+    const updateOverlay = document.getElementById('updateOverlay');
+    
+    if (!techWorkOverlay || !updateOverlay) return;
+    
+    // Проверяем Firebase
+    firebase.database().ref('maintenance').once('value').then(snapshot => {
+        const data = snapshot.val();
+        
+        // Сначала скрываем оба
+        techWorkOverlay.style.display = 'none';
+        updateOverlay.style.display = 'none';
+        
+        // Останавливаем старые интервалы
+        if (window._timerInterval) clearInterval(window._timerInterval);
+        
+        // Если техработы не активны — выходим
+        if (!data || data.active !== true) return;
+        
+        // ЭКРАН ОБНОВЛЕНИЯ (с таймером)
+        if (data.type === 'timer' && data.endTime) {
+            updateOverlay.style.display = 'flex';
+            
+            const timerDiv = document.getElementById('updateTimer');
+            const progressBar = document.getElementById('updateProgressBar');
+            
+            if (!timerDiv) return;
+            
+            const updateTimer = () => {
+                const remaining = data.endTime - Date.now();
+                
+                if (remaining <= 0) {
+                    // Таймер закончился — экран пропадает
+                    updateOverlay.style.display = 'none';
+                    if (window._timerInterval) clearInterval(window._timerInterval);
+                    return;
+                }
+                
+                const seconds = Math.floor(remaining / 1000);
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                
+                timerDiv.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                timerDiv.style.display = 'block';
+                
+                if (progressBar) {
+                    const total = data.duration || 3600;
+                    const progress = ((total - seconds) / total) * 100;
+                    progressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+                }
+            };
+            
+            updateTimer();
+            if (window._timerInterval) clearInterval(window._timerInterval);
+            window._timerInterval = setInterval(updateTimer, 1000);
+        }
+        // ЭКРАН ТЕХРАБОТ (бесконечный)
+        else {
+            techWorkOverlay.style.display = 'flex';
+            const timerDiv = document.getElementById('techWorkTimer');
+            if (timerDiv) timerDiv.style.display = 'none';
+        }
+        
+    }).catch(err => console.error('Ошибка проверки экранов:', err));
+}
+
+// Слушаем изменения в Firebase (мгновенно)
+function listenScreenChanges() {
+    firebase.database().ref('maintenance').on('value', () => {
+        checkAndShowScreens();
+    });
+}
+
+// Запускаем при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    checkAndShowScreens();
+    listenScreenChanges();
+});
+
+// ДОПОЛНИТЕЛЬНО: проверяем при каждой загрузке страницы (на случай если Firebase еще не инициализирован)
+setTimeout(() => {
+    checkAndShowScreens();
+}, 1000);
+setTimeout(() => {
+    checkAndShowScreens();
+}, 3000);
