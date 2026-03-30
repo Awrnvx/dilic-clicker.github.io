@@ -1,4 +1,3 @@
-// firebase-config.js
 const firebaseConfig = {
     apiKey: "AIzaSyBHcptZefbC53BR6wMPEtyIF9GCx2y7xjw",
     authDomain: "dilic-clicker.firebaseapp.com",
@@ -13,8 +12,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// ТВОЙ НОВЫЙ ID АДМИНА - ПРОВЕРЬ ЧТО ЭТО ТОЧНО ТВОЙ ID!
-const CREATOR_ID = "-OoEwrjU2Mehwmv3qQcC";
+// ТВОЙ ID АДМИНА - ЗАМЕНИ НА СВОЙ!
+const CREATOR_ID = "-Onbl-wmWqYsAV-cYUWm";
 
 console.log("🔥 Firebase инициализирован");
 console.log("👑 CREATOR_ID:", CREATOR_ID);

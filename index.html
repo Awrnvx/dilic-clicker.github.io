@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Dilic Clicker - Игра с кликерами</title>
     <link rel="stylesheet" href="style.css">
     
@@ -22,7 +22,7 @@
     </script>
 </head>
 <body>
-        <!-- ЭКРАН ТЕХНИЧЕСКИХ РАБОТ (обычный) -->
+    <!-- ЭКРАН ТЕХНИЧЕСКИХ РАБОТ (обычный) -->
     <div id="maintenanceOverlay" class="maintenance-overlay" style="display: none;">
         <div class="maintenance-card glass-card liquid-glass">
             <div class="maintenance-icon">🔧</div>
@@ -83,8 +83,8 @@
                 <button class="nav-btn liquid-glass" data-tab="leaderboard">
                     <span class="nav-text">Лидеры</span>
                 </button>
-                <button class="nav-btn liquid-glass" data-tab="events">
-                    <span class="nav-text">🎉 Ивенты</span>
+                <button class="nav-btn liquid-glass" data-tab="wheel">
+                    <span class="nav-text">Колесо</span>
                 </button>
             </div>
             
@@ -489,224 +489,13 @@
                 <div class="leaderboard-container glass-card liquid-glass">
                     <h2>Таблица лидеров</h2>
                     <div class="leaderboard-tabs"><button class="glass-btn small active liquid-glass" data-leaderboard="clicks">По кликам</button><button class="glass-btn small liquid-glass" data-leaderboard="money">По деньгам</button><button class="glass-btn small liquid-glass" data-leaderboard="playtime">По времени</button></div>
-                    <table class="leaderboard-table"><thead>汽<th>Место</th><th>Игрок</th><th>Показатель</th> </thead><tbody id="leaderboardBody"></tbody>  </table>
+                    <table class="leaderboard-table"><thead><th>Место</th><th>Игрок</th><th>Показатель</th> </thead><tbody id="leaderboardBody"></tbody>
                 </div>
             </div>
 
-            <!-- Ивенты (вкладка) -->
-            <div id="events" class="tab">
-                <div id="eventsList" class="events-fullscreen">
-                    <div class="events-header glass-card liquid-glass">
-                        <h1 class="section-title">🎉 ИВЕНТЫ 🎉</h1>
-                        <p class="events-subtitle">Участвуй в событиях и получай уникальные награды!</p>
-                    </div>
-                    
-                    <div class="user-panel-mini glass-card liquid-glass">
-                        <div class="user-info-mini">
-                            <span>👤 <span id="eventsUsername">Загрузка...</span></span>
-                            <span>💎 <span id="eventsDilicks">0</span></span>
-                            <span>🪙 <span id="eventsMoney">0</span></span>
-                        </div>
-                        <button class="glass-btn small" id="eventsLogoutBtn">Выйти</button>
-                    </div>
-                    
-                    <div class="events-grid" id="eventsGrid">
-                        <div class="event-card" id="uraganEventCard">
-                            <div class="event-icon">💎💨</div>
-                            <h2>💎 ДИЛИКОВЫЙ УРАГАН</h2>
-                            <p class="event-description">x2 → x3 → x5 диликов за клик! Соревнуйся в топе, собирай копилку и получай эксклюзивные скины!</p>
-                            <div class="event-timer-block">
-                                <div class="event-timer-label">⏰ ДО КОНЦА ИВЕНТА</div>
-                                <div class="event-timer-value" id="uraganTimer">-- дн -- ч -- мин</div>
-                            </div>
-                            <div class="event-status active" id="uraganStatus">АКТИВЕН</div>
-                            <div class="event-bonus">🔥 x5 диликов в последний день!</div>
-                        </div>
-                        
-                        <div class="event-card" id="wheelEventCard">
-                            <div class="event-icon">🎡✨</div>
-                            <h2>🎡 КОЛЕСО ФОРТУНЫ</h2>
-                            <p class="event-description">Крути колесо и выигрывай монеты, дилики и легендарный скин дракона с множителем x250!</p>
-                            <div class="event-timer-block">
-                                <div class="event-timer-label">⏰ ДО КОНЦА ИВЕНТА</div>
-                                <div class="event-timer-value" id="wheelTimer">-- дн -- ч -- мин</div>
-                            </div>
-                            <div class="event-status active" id="wheelStatus">АКТИВЕН</div>
-                            <div class="event-bonus">🎁 Особый скин +250 множитель!</div>
-                        </div>
-                        
-                        <div class="event-card disabled">
-                            <div class="event-icon">❓✨</div>
-                            <h2>СКОРО</h2>
-                            <p class="event-description">Новый ивент уже готовится! Следи за обновлениями и не пропусти уникальные награды!</p>
-                            <div class="event-timer-block">
-                                <div class="event-timer-label">⏰ СТАРТ</div>
-                                <div class="event-timer-value">Скоро</div>
-                            </div>
-                            <div class="event-status coming">СКОРО</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Контент Диликового урагана -->
-                <div id="uraganContent" style="display: none;">
-                    <div class="uragan-page">
-                        <div class="uragan-header liquid-glass">
-                            <h1>💎 ДИЛИКОВЫЙ УРАГАН 💨</h1>
-                            <p>Самый мощный ивент! Зарабатывай дилики x5 и становись легендой!</p>
-                        </div>
-                        
-                        <div class="user-panel-mini liquid-glass">
-                            <div class="user-info-mini">
-                                <span>👤 <span id="uraganUsername">Загрузка...</span></span>
-                                <span>💎 Дилики: <span id="uraganDilicks">0</span></span>
-                                <span>📊 Мой вклад: <span id="userContribution">0</span> 💎</span>
-                            </div>
-                            <button class="glass-btn small" id="uraganBackBtn">← Назад к ивентам</button>
-                        </div>
-                        
-                        <div class="event-info liquid-glass">
-                            <div class="multiplier-box" id="multiplierDisplay">x2 ДИЛИКОВ</div>
-                            <div class="multiplier-label">🔥 множитель диликов за клик</div>
-                            <div class="timer-box" id="eventTimer">-- дн -- ч -- мин</div>
-                            <div class="day-badge" id="dayBadge">ДЕНЬ 1</div>
-                        </div>
-                        
-                        <div class="pool-section liquid-glass">
-                            <div class="pool-title">💰 ОБЩАЯ КОПИЛКА ИВЕНТА</div>
-                            <div class="progress-bar"><div class="progress-fill" id="poolProgress" style="width: 0%"></div></div>
-                            <div class="pool-stats"><span>Собрано: <span id="totalPool">0</span> 💎</span><span>Цель: 100 000 000 💎</span></div>
-                        </div>
-                        
-                        <div class="quests-section liquid-glass">
-                            <div class="quests-title">🎯 ЗАДАНИЯ ИВЕНТА</div>
-                            <div id="questsList"></div>
-                        </div>
-                        
-                        <div class="top-section liquid-glass">
-                            <div class="top-title">🏆 ТОП-10 УЧАСТНИКОВ 🏆</div>
-                            <div class="top-list" id="topList"></div>
-                        </div>
-                        
-                        <div class="rewards-section liquid-glass">
-                            <div class="rewards-title">🎁 НАГРАДЫ ЗА ВКЛАД</div>
-                            <div class="rewards-grid">
-                                <div class="reward-item"><div class="reward-value">1 000 💎</div><div class="reward-desc">за 10 000 диликов</div></div>
-                                <div class="reward-item"><div class="reward-value">5 000 💎</div><div class="reward-desc">за 50 000 диликов</div></div>
-                                <div class="reward-item"><div class="reward-value">25 000 💎</div><div class="reward-desc">за 100 000 диликов</div></div>
-                                <div class="reward-item"><div class="reward-value">СКИН "ДИЛИК"</div><div class="reward-desc">Топ-100</div></div>
-                                <div class="reward-item"><div class="reward-value">СКИН "ДИЛИК МАСТЕР"</div><div class="reward-desc">Топ-50</div></div>
-                                <div class="reward-item"><div class="reward-value">СКИН "ДИЛИК ЛОРД"</div><div class="reward-desc">Топ-10</div></div>
-                                <div class="reward-item"><div class="reward-value">СКИН "ДИЛИК КОРОЛЬ"</div><div class="reward-desc">Топ-3 + копилка</div></div>
-                                <div class="reward-item"><div class="reward-value">СКИН "ДИЛИК ДРАКОН"</div><div class="reward-desc">Колесо ивента</div></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Контент Колеса фортуны (стильная версия) -->
-                <div id="wheelContent" style="display: none;">
-                    <div class="wheel-card">
-                        <div class="wheel-header">
-                            <h2>✦ КОЛЕСО ФОРТУНЫ ✦</h2>
-                            <p class="wheel-subtitle">Испытай удачу!</p>
-                            <div class="wheel-price">
-                                <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="wheel-price-icon">
-                                <span id="wheelSpinCost">2500</span> за крутку
-                            </div>
-                        </div>
-                        
-                        <div class="wheel-wrapper">
-                            <canvas id="wheelCanvas" width="450" height="450" class="wheel-canvas"></canvas>
-                            <div class="wheel-pointer"></div>
-                            <div class="wheel-pointer-center"></div>
-                        </div>
-                        
-                        <div class="wheel-controls">
-                            <button class="wheel-spin-btn" id="wheelSpinBtn">
-                                <span>🎡</span> КРУТИТЬ <span>🎡</span>
-                            </button>
-                            <div class="wheel-balance">
-                                Твой баланс: 
-                                <span id="wheelBalance">0</span>
-                                <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="wheel-balance-icon">
-                            </div>
-                        </div>
-                        
-                        <div class="wheel-prizes">
-                            <div class="wheel-prize-item">
-                                <span class="wheel-prize-dot" style="background: #2e7d32;"></span>
-                                <span class="wheel-prize-text">
-                                    <strong class="wheel-prize-percent">50%</strong>
-                                    <span class="wheel-prize-value">2.5k <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="wheel-prize-icon"></span>
-                                </span>
-                            </div>
-                            <div class="wheel-prize-item">
-                                <span class="wheel-prize-dot" style="background: #f9a825;"></span>
-                                <span class="wheel-prize-text">
-                                    <strong class="wheel-prize-percent">35%</strong>
-                                    <span class="wheel-prize-value">5.5k <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="wheel-prize-icon"></span>
-                                </span>
-                            </div>
-                            <div class="wheel-prize-item">
-                                <span class="wheel-prize-dot" style="background: #ef6c00;"></span>
-                                <span class="wheel-prize-text">
-                                    <strong class="wheel-prize-percent">25%</strong>
-                                    <span class="wheel-prize-value">8.5k <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="wheel-prize-icon"></span>
-                                </span>
-                            </div>
-                            <div class="wheel-prize-item">
-                                <span class="wheel-prize-dot" style="background: #d32f2f;"></span>
-                                <span class="wheel-prize-text">
-                                    <strong class="wheel-prize-percent">15%</strong>
-                                    <span class="wheel-prize-value">11.5k <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="wheel-prize-icon"></span>
-                                </span>
-                            </div>
-                            <div class="wheel-prize-item">
-                                <span class="wheel-prize-dot" style="background: #7b1fa2;"></span>
-                                <span class="wheel-prize-text">
-                                    <strong class="wheel-prize-percent">5%</strong>
-                                    <span class="wheel-prize-value">5k <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="wheel-prize-icon"></span>
-                                </span>
-                            </div>
-                            <div class="wheel-prize-item skin-prize">
-                                <div class="wheel-prize-skin-content">
-                                    <span class="wheel-prize-dot" style="background: #c2185b;"></span>
-                                    <span class="wheel-prize-text">
-                                        <strong class="wheel-prize-percent">2.5%</strong>
-                                        <span class="wheel-prize-value">СКИН ✨</span>
-                                    </span>
-                                </div>
-                                <div class="wheel-skin-btn" id="showSkinBtn">?</div>
-                            </div>
-                        </div>
-                        
-                        <div class="wheel-result" id="wheelResult">
-                            <div class="wheel-result-label">ТВОЙ ВЫИГРЫШ</div>
-                            <div class="wheel-result-value" id="wheelResultDisplay">НАЖМИ КРУТИТЬ</div>
-                        </div>
-                    </div>
-                    
-                    <div class="wheel-skin-modal" id="skinModal">
-                        <div class="wheel-modal-content">
-                            <span class="wheel-modal-close" id="closeModal">✕</span>
-                            <h2 class="wheel-modal-title">✦ ОСОБЕННЫЙ СКИН ✦</h2>
-                            <div class="wheel-skin-preview">
-                                <img src="https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755" alt="Special Skin">
-                            </div>
-                            <p class="wheel-skin-description">
-                                ✨ Легендарный скин дракона<br>
-                                <strong>×250 МНОЖИТЕЛЬ</strong><br>
-                                ко всем кликам
-                            </p>
-                            <div class="wheel-multiplier">×250</div>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 20px;">
-                        <button class="glass-btn" id="wheelBackBtn">← Назад к ивентам</button>
-                    </div>
-                </div>
+            <!-- Колесо фортуны -->
+            <div id="wheel" class="tab">
+                <div id="wheelContainer"></div>
             </div>
         </div>
     </div>
