@@ -11,7 +11,7 @@ class ClickerGame {
         this.wheel = null;
         this.compensationShown = false;
         this.isLoaded = false;
-        this.CREATOR_ID = "-Onbl-wmWqYsAV-cYUWm"; // ТВОЙ ID АДМИНА
+        this.CREATOR_ID = "-OqRQELBxs6IyV4wIeiT"; // ТВОЙ ID АДМИНА
         
         // Данные скинов
         this.skinsData = {
@@ -137,6 +137,14 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
+            'MIWA': {
+                code: 'MIWA',
+                reward: { money: 10000000, dilicks: 10000000 },
+                description: 'Для тебя брат!',
+                maxActivations: 1,
+                expiryDate: null,
+                allowedUserId: '-OqNFAvSBHjO7lxyCAgF'
+            },
             'DILICKS100': {
                 code: 'DILICKS100',
                 reward: { money: 0, dilicks: 100 },
@@ -185,7 +193,7 @@ class ClickerGame {
                 description: 'Скин дракона в подарок!',
                 maxActivations: 1,
                 expiryDate: null
-            },
+            }
         };
         
         this.init();
@@ -1400,6 +1408,7 @@ class ClickerGame {
         });
     }
 
+    // ===== ОБНОВЛЕННАЯ АКТИВАЦИЯ ПРОМОКОДА С ПРОВЕРКОЙ ID =====
     activatePromocode() {
         if (!this.promocodeInput) return;
         
@@ -1417,6 +1426,16 @@ class ClickerGame {
             return;
         }
         
+        // ===== ПРОВЕРКА НА ЭКСКЛЮЗИВНЫЙ ПРОМОКОД ПО ID =====
+        if (promocode.allowedUserId) {
+            const currentUserId = localStorage.getItem('userId');
+            if (currentUserId !== promocode.allowedUserId) {
+                this.showPromocodeMessage('❌ Этот промокод предназначен для другого игрока!', 'error');
+                return;
+            }
+        }
+        // ===== КОНЕЦ ПРОВЕРКИ =====
+        
         if (promocode.expiryDate && Date.now() > promocode.expiryDate) {
             this.showPromocodeMessage('Срок действия промокода истек', 'error');
             return;
@@ -1431,12 +1450,12 @@ class ClickerGame {
         
         if (promocode.reward.money > 0) {
             this.userData.money += promocode.reward.money;
-            rewardMessage += `+${promocode.reward.money} <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" style="width: 18px; height: 18px; border-radius: 50%;"> `;
+            rewardMessage += `+${promocode.reward.money.toLocaleString()} <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" style="width: 18px; height: 18px; border-radius: 50%;"> `;
         }
         
         if (promocode.reward.dilicks > 0) {
             this.userData.dilicks += promocode.reward.dilicks;
-            rewardMessage += `+${promocode.reward.dilicks} <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" style="width: 18px; height: 18px; border-radius: 50%;"> `;
+            rewardMessage += `+${promocode.reward.dilicks.toLocaleString()} <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" style="width: 18px; height: 18px; border-radius: 50%;"> `;
         }
         
         if (promocode.reward.skin) {
@@ -1519,10 +1538,10 @@ class ClickerGame {
             
             const rewardParts = [];
             if (promocode.reward.money > 0) {
-                rewardParts.push(`<img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="price-icon"> +${promocode.reward.money}`);
+                rewardParts.push(`<img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="price-icon"> +${promocode.reward.money.toLocaleString()}`);
             }
             if (promocode.reward.dilicks > 0) {
-                rewardParts.push(`<img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="price-icon"> +${promocode.reward.dilicks}`);
+                rewardParts.push(`<img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="price-icon"> +${promocode.reward.dilicks.toLocaleString()}`);
             }
             if (promocode.reward.skin) {
                 rewardParts.push(`✨ +скин`);
@@ -1576,10 +1595,10 @@ class ClickerGame {
             
             const rewardParts = [];
             if (item.reward.money > 0) {
-                rewardParts.push(`<img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="price-icon"> +${item.reward.money}`);
+                rewardParts.push(`<img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="price-icon"> +${item.reward.money.toLocaleString()}`);
             }
             if (item.reward.dilicks > 0) {
-                rewardParts.push(`<img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="price-icon"> +${item.reward.dilicks}`);
+                rewardParts.push(`<img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="price-icon"> +${item.reward.dilicks.toLocaleString()}`);
             }
             if (item.reward.skin) {
                 rewardParts.push(`✨ +скин`);
@@ -2621,4 +2640,3 @@ setTimeout(() => {
     checkMaintenanceScreen();
     listenMaintenanceChanges();
 }, 1000);
-
