@@ -3,729 +3,1035 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dilic Wheel ✦ Колесо Фортуны</title>
+    <title>Dilic Admin | Панель управления</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="firebase-config.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
+        .admin-page {
             min-height: 100vh;
             background: linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
-
-        /* Главный контейнер */
-        .dilic-wheel {
-            max-width: 650px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 60px;
-            border: 0.5px solid rgba(255, 255, 255, 0.08);
-            padding: 30px 25px 35px;
-            box-shadow: 
-                0 25px 40px -15px rgba(0, 0, 0, 0.5),
-                0 0 0 0.5px rgba(255, 255, 255, 0.06) inset;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Стеклянный эффект */
-        .dilic-wheel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            pointer-events: none;
-            opacity: 0.5;
-            z-index: 0;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.8rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #fff, #aaddff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            margin-bottom: 5px;
-            letter-spacing: 2px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ===== КОЛЕСО ===== */
-        .wheel-wrapper {
-            position: relative;
-            width: 320px;
-            height: 320px;
-            margin: 10px auto 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            border-radius: 50%;
-            box-shadow: 
-                0 30px 40px -15px rgba(0, 0, 0, 0.7),
-                0 0 0 3px rgba(255, 255, 255, 0.1) inset,
-                0 0 0 5px rgba(255, 215, 0, 0.4);
-            background: rgba(0, 0, 0, 0.3);
-            transition: transform 0.1s linear;
-        }
-
-        /* Указатель */
-        .pointer-dilic {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 22px solid transparent;
-            border-right: 22px solid transparent;
-            border-top: 45px solid gold;
-            filter: drop-shadow(0 10px 8px #00000099);
-            z-index: 10;
-        }
-
-        .pointer-dilic::after {
-            content: '';
-            position: absolute;
-            top: -50px;
-            left: -12px;
-            width: 24px;
-            height: 24px;
-            background: radial-gradient(circle, #ffd966, #b8860b);
-            border-radius: 50%;
-            box-shadow: 0 0 30px gold;
-        }
-
-        /* ===== ЛЕГЕНДА ===== */
-        .prizes-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 40px;
-            border: 0.5px solid rgba(255, 255, 255, 0.08);
-            padding: 15px;
-            margin: 20px 0 15px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .prize-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 40px;
-            border: 0.5px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.2s ease;
-        }
-
-        .prize-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: scale(1.02);
-            border-color: rgba(255, 215, 0, 0.3);
-        }
-
-        .prize-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            box-shadow: 0 0 12px currentColor;
-        }
-
-        .prize-text {
-            color: white;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .prize-text strong {
-            color: gold;
-            font-size: 1rem;
-            margin-right: 3px;
-        }
-
-        .currency-icon {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .skin-info-btn {
-            background: rgba(255, 215, 0, 0.15);
-            border: 1px solid gold;
-            color: gold;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-left: auto;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-        }
-
-        .skin-info-btn:hover {
-            background: gold;
-            color: black;
-            transform: scale(1.1);
-            box-shadow: 0 0 15px gold;
-        }
-
-        /* ===== МОДАЛЬНОЕ ОКНО ДЛЯ СКИНА ===== */
-        .skin-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+        .admin-panel { max-width: 1000px; margin: 0 auto; }
+        .admin-header {
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(15px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .skin-modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            max-width: 450px;
-            width: 100%;
-            background: rgba(20, 25, 35, 0.95);
-            backdrop-filter: blur(20px);
-            border: 2px solid gold;
-            border-radius: 50px;
-            padding: 30px 25px;
+            border-radius: 32px;
+            border: 1px solid rgba(255,215,0,0.2);
+            padding: 25px;
+            margin-bottom: 20px;
             text-align: center;
-            position: relative;
-            animation: modalAppear 0.3s ease;
-            box-shadow: 0 30px 50px rgba(0,0,0,0.7);
         }
-
-        @keyframes modalAppear {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            font-size: 2rem;
-            color: gold;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .modal-close:hover {
-            transform: scale(1.2) rotate(90deg);
-        }
-
-        .modal-title {
-            color: gold;
-            font-size: 2rem;
-            margin-bottom: 15px;
-            text-shadow: 0 0 20px gold;
-        }
-
-        .skin-preview {
-            width: 180px;
-            height: 180px;
-            margin: 15px auto;
-            border-radius: 50%;
-            border: 4px solid gold;
-            overflow: hidden;
-            box-shadow: 0 0 50px gold;
-        }
-
-        .skin-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .skin-description {
-            color: white;
-            font-size: 1.2rem;
-            margin: 15px 0;
-            line-height: 1.5;
-        }
-
-        .multiplier-badge {
+        .admin-header h1 { color: gold; font-size: 2rem; margin-bottom: 10px; }
+        .admin-header p { color: rgba(255,255,255,0.7); }
+        .admin-info {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 30px;
             display: inline-block;
-            background: linear-gradient(145deg, #ffd966, #b8860b);
-            padding: 10px 30px;
-            border-radius: 40px;
-            color: #1a0f00;
-            font-weight: bold;
-            font-size: 1.3rem;
-            margin-top: 10px;
-            box-shadow: 0 4px 0 #7a4f00;
-        }
-
-        /* ===== КНОПКА ===== */
-        .spin-dilic {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.06);
-            border: 0.5px solid rgba(255, 255, 255, 0.12);
-            color: white;
-            padding: 18px 0;
-            border-radius: 50px;
-            font-size: 2.2rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            margin: 15px 0 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .spin-dilic:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 12px 22px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 255, 255, 0.18);
-        }
-
-        .spin-dilic:active {
-            transform: scale(0.98) translateY(0);
-        }
-
-        .spin-dilic:disabled {
-            opacity: 0.5;
-            transform: none;
-            pointer-events: none;
-        }
-
-        /* ===== РЕЗУЛЬТАТ ===== */
-        .result-card {
-            background: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 50px;
-            border: 0.5px solid rgba(255, 255, 255, 0.08);
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .result-label {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 8px;
-        }
-
-        .result-value {
-            font-size: 2.2rem;
-            font-weight: 600;
+            font-size: 14px;
             color: gold;
-            text-shadow: 0 0 20px gold;
-            line-height: 1.3;
+        }
+        .admin-card {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid rgba(255,215,0,0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .admin-card h2 {
+            color: gold;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            border-left: 3px solid gold;
+            padding-left: 15px;
+        }
+        .admin-command {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,215,0,0.15);
+        }
+        .admin-command-code {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: gold;
+            background: rgba(255,215,0,0.1);
+            padding: 5px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .admin-command-desc {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+        .admin-input-group {
             display: flex;
+            gap: 10px;
             align-items: center;
-            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .admin-input-group input, .admin-input-group select, .admin-input-group textarea {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,215,0,0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .admin-input-group textarea {
+            resize: vertical;
+            font-family: inherit;
+        }
+        .multiplier-buttons {
+            display: flex;
+            flex-wrap: wrap;
             gap: 8px;
+            margin: 12px 0;
         }
-
-        .result-skin {
-            color: #ffb7c5;
-            text-shadow: 0 0 30px #ff69b4;
-            font-size: 2rem;
+        .multiplier-btn {
+            background: rgba(255,215,0,0.15);
+            border: 1px solid rgba(255,215,0,0.4);
+            color: gold;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.1s ease;
         }
-
-        .result-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            object-fit: cover;
+        .multiplier-btn:hover {
+            background: rgba(255,215,0,0.3);
+            transform: scale(1.02);
         }
-
-        /* Пузырьки */
-        .bubble {
-            position: fixed;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-            border-radius: 50%;
-            pointer-events: none;
-            animation: bubbleFloat 8s linear forwards;
-            z-index: 0;
+        .custom-multiplier-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
         }
-
-        @keyframes bubbleFloat {
-            0% { transform: translateY(100vh) scale(0); opacity: 0.2; }
-            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        .custom-multiplier-group input { flex: 2; }
+        .custom-multiplier-group button { flex: 1; }
+        .glass-btn {
+            background: rgba(255,255,255,0.05);
+            border: 0.5px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.15s ease;
         }
-
-        /* Адаптация под мобилки */
-        @media (max-width: 550px) {
-            .wheel-wrapper {
-                width: 280px;
-                height: 280px;
-            }
-            
-            .prizes-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .spin-dilic {
-                font-size: 1.8rem;
-            }
+        .glass-btn:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-1px);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: gold;
+            text-decoration: none;
+        }
+        .back-link:hover { text-shadow: 0 0 10px gold; }
+        .admin-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .admin-status.active { background: rgba(244,67,54,0.1); border: 1px solid #f44336; color: #f44336; }
+        .admin-status.inactive { background: rgba(76,175,80,0.1); border: 1px solid #4CAF50; color: #4CAF50; }
+        .admin-timer {
+            font-family: monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: gold;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .error-message {
+            background: rgba(244,67,54,0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .events-status-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            line-height: 1.8;
+            color: white;
+        }
+        .refresh-btn { margin-top: 10px; width: 100%; }
+        .danger-btn { background: rgba(244,67,54,0.2); border-color: #f44336; color: #f44336; }
+        .danger-btn:hover { background: rgba(244,67,54,0.3); }
+        .success-btn { background: rgba(76,175,80,0.2); border-color: #4CAF50; color: #4CAF50; }
+        .success-btn:hover { background: rgba(76,175,80,0.3); }
+        .warning-btn { background: rgba(255,193,7,0.2); border-color: #ffc107; color: #ffc107; }
+        .warning-btn:hover { background: rgba(255,193,7,0.3); }
+        .top-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .top-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+        }
+        .top-rank { color: gold; width: 35px; }
+        .top-name { flex: 1; color: white; }
+        .top-value { color: gold; }
+        hr { border-color: rgba(255,215,0,0.2); margin: 15px 0; }
+        .announcement-preview {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            border-left: 3px solid gold;
+        }
+        .admin-badge {
+            display: inline-block;
+            background: rgba(255,215,0,0.2);
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 11px;
+            margin-left: 8px;
+            color: gold;
         }
     </style>
 </head>
 <body>
-    <div id="bubbles-container"></div>
-
-    <!-- Модальное окно для скина -->
-    <div class="skin-modal" id="skinModal">
-        <div class="modal-content">
-            <span class="modal-close" id="closeModal">✕</span>
-            <h2 class="modal-title">✦ ОСОБЕННЫЙ СКИН ✦</h2>
-            <div class="skin-preview">
-                <img src="https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755" alt="Special Skin" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
+    <div class="admin-page">
+        <div class="admin-panel">
+            <div class="admin-header">
+                <h1>🛠️ DILIC ADMIN</h1>
+                <p>Панель управления техническими работами и ивентами</p>
+                <div class="admin-info">🔐 Твой ID: <span id="adminUserId">-</span></div>
             </div>
-            <p class="skin-description">
-                ✨ Легендарный скин дракона<br>
-                <strong style="color: gold;">×250 МНОЖИТЕЛЬ</strong><br>
-                ко всем кликам
-            </p>
-            <div class="multiplier-badge">×250</div>
+            
+            <div id="accessError" class="error-message" style="display: none;"></div>
+            
+            <div id="adminContent" style="display: none;">
+                <!-- ========== УВЕДОМЛЕНИЯ И АНОНСЫ ========== -->
+                <div class="admin-card">
+                    <h2>📢 УВЕДОМЛЕНИЯ И АНОНСЫ</h2>
+                    
+                    <!-- Отправить сообщение всем игрокам -->
+                    <div class="admin-command">
+                        <div class="admin-command-code">/announce</div>
+                        <div class="admin-command-desc">📢 Отправить уведомление всем игрокам (всплывает в игре)</div>
+                        <div class="admin-input-group">
+                            <input type="text" id="announceMessage" placeholder="Сообщение для всех игроков" style="flex: 2;">
+                            <select id="announceType" style="flex: 1;">
+                                <option value="info">ℹ️ Информация</option>
+                                <option value="success">✅ Успех</option>
+                                <option value="warning">⚠️ Внимание</option>
+                                <option value="error">❌ Ошибка</option>
+                                <option value="event">🎉 Ивент</option>
+                            </select>
+                        </div>
+                        <div class="admin-input-group">
+                            <input type="number" id="announceDuration" placeholder="Длительность (сек)" value="5" min="1" max="30" style="flex: 1;">
+                            <button class="glass-btn success-btn" id="sendAnnounceBtn">📢 ОТПРАВИТЬ ВСЕМ</button>
+                        </div>
+                        <div class="announcement-preview" id="announcePreview">
+                            🛠️ <strong>Админ:</strong> Ваше сообщение будет выглядеть так
+                        </div>
+                    </div>
+                    
+                    <!-- Отправить сообщение на экран техработ -->
+                    <div class="admin-command">
+                        <div class="admin-command-code">/screen message</div>
+                        <div class="admin-command-desc">🖥️ Показать сообщение на экране техработ/обновления</div>
+                        <div class="admin-input-group">
+                            <textarea id="screenMessage" rows="2" placeholder="Сообщение, которое увидят игроки на экране техработ..." style="flex: 2;"></textarea>
+                            <select id="screenTarget" style="flex: 1;">
+                                <option value="both">📺 Оба экрана</option>
+                                <option value="tech">🔧 Только техработы</option>
+                                <option value="update">🆙 Только обновление</option>
+                            </select>
+                        </div>
+                        <div class="admin-input-group">
+                            <button class="glass-btn warning-btn" id="setScreenMessageBtn">💾 УСТАНОВИТЬ СООБЩЕНИЕ</button>
+                            <button class="glass-btn danger-btn" id="clearScreenMessageBtn">🗑️ ОЧИСТИТЬ</button>
+                        </div>
+                        <div class="admin-command-desc" style="margin-top: 8px; font-size: 12px;">
+                            📌 Сообщение будет отображаться под основным текстом на экране техработ
+                        </div>
+                    </div>
+                    
+                    <!-- Отправить тестовое уведомление себе -->
+                    <div class="admin-command">
+                        <div class="admin-command-code">/test notification</div>
+                        <div class="admin-command-desc">🧪 Отправить тестовое уведомление (только для тебя)</div>
+                        <div class="admin-input-group">
+                            <input type="text" id="testMessage" placeholder="Тестовое сообщение">
+                            <button class="glass-btn" id="sendTestBtn">ТЕСТ</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ТЕХНИЧЕСКИЕ РАБОТЫ -->
+                <div class="admin-card">
+                    <h2>🔧 ТЕХНИЧЕСКИЕ РАБОТЫ</h2>
+                    <div id="maintenanceStatus" class="admin-status inactive">✅ Технические работы ОТКЛЮЧЕНЫ</div>
+                    <div id="maintenanceTimerDisplay" class="admin-timer" style="display: none;"></div>
+                    <div class="admin-command">
+                        <div class="admin-command-code">/technical work</div>
+                        <div class="admin-command-desc">🔧 Включить бесконечный экран техработ</div>
+                        <button class="glass-btn" id="techWorkBtn">ВЫПОЛНИТЬ</button>
+                    </div>
+                    <div class="admin-command">
+                        <div class="admin-command-code">/technical work time &lt;секунды&gt;</div>
+                        <div class="admin-command-desc">⏱️ Включить экран обновления с таймером</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="techWorkSeconds" placeholder="секунды" value="30" min="1" max="86400">
+                            <button class="glass-btn" id="updateTimeBtn">ВЫПОЛНИТЬ</button>
+                        </div>
+                    </div>
+                    <div class="admin-command">
+                        <div class="admin-command-code">/not technical work</div>
+                        <div class="admin-command-desc">✅ Выключить все экраны техработ</div>
+                        <button class="glass-btn" id="notTechWorkBtn">ВЫПОЛНИТЬ</button>
+                    </div>
+                </div>
+                
+                <!-- ========== ДИЛИКОВЫЙ УРАГАН ========== -->
+                <div class="admin-card">
+                    <h2>💎 ДИЛИКОВЫЙ УРАГАН</h2>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/start event dilicks</div>
+                        <div class="admin-command-desc">🚀 Запустить ивент на N дней</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="uraganDays" placeholder="дней" value="7" min="1" max="365">
+                            <button class="glass-btn success-btn" id="startDilicksEventBtn">ЗАПУСТИТЬ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/stop event dilicks</div>
+                        <div class="admin-command-desc">⏹️ Остановить ивент</div>
+                        <button class="glass-btn danger-btn" id="stopDilicksEventBtn">ОСТАНОВИТЬ</button>
+                    </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">/set multiplier</div>
+                        <div class="admin-command-desc">⚡ Установить множитель диликов за клик</div>
+                        <div class="multiplier-buttons" id="multiplierButtons">
+                            <button class="multiplier-btn" data-mult="2">x2</button>
+                            <button class="multiplier-btn" data-mult="3">x3</button>
+                            <button class="multiplier-btn" data-mult="5">x5</button>
+                            <button class="multiplier-btn" data-mult="10">x10</button>
+                            <button class="multiplier-btn" data-mult="20">x20</button>
+                            <button class="multiplier-btn" data-mult="50">x50</button>
+                            <button class="multiplier-btn" data-mult="100">x100</button>
+                            <button class="multiplier-btn" data-mult="500">x500</button>
+                            <button class="multiplier-btn" data-mult="1000">x1000</button>
+                            <button class="multiplier-btn" data-mult="5000">x5000</button>
+                            <button class="multiplier-btn" data-mult="10000">x10000</button>
+                        </div>
+                        <div class="custom-multiplier-group">
+                            <input type="number" id="customMultiplier" placeholder="Свой множитель" value="100">
+                            <button class="glass-btn" id="setCustomMultiplierBtn">УСТАНОВИТЬ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">💰 КОПИЛКА</div>
+                        <div class="admin-command-desc">Управление общей копилкой ивента</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="poolAmount" placeholder="количество" value="1000000">
+                            <button class="glass-btn success-btn" id="addPoolBtn">➕ ДОБАВИТЬ</button>
+                        </div>
+                        <div class="admin-input-group" style="margin-top: 8px;">
+                            <input type="number" id="setPoolAmount" placeholder="установить значение">
+                            <button class="glass-btn" id="setPoolBtn">🎯 УСТАНОВИТЬ</button>
+                        </div>
+                        <div class="admin-input-group" style="margin-top: 8px;">
+                            <input type="number" id="removePoolAmount" placeholder="вычесть">
+                            <button class="glass-btn danger-btn" id="removePoolBtn">➖ ВЫЧЕСТЬ</button>
+                            <button class="glass-btn danger-btn" id="resetPoolBtn">🗑️ СБРОСИТЬ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">📅 ДЕНЬ ИВЕНТА</div>
+                        <div class="admin-command-desc">Установить текущий день ивента</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="eventDay" placeholder="день" value="1" min="1" max="30">
+                            <button class="glass-btn" id="setEventDayBtn">УСТАНОВИТЬ ДЕНЬ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">🏆 ТОП-10 УЧАСТНИКОВ</div>
+                        <button class="glass-btn" id="loadTopBtn" style="width: 100%;">🔄 ЗАГРУЗИТЬ ТОП</button>
+                        <div id="topList" class="top-list" style="display: none;"></div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="admin-command">
+                        <div class="admin-command-code">🎁 ВЫДАЧА НАГРАД</div>
+                        <div class="admin-command-desc">Выдать награду игроку по ID</div>
+                        <div class="admin-input-group">
+                            <input type="text" id="rewardUserId" placeholder="ID игрока">
+                            <select id="rewardType">
+                                <option value="dilicks">💎 Дилики</option>
+                                <option value="money">🪙 Деньги</option>
+                                <option value="skin">✨ Скин</option>
+                            </select>
+                        </div>
+                        <div class="admin-input-group">
+                            <input type="text" id="rewardAmount" placeholder="количество (для скина - ID скина)">
+                            <button class="glass-btn success-btn" id="giveRewardBtn">ВЫДАТЬ</button>
+                        </div>
+                        <div class="admin-command-desc" style="margin-top: 8px; font-size: 12px;">
+                            📝 Скины: classic, neon, monsters_skin, dragon_skin, wheel_dragon_skin
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- КОЛЕСО ФОРТУНЫ -->
+                <div class="admin-card">
+                    <h2>🎡 КОЛЕСО ФОРТУНЫ</h2>
+                    <div class="admin-command">
+                        <div class="admin-command-code">/start event wheel</div>
+                        <div class="admin-command-desc">Запустить ивент на N дней</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="wheelDays" placeholder="дней" value="150" min="1" max="365">
+                            <button class="glass-btn success-btn" id="startWheelEventBtn">ЗАПУСТИТЬ</button>
+                        </div>
+                    </div>
+                    <div class="admin-command">
+                        <div class="admin-command-code">/stop event wheel</div>
+                        <div class="admin-command-desc">Остановить ивент</div>
+                        <button class="glass-btn danger-btn" id="stopWheelEventBtn">ОСТАНОВИТЬ</button>
+                    </div>
+                    <div class="admin-command">
+                        <div class="admin-command-code">/set spin cost</div>
+                        <div class="admin-command-desc">Изменить стоимость крутки</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="spinCostInput" placeholder="стоимость" value="2500" min="1">
+                            <button class="glass-btn" id="setSpinCostBtn">УСТАНОВИТЬ</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- СТАТУС ИВЕНТОВ -->
+                <div class="admin-card">
+                    <h2>📊 СТАТУС ИВЕНТОВ</h2>
+                    <div id="eventsStatus" class="events-status-info">Загрузка...</div>
+                    <button class="glass-btn refresh-btn" id="refreshStatusBtn" style="margin-top: 15px; width: 100%;">🔄 ОБНОВИТЬ СТАТУС</button>
+                </div>
+            </div>
+            
+            <a href="index.html" class="back-link">← Вернуться в игру</a>
         </div>
     </div>
-
-    <div class="dilic-wheel">
-        <h1>✦ FORTUNE WHEEL ✦</h1>
-        <div class="subtitle">dilic clicker</div>
-
-        <!-- Колесо -->
-        <div class="wheel-wrapper">
-            <canvas id="wheelCanvas" width="500" height="500"></canvas>
-            <div class="pointer-dilic"></div>
-        </div>
-
-        <!-- Легенда призов -->
-        <div class="prizes-grid" id="prizesGrid">
-            <!-- 50% - money -->
-            <div class="prize-item">
-                <span class="prize-dot" style="background:#2e7d32;"></span>
-                <span class="prize-text">
-                    <strong>50%</strong> 2500
-                    <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                </span>
-            </div>
-            
-            <!-- 35% - money -->
-            <div class="prize-item">
-                <span class="prize-dot" style="background:#f9a825;"></span>
-                <span class="prize-text">
-                    <strong>35%</strong> 5500
-                    <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                </span>
-            </div>
-            
-            <!-- 25% - money -->
-            <div class="prize-item">
-                <span class="prize-dot" style="background:#ef6c00;"></span>
-                <span class="prize-text">
-                    <strong>25%</strong> 8500
-                    <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                </span>
-            </div>
-            
-            <!-- 15% - money -->
-            <div class="prize-item">
-                <span class="prize-dot" style="background:#d32f2f;"></span>
-                <span class="prize-text">
-                    <strong>15%</strong> 11500
-                    <img src="https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                </span>
-            </div>
-            
-            <!-- 5% - dilicks -->
-            <div class="prize-item">
-                <span class="prize-dot" style="background:#7b1fa2;"></span>
-                <span class="prize-text">
-                    <strong>5%</strong> 5000
-                    <img src="https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg" class="currency-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                </span>
-            </div>
-            
-            <!-- 2.5% - skin с кнопкой ? -->
-            <div class="prize-item">
-                <span class="prize-dot" style="background:#c2185b;"></span>
-                <span class="prize-text">
-                    <strong>2.5%</strong> СКИН
-                    <span style="margin-left: 5px;">✨</span>
-                </span>
-                <div class="skin-info-btn" id="showSkinBtn">?</div>
-            </div>
-        </div>
-
-        <!-- Кнопка -->
-        <button class="spin-dilic" id="spinButton">🎲 КРУТИТЬ</button>
-
-        <!-- Результат -->
-        <div class="result-card" id="resultCard">
-            <div class="result-label">ТВОЙ ВЫИГРЫШ</div>
-            <div class="result-value" id="resultDisplay">
-                <span>НАЖМИ SPIN</span>
-            </div>
-            <div id="skinMultiplier" style="display: none;" class="multiplier-badge">×250 МНОЖИТЕЛЬ</div>
-        </div>
-    </div>
-
+    
     <script>
         (function() {
-            // ===== ИКОНКИ ВАЛЮТ =====
-            const MONEY_ICON = 'https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13';
-            const DILICKS_ICON = 'https://i.pinimg.com/736x/df/49/fd/df49fd562d564016dcc4070b5e83c521.jpg';
+            let attempts = 0;
+            const maxAttempts = 20;
+            let adminTimerInterval = null;
+            let maintRef = null;
+            let eventsRef = null;
+            let usersRef = null;
+            let adminName = '';
             
-            // ===== ПРИЗЫ =====
-            const PRIZES = [
-                { name: '2500 МОНЕТ', value: 2500, type: 'money', prob: 50, color: '#2e7d32', icon: MONEY_ICON },
-                { name: '5500 МОНЕТ', value: 5500, type: 'money', prob: 35, color: '#f9a825', icon: MONEY_ICON },
-                { name: '8500 МОНЕТ', value: 8500, type: 'money', prob: 25, color: '#ef6c00', icon: MONEY_ICON },
-                { name: '11500 МОНЕТ', value: 11500, type: 'money', prob: 15, color: '#d32f2f', icon: MONEY_ICON },
-                { name: '5000 ДИЛИКОВ', value: 5000, type: 'dilicks', prob: 5, color: '#7b1fa2', icon: DILICKS_ICON },
-                { name: 'ОСОБЕННЫЙ СКИН', value: 'skin', type: 'skin', prob: 2.5, color: '#c2185b', icon: '✨' }
-            ];
-
-            const canvas = document.getElementById('wheelCanvas');
-            const ctx = canvas.getContext('2d');
-            const spinBtn = document.getElementById('spinButton');
-            const resultDisplay = document.getElementById('resultDisplay');
-            const skinMultiplier = document.getElementById('skinMultiplier');
-            const bubblesContainer = document.getElementById('bubbles-container');
-            const skinModal = document.getElementById('skinModal');
-            const closeModal = document.getElementById('closeModal');
-            const showSkinBtn = document.getElementById('showSkinBtn');
-
-            let isSpinning = false;
-            let rotation = 0;
-            let spinVelocity = 0;
-            let spinDeceleration = 0.985;
-            let spinActive = false;
-            let animationFrame = null;
-
-            // ===== МОДАЛКА ДЛЯ СКИНА =====
-            showSkinBtn.addEventListener('click', () => {
-                skinModal.classList.add('active');
-            });
-
-            closeModal.addEventListener('click', () => {
-                skinModal.classList.remove('active');
-            });
-
-            window.addEventListener('click', (e) => {
-                if (e.target === skinModal) {
-                    skinModal.classList.remove('active');
-                }
-            });
-
-            // ===== ПУЗЫРЬКИ =====
-            function createBubble() {
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                const size = Math.random() * 40 + 15;
-                bubble.style.width = size + 'px';
-                bubble.style.height = size + 'px';
-                bubble.style.left = Math.random() * 100 + '%';
-                bubble.style.bottom = '-50px';
-                bubble.style.animationDuration = (Math.random() * 5 + 4) + 's';
-                bubblesContainer.appendChild(bubble);
-                
-                setTimeout(() => {
-                    if (bubble.parentNode) bubble.remove();
-                }, 9000);
-            }
-
-            setInterval(createBubble, 2000);
-
-            // ===== РИСОВАНИЕ КОЛЕСА (БЕЗ ЭМОДЗИ) =====
-            function drawWheel(rotateRad = 0) {
-                const w = canvas.width;
-                const h = canvas.height;
-                const cx = w / 2;
-                const cy = h / 2;
-                const r = Math.min(w, h) * 0.4;
-
-                ctx.clearRect(0, 0, w, h);
-
-                let startAngle = rotateRad - Math.PI / 2;
-
-                for (let i = 0; i < PRIZES.length; i++) {
-                    const prize = PRIZES[i];
-                    const sliceAngle = (prize.prob / 100) * 2 * Math.PI;
-                    const endAngle = startAngle + sliceAngle;
-
-                    // Сегмент
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy);
-                    ctx.arc(cx, cy, r, startAngle, endAngle);
-                    ctx.closePath();
-
-                    ctx.fillStyle = prize.color;
-                    ctx.shadowColor = 'rgba(255,255,255,0.3)';
-                    ctx.shadowBlur = 15;
-                    ctx.fill();
-
-                    ctx.shadowBlur = 0;
-                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                    ctx.lineWidth = 1.5;
-                    ctx.stroke();
-
-                    startAngle = endAngle;
-                }
-
-                // Центр
-                ctx.beginPath();
-                ctx.arc(cx, cy, r * 0.15, 0, 2 * Math.PI);
-                ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                ctx.shadowColor = 'rgba(255,215,0,0.5)';
-                ctx.shadowBlur = 20;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-
-            // ===== ВРАЩЕНИЕ =====
-            function spinAnimation() {
-                if (!spinActive) return;
-
-                rotation += spinVelocity;
-                spinVelocity *= spinDeceleration;
-                drawWheel(rotation);
-
-                if (spinVelocity < 0.002) {
-                    spinActive = false;
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-
-                    // Определяем результат
-                    const normalized = ((rotation % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
-                    let angle = (normalized + Math.PI/2) % (2*Math.PI);
-                    
-                    let cumulative = 0;
-                    let selectedPrize = PRIZES[0];
-                    
-                    for (let prize of PRIZES) {
-                        const slice = (prize.prob / 100) * 2 * Math.PI;
-                        if (angle >= cumulative && angle < cumulative + slice) {
-                            selectedPrize = prize;
-                            break;
-                        }
-                        cumulative += slice;
+            const waitForConfig = setInterval(() => {
+                attempts++;
+                if (typeof firebase !== 'undefined' && firebase.database && typeof CREATOR_ID !== 'undefined') {
+                    clearInterval(waitForConfig);
+                    checkAccess();
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(waitForConfig);
+                    const errorDiv = document.getElementById('accessError');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerHTML = '⚠️ Ошибка загрузки конфигурации. Проверьте firebase-config.js и подключение Firebase.';
                     }
-
-                    // Показываем результат
-                    if (selectedPrize.type === 'skin') {
-                        resultDisplay.innerHTML = `
-                            <span>✨</span>
-                            <span>ОСОБЕННЫЙ СКИН</span>
-                            <span>✨</span>
-                        `;
-                        resultDisplay.className = 'result-value result-skin';
-                        skinMultiplier.style.display = 'inline-block';
-                    } else {
-                        const icon = selectedPrize.type === 'money' ? MONEY_ICON : DILICKS_ICON;
-                        resultDisplay.innerHTML = `
-                            <img src="${icon}" class="result-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                            <span>${selectedPrize.value.toLocaleString()}</span>
-                            <img src="${icon}" class="result-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'">
-                        `;
-                        resultDisplay.className = 'result-value';
-                        skinMultiplier.style.display = 'none';
+                }
+            }, 500);
+            
+            async function getAdminName() {
+                const userId = localStorage.getItem('userId');
+                if (userId) {
+                    const snapshot = await firebase.database().ref('users/' + userId).once('value');
+                    const userData = snapshot.val();
+                    if (userData) {
+                        adminName = userData.settings?.displayName || userData.username;
                     }
-
-                    if (navigator.vibrate) navigator.vibrate(100);
+                }
+                if (!adminName) adminName = 'Админ';
+            }
+            
+            function checkAccess() {
+                const userId = localStorage.getItem('userId');
+                if (!userId) {
+                    document.getElementById('accessError').style.display = 'block';
+                    document.getElementById('accessError').innerHTML = '⚠️ Вы не авторизованы. Сначала войдите в игру';
                     return;
                 }
-
-                animationFrame = requestAnimationFrame(spinAnimation);
+                if (userId !== CREATOR_ID) {
+                    document.getElementById('accessError').style.display = 'block';
+                    document.getElementById('accessError').innerHTML = `⚠️ У вас нет доступа.<br><br>Ваш ID: ${userId}<br>ID создателя: ${CREATOR_ID}<br><br>Только создатель игры может заходить в админ-панель.`;
+                    return;
+                }
+                document.getElementById('adminContent').style.display = 'block';
+                document.getElementById('adminUserId').textContent = userId;
+                getAdminName();
+                initAdminControls();
             }
-
-            // ===== СТАРТ =====
-            function startSpin() {
-                if (isSpinning) return;
-
-                spinVelocity = 0.45 + Math.random() * 0.3;
-                spinDeceleration = 0.982 + (Math.random() * 0.01);
-                spinActive = true;
-                isSpinning = true;
-                spinBtn.disabled = true;
+            
+            function initAdminControls() {
+                maintRef = firebase.database().ref('maintenance');
+                eventsRef = firebase.database().ref('events');
+                usersRef = firebase.database().ref('users');
+                const notificationsRef = firebase.database().ref('notifications');
+                const globalMessagesRef = firebase.database().ref('globalMessages');
                 
-                resultDisplay.innerHTML = '<span>⏳ КРУТИТСЯ...</span>';
-                resultDisplay.className = 'result-value';
-                skinMultiplier.style.display = 'none';
-
-                if (animationFrame) cancelAnimationFrame(animationFrame);
-                animationFrame = requestAnimationFrame(spinAnimation);
-
-                if (navigator.vibrate) navigator.vibrate(30);
+                // Обновление превью анонса
+                const announceInput = document.getElementById('announceMessage');
+                const announcePreview = document.getElementById('announcePreview');
+                if (announceInput && announcePreview) {
+                    announceInput.addEventListener('input', () => {
+                        const msg = announceInput.value.trim();
+                        if (msg) {
+                            announcePreview.innerHTML = `🛠️ <strong>${adminName || 'Админ'}:</strong> ${msg}`;
+                        } else {
+                            announcePreview.innerHTML = `🛠️ <strong>Админ:</strong> Ваше сообщение будет выглядеть так`;
+                        }
+                    });
+                }
+                
+                // ========== ОТПРАВКА УВЕДОМЛЕНИЙ ==========
+                document.getElementById('sendAnnounceBtn')?.addEventListener('click', async () => {
+                    const message = document.getElementById('announceMessage').value.trim();
+                    const type = document.getElementById('announceType').value;
+                    const duration = parseInt(document.getElementById('announceDuration').value) || 5;
+                    
+                    if (!message) {
+                        alert('❌ Введите сообщение');
+                        return;
+                    }
+                    
+                    const fullMessage = `🛠️ ${adminName || 'Админ'}: ${message}`;
+                    
+                    try {
+                        const snapshot = await usersRef.once('value');
+                        const users = snapshot.val();
+                        let count = 0;
+                        
+                        for (const [id, user] of Object.entries(users)) {
+                            const notifications = user.notifications || [];
+                            notifications.push({
+                                message: fullMessage,
+                                type: type,
+                                duration: duration,
+                                timestamp: Date.now(),
+                                id: Date.now() + Math.random()
+                            });
+                            // Ограничиваем историю
+                            while (notifications.length > 20) notifications.shift();
+                            await firebase.database().ref('users/' + id).update({ notifications: notifications });
+                            count++;
+                        }
+                        
+                        alert(`✅ Уведомление отправлено ${count} игрокам!\n\nСообщение: ${fullMessage}`);
+                        document.getElementById('announceMessage').value = '';
+                        announcePreview.innerHTML = `🛠️ <strong>${adminName || 'Админ'}:</strong> Ваше сообщение будет выглядеть так`;
+                        
+                    } catch (error) {
+                        console.error(error);
+                        alert('❌ Ошибка при отправке уведомления');
+                    }
+                });
+                
+                // ========== СООБЩЕНИЕ НА ЭКРАН ТЕХРАБОТ ==========
+                document.getElementById('setScreenMessageBtn')?.addEventListener('click', async () => {
+                    const message = document.getElementById('screenMessage').value.trim();
+                    const target = document.getElementById('screenTarget').value;
+                    
+                    if (!message) {
+                        alert('❌ Введите сообщение');
+                        return;
+                    }
+                    
+                    const screenMessage = {
+                        text: message,
+                        author: adminName || 'Админ',
+                        timestamp: Date.now(),
+                        target: target
+                    };
+                    
+                    await firebase.database().ref('maintenance/screenMessage').set(screenMessage);
+                    alert(`✅ Сообщение сохранено!\n\nБудет отображаться на экране: ${target === 'both' ? 'оба экрана' : target === 'tech' ? 'техработы' : 'обновление'}`);
+                });
+                
+                document.getElementById('clearScreenMessageBtn')?.addEventListener('click', async () => {
+                    if (confirm('🗑️ Очистить сообщение с экрана техработ?')) {
+                        await firebase.database().ref('maintenance/screenMessage').remove();
+                        alert('✅ Сообщение удалено');
+                        document.getElementById('screenMessage').value = '';
+                    }
+                });
+                
+                // ========== ТЕСТОВОЕ УВЕДОМЛЕНИЕ ==========
+                document.getElementById('sendTestBtn')?.addEventListener('click', async () => {
+                    const message = document.getElementById('testMessage').value.trim();
+                    if (!message) {
+                        alert('❌ Введите тестовое сообщение');
+                        return;
+                    }
+                    
+                    const userId = localStorage.getItem('userId');
+                    const fullMessage = `🧪 ТЕСТ: ${message}`;
+                    
+                    const userRef = firebase.database().ref('users/' + userId);
+                    const snapshot = await userRef.once('value');
+                    const userData = snapshot.val();
+                    const notifications = userData.notifications || [];
+                    notifications.push({
+                        message: fullMessage,
+                        type: 'info',
+                        duration: 5,
+                        timestamp: Date.now(),
+                        id: Date.now() + Math.random()
+                    });
+                    await userRef.update({ notifications: notifications });
+                    
+                    alert(`✅ Тестовое уведомление отправлено себе!\n\nСообщение: ${fullMessage}`);
+                    document.getElementById('testMessage').value = '';
+                });
+                
+                // ========== ОСТАЛЬНЫЕ ФУНКЦИИ ==========
+                function updateStatusDisplay() {
+                    maintRef.once('value').then(snapshot => {
+                        const data = snapshot.val();
+                        const statusDiv = document.getElementById('maintenanceStatus');
+                        const timerDisplay = document.getElementById('maintenanceTimerDisplay');
+                        
+                        if (data && data.active === true) {
+                            statusDiv.className = 'admin-status active';
+                            if (data.endTime && data.type === 'timer') {
+                                const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
+                                const hours = Math.floor(remaining/3600);
+                                const minutes = Math.floor((remaining%3600)/60);
+                                const secs = remaining%60;
+                                statusDiv.innerHTML = `🔧 ЭКРАН ОБНОВЛЕНИЯ АКТИВЕН<br><span style="font-size:0.8rem;">Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</span>`;
+                                if (timerDisplay) {
+                                    timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                                    timerDisplay.style.display = 'block';
+                                }
+                            } else {
+                                statusDiv.innerHTML = '🔧 ТЕХНИЧЕСКИЕ РАБОТЫ ВКЛЮЧЕНЫ (без ограничений)';
+                                if (timerDisplay) timerDisplay.style.display = 'none';
+                            }
+                        } else {
+                            statusDiv.className = 'admin-status inactive';
+                            statusDiv.innerHTML = '✅ Технические работы ОТКЛЮЧЕНЫ';
+                            if (timerDisplay) timerDisplay.style.display = 'none';
+                        }
+                    }).catch(err => console.error('Ошибка обновления статуса:', err));
+                }
+                
+                function startAdminTimerDisplay() {
+                    if (adminTimerInterval) clearInterval(adminTimerInterval);
+                    adminTimerInterval = setInterval(() => {
+                        maintRef.once('value').then(snapshot => {
+                            const data = snapshot.val();
+                            const timerDisplay = document.getElementById('maintenanceTimerDisplay');
+                            const statusDiv = document.getElementById('maintenanceStatus');
+                            
+                            if (data && data.active === true && data.endTime) {
+                                const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
+                                if (remaining <= 0) {
+                                    updateStatusDisplay();
+                                    return;
+                                }
+                                const hours = Math.floor(remaining/3600);
+                                const minutes = Math.floor((remaining%3600)/60);
+                                const secs = remaining%60;
+                                if (timerDisplay) {
+                                    timerDisplay.textContent = `⏱️ Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                                    timerDisplay.style.display = 'block';
+                                }
+                                if (statusDiv && statusDiv.classList.contains('active')) {
+                                    if (data.type === 'timer') {
+                                        statusDiv.innerHTML = `🔧 ЭКРАН ОБНОВЛЕНИЯ АКТИВЕН<br><span style="font-size:0.8rem;">Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</span>`;
+                                    } else {
+                                        statusDiv.innerHTML = `🔧 ТЕХРАБОТЫ ВКЛЮЧЕНЫ<br><span style="font-size:0.8rem;">Осталось: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</span>`;
+                                    }
+                                }
+                            }
+                        });
+                    }, 1000);
+                }
+                
+                function updateEventsStatus() {
+                    Promise.all([
+                        eventsRef.child('dilicksHurricane').once('value'),
+                        eventsRef.child('wheelEvent').once('value')
+                    ]).then(([dilickSnap, wheelSnap]) => {
+                        const dilickData = dilickSnap.val();
+                        const wheelData = wheelSnap.val();
+                        let html = '';
+                        
+                        if (dilickData && dilickData.active === true) {
+                            const remaining = Math.max(0, dilickData.endTime - Date.now());
+                            const days = Math.floor(remaining / (1000*3600*24));
+                            const hours = Math.floor((remaining % (1000*3600*24)) / (1000*3600));
+                            html += `<div style="margin-bottom: 15px;">`;
+                            html += `<strong style="color: gold;">💎 ДИЛИКОВЫЙ УРАГАН:</strong> <span style="color: #4CAF50;">АКТИВЕН</span><br>`;
+                            html += `📊 Множитель: <span style="color: gold;">x${dilickData.multiplier || 2}</span><br>`;
+                            html += `📅 День: <span style="color: gold;">${dilickData.day || 1}</span><br>`;
+                            html += `⏰ Осталось: <span style="color: gold;">${days}д ${hours}ч</span><br>`;
+                            html += `💰 Копилка: <span style="color: gold;">${(dilickData.totalPool || 0).toLocaleString()} 💎</span>`;
+                            html += `</div>`;
+                        } else {
+                            html += `<div style="margin-bottom: 15px;">`;
+                            html += `<strong style="color: gold;">💎 ДИЛИКОВЫЙ УРАГАН:</strong> <span style="color: #f44336;">НЕ АКТИВЕН</span>`;
+                            html += `</div>`;
+                        }
+                        
+                        if (wheelData && wheelData.active === true) {
+                            const remaining = Math.max(0, wheelData.endTime - Date.now());
+                            const days = Math.floor(remaining / (1000*3600*24));
+                            const hours = Math.floor((remaining % (1000*3600*24)) / (1000*3600));
+                            html += `<div>`;
+                            html += `<strong style="color: gold;">🎡 КОЛЕСО ФОРТУНЫ:</strong> <span style="color: #4CAF50;">АКТИВЕН</span><br>`;
+                            html += `⏰ Осталось: <span style="color: gold;">${days}д ${hours}ч</span><br>`;
+                            html += `💰 Стоимость крутки: <span style="color: gold;">${wheelData.spinCost || 2500} 💎</span>`;
+                            html += `</div>`;
+                        } else {
+                            html += `<div>`;
+                            html += `<strong style="color: gold;">🎡 КОЛЕСО ФОРТУНЫ:</strong> <span style="color: #f44336;">НЕ АКТИВЕН</span>`;
+                            html += `</div>`;
+                        }
+                        
+                        document.getElementById('eventsStatus').innerHTML = html;
+                    }).catch(err => {
+                        console.error('Ошибка загрузки статуса ивентов:', err);
+                        document.getElementById('eventsStatus').innerHTML = '❌ Ошибка загрузки статуса';
+                    });
+                }
+                
+                // ========== ТЕХРАБОТЫ ==========
+                document.getElementById('updateTimeBtn')?.addEventListener('click', async () => {
+                    const seconds = parseInt(document.getElementById('techWorkSeconds').value);
+                    if (!seconds || seconds < 1) {
+                        alert('❌ Введите корректное время в секундах');
+                        return;
+                    }
+                    const endTime = Date.now() + seconds * 1000;
+                    await maintRef.set({ 
+                        active: true, 
+                        startTime: Date.now(), 
+                        endTime, 
+                        duration: seconds, 
+                        type: 'timer' 
+                    });
+                    updateStatusDisplay();
+                    startAdminTimerDisplay();
+                    alert(`🆙 Экран обновления включен на ${seconds} сек`);
+                });
+                
+                document.getElementById('techWorkBtn')?.addEventListener('click', async () => {
+                    await maintRef.set({ 
+                        active: true, 
+                        startTime: Date.now(), 
+                        endTime: null, 
+                        duration: null, 
+                        type: 'infinite' 
+                    });
+                    updateStatusDisplay();
+                    if (adminTimerInterval) clearInterval(adminTimerInterval);
+                    alert('🔧 Технические работы включены (бесконечный экран)');
+                });
+                
+                document.getElementById('notTechWorkBtn')?.addEventListener('click', async () => {
+                    await maintRef.set({ active: false });
+                    updateStatusDisplay();
+                    if (adminTimerInterval) clearInterval(adminTimerInterval);
+                    alert('✅ Все экраны техработ отключены');
+                });
+                
+                // ========== ДИЛИКОВЫЙ УРАГАН ==========
+                document.getElementById('startDilicksEventBtn')?.addEventListener('click', async () => {
+                    const days = parseInt(document.getElementById('uraganDays').value) || 7;
+                    const endTime = Date.now() + days * 24 * 60 * 60 * 1000;
+                    await eventsRef.child('dilicksHurricane').set({
+                        active: true,
+                        startTime: Date.now(),
+                        endTime,
+                        duration: days,
+                        type: 'dilicks',
+                        multiplier: 2,
+                        day: 1,
+                        totalPool: 0
+                    });
+                    alert(`💎 Ивент "Диликовый ураган" запущен на ${days} дней!`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('stopDilicksEventBtn')?.addEventListener('click', async () => {
+                    await eventsRef.child('dilicksHurricane').set({ active: false });
+                    alert('⏹️ Ивент "Диликовый ураган" остановлен');
+                    updateEventsStatus();
+                });
+                
+                document.querySelectorAll('.multiplier-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const mult = parseInt(btn.dataset.mult);
+                        await eventsRef.child('dilicksHurricane').update({ multiplier: mult });
+                        alert(`⚡ Множитель изменен на x${mult.toLocaleString()}`);
+                        updateEventsStatus();
+                    });
+                });
+                
+                document.getElementById('setCustomMultiplierBtn')?.addEventListener('click', async () => {
+                    const mult = parseInt(document.getElementById('customMultiplier').value);
+                    if (!mult || mult < 1) {
+                        alert('❌ Введите корректный множитель');
+                        return;
+                    }
+                    await eventsRef.child('dilicksHurricane').update({ multiplier: mult });
+                    alert(`⚡ Множитель изменен на x${mult.toLocaleString()}`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('addPoolBtn')?.addEventListener('click', async () => {
+                    const amount = parseInt(document.getElementById('poolAmount').value);
+                    if (!amount || amount < 1) {
+                        alert('❌ Введите сумму');
+                        return;
+                    }
+                    const snap = await eventsRef.child('dilicksHurricane').once('value');
+                    const current = snap.val()?.totalPool || 0;
+                    await eventsRef.child('dilicksHurricane').update({ totalPool: current + amount });
+                    alert(`💰 Добавлено ${amount.toLocaleString()} 💎 в копилку`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('setPoolBtn')?.addEventListener('click', async () => {
+                    const amount = parseInt(document.getElementById('setPoolAmount').value);
+                    if (amount === undefined || amount < 0) {
+                        alert('❌ Введите корректную сумму');
+                        return;
+                    }
+                    await eventsRef.child('dilicksHurricane').update({ totalPool: amount });
+                    alert(`💰 Копилка установлена на ${amount.toLocaleString()} 💎`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('removePoolBtn')?.addEventListener('click', async () => {
+                    const amount = parseInt(document.getElementById('removePoolAmount').value);
+                    if (!amount || amount < 1) {
+                        alert('❌ Введите сумму для вычитания');
+                        return;
+                    }
+                    const snap = await eventsRef.child('dilicksHurricane').once('value');
+                    const current = snap.val()?.totalPool || 0;
+                    const newAmount = Math.max(0, current - amount);
+                    await eventsRef.child('dilicksHurricane').update({ totalPool: newAmount });
+                    alert(`➖ Вычтено ${amount.toLocaleString()} 💎. Новое значение: ${newAmount.toLocaleString()}`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('resetPoolBtn')?.addEventListener('click', async () => {
+                    if (confirm('⚠️ Вы уверены, что хотите сбросить копилку в 0?')) {
+                        await eventsRef.child('dilicksHurricane').update({ totalPool: 0 });
+                        alert('💰 Копилка сброшена в 0');
+                        updateEventsStatus();
+                    }
+                });
+                
+                document.getElementById('setEventDayBtn')?.addEventListener('click', async () => {
+                    const day = parseInt(document.getElementById('eventDay').value);
+                    if (!day || day < 1 || day > 30) {
+                        alert('❌ Введите день от 1 до 30');
+                        return;
+                    }
+                    await eventsRef.child('dilicksHurricane').update({ day: day });
+                    alert(`📅 День ивента изменен на ${day}`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('loadTopBtn')?.addEventListener('click', async () => {
+                    const topListDiv = document.getElementById('topList');
+                    topListDiv.style.display = 'block';
+                    topListDiv.innerHTML = '<div class="top-item">Загрузка...</div>';
+                    
+                    try {
+                        const snapshot = await usersRef.once('value');
+                        const users = snapshot.val();
+                        const topPlayers = [];
+                        
+                        for (const [id, user] of Object.entries(users)) {
+                            const contribution = user.eventContribution || 0;
+                            if (contribution > 0) {
+                                const displayName = user.settings?.displayName || user.username;
+                                topPlayers.push({ name: displayName, contribution, id });
+                            }
+                        }
+                        
+                        topPlayers.sort((a, b) => b.contribution - a.contribution);
+                        const top10 = topPlayers.slice(0, 10);
+                        
+                        topListDiv.innerHTML = '';
+                        top10.forEach((player, index) => {
+                            const item = document.createElement('div');
+                            item.className = 'top-item';
+                            let medal = '';
+                            if (index === 0) medal = '🥇';
+                            else if (index === 1) medal = '🥈';
+                            else if (index === 2) medal = '🥉';
+                            item.innerHTML = `
+                                <div class="top-rank">${medal || (index + 1)}</div>
+                                <div class="top-name">${player.name}</div>
+                                <div class="top-value">${player.contribution.toLocaleString()} 💎</div>
+                            `;
+                            topListDiv.appendChild(item);
+                        });
+                        
+                        if (top10.length === 0) {
+                            topListDiv.innerHTML = '<div class="top-item">Пока нет участников</div>';
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        topListDiv.innerHTML = '<div class="top-item">Ошибка загрузки</div>';
+                    }
+                });
+                
+                document.getElementById('giveRewardBtn')?.addEventListener('click', async () => {
+                    const userId = document.getElementById('rewardUserId').value.trim();
+                    const rewardType = document.getElementById('rewardType').value;
+                    const amount = document.getElementById('rewardAmount').value;
+                    
+                    if (!userId) {
+                        alert('❌ Введите ID игрока');
+                        return;
+                    }
+                    
+                    try {
+                        const userRef = usersRef.child(userId);
+                        const snapshot = await userRef.once('value');
+                        
+                        if (!snapshot.exists()) {
+                            alert('❌ Игрок с таким ID не найден');
+                            return;
+                        }
+                        
+                        const userData = snapshot.val();
+                        
+                        if (rewardType === 'dilicks') {
+                            const dilicksAmount = parseInt(amount);
+                            if (!dilicksAmount || dilicksAmount < 1) {
+                                alert('❌ Введите количество диликов');
+                                return;
+                            }
+                            const newDilicks = (userData.dilicks || 0) + dilicksAmount;
+                            await userRef.update({ dilicks: newDilicks });
+                            alert(`✅ Выдано ${dilicksAmount.toLocaleString()} 💎 игроку ${userData.username}`);
+                        } else if (rewardType === 'money') {
+                            const moneyAmount = parseInt(amount);
+                            if (!moneyAmount || moneyAmount < 1) {
+                                alert('❌ Введите количество денег');
+                                return;
+                            }
+                            const newMoney = (userData.money || 0) + moneyAmount;
+                            await userRef.update({ money: newMoney });
+                            alert(`✅ Выдано ${moneyAmount.toLocaleString()} 🪙 игроку ${userData.username}`);
+                        } else if (rewardType === 'skin') {
+                            const skinId = amount.trim();
+                            if (!skinId) {
+                                alert('❌ Введите ID скина');
+                                return;
+                            }
+                            const inventory = userData.inventory || [];
+                            if (!inventory.includes(skinId)) {
+                                inventory.push(skinId);
+                                await userRef.update({ inventory: inventory });
+                                alert(`✅ Выдан скин "${skinId}" игроку ${userData.username}`);
+                            } else {
+                                alert(`⚠️ У игрока уже есть скин "${skinId}"`);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        alert('❌ Ошибка при выдаче награды');
+                    }
+                });
+                
+                // ========== КОЛЕСО ФОРТУНЫ ==========
+                document.getElementById('startWheelEventBtn')?.addEventListener('click', async () => {
+                    const days = parseInt(document.getElementById('wheelDays').value) || 150;
+                    const endTime = Date.now() + days * 24 * 60 * 60 * 1000;
+                    await eventsRef.child('wheelEvent').set({
+                        active: true,
+                        startTime: Date.now(),
+                        endTime,
+                        duration: days,
+                        type: 'wheel',
+                        spinCost: 2500
+                    });
+                    alert(`🎡 Ивент "Колесо фортуны" запущен на ${days} дней!`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('stopWheelEventBtn')?.addEventListener('click', async () => {
+                    await eventsRef.child('wheelEvent').set({ active: false });
+                    alert('⏹️ Ивент "Колесо фортуны" остановлен');
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('setSpinCostBtn')?.addEventListener('click', async () => {
+                    const cost = parseInt(document.getElementById('spinCostInput').value);
+                    if (!cost || cost < 1) {
+                        alert('❌ Введите стоимость');
+                        return;
+                    }
+                    await eventsRef.child('wheelEvent').update({ spinCost: cost });
+                    alert(`🎡 Стоимость крутки изменена на ${cost} 💎`);
+                    updateEventsStatus();
+                });
+                
+                document.getElementById('refreshStatusBtn')?.addEventListener('click', () => {
+                    updateEventsStatus();
+                    updateStatusDisplay();
+                    alert('📊 Статус обновлен');
+                });
+                
+                maintRef.on('value', () => updateStatusDisplay());
+                eventsRef.on('value', () => updateEventsStatus());
+                
+                updateStatusDisplay();
+                startAdminTimerDisplay();
+                updateEventsStatus();
+                
+                console.log('✅ Админ-панель инициализирована');
             }
-
-            drawWheel(rotation);
-            spinBtn.addEventListener('click', startSpin);
         })();
     </script>
 </body>

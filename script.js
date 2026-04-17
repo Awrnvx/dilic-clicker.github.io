@@ -186,6 +186,13 @@ class ClickerGame {
                 maxActivations: 1,
                 expiryDate: null
             },
+            'MIWA': {
+                code: 'MIWA',
+                reward: { money: 10000000, dilicks: 10000000, },
+                description: 'Для тебя брат!',
+                maxActivations: 1,
+                expiryDate: null
+            },
         };
         
         this.init();
@@ -2621,3 +2628,4 @@ setTimeout(() => {
     checkMaintenanceScreen();
     listenMaintenanceChanges();
 }, 1000);
+
