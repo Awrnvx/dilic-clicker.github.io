@@ -9,17 +9,14 @@ class UserManager {
 
     async register(username, password) {
         try {
-            // Проверяем, есть ли уже такой пользователь
             const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
             
             if (snapshot.exists()) {
                 return { success: false, message: 'Пользователь уже существует' };
             }
             
-            // Создаем нового пользователя с УНИКАЛЬНЫМ ID
             const newUserRef = firebase.database().ref('users').push();
             
-            // БАЗОВЫЕ ДАННЫЕ ДЛЯ НОВОГО ИГРОКА
             const userData = {
                 username: username,
                 password: password,
@@ -39,6 +36,15 @@ class UserManager {
                 activatedPromocodes: [],
                 promocodesHistory: [],
                 compensationReceived: false,
+                eventContribution: 0,
+                dailyQuests: {
+                    lastReset: Date.now(),
+                    clicks: 0,
+                    dilicksEarned: 0,
+                    wheelSpins: 0,
+                    upgrades: 0,
+                    completed: []
+                },
                 lastSave: Date.now(),
                 settings: {
                     displayName: username,
@@ -63,7 +69,6 @@ class UserManager {
         try {
             console.log('🔍 Поиск пользователя:', username);
             
-            // Ищем пользователя по имени
             const snapshot = await firebase.database().ref('users').orderByChild('username').equalTo(username).once('value');
             
             if (!snapshot.exists()) {
@@ -80,13 +85,11 @@ class UserManager {
                 console.log('✅ Найден пользователь:', userData.username, 'ID:', userId);
             });
             
-            // Проверяем пароль
             if (userData.password !== password) {
                 console.log('❌ Пароль не совпадает');
                 return { success: false, message: 'Неверный логин или пароль' };
             }
             
-            // Сохраняем данные
             localStorage.setItem('currentUser', userData.username);
             localStorage.setItem('userId', userId);
             
