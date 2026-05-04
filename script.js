@@ -13,7 +13,7 @@ class ClickerGame {
         this.wheel = null;
         this.compensationShown = false;
         this.isLoaded = false;
-        this.CREATOR_ID = typeof CREATOR_ID !== 'undefined' ? CREATOR_ID : "-OqRQELBxs6IyV4wIeiT";
+        this.CREATOR_ID = typeof CREATOR_ID !== 'undefined' ? CREATOR_ID : "-OrjRkQiw3TQyxJjMi4i";
         
         this.currentUraganMultiplier = 1;
         this.uraganEventActive = false;
