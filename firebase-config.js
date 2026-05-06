@@ -13,7 +13,7 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 // ID создателя (замени на свой)
-const CREATOR_ID = "-OqRQELBxs6IyV4wIeiT";
+const CREATOR_ID = "-OrjRkQiw3TQyxJjMi4i";
 
 // Проверка подключения к Firebase
 const connectedRef = database.ref('.info/connected');
