@@ -8,14 +8,11 @@ const firebaseConfig = {
     appId: "1:651188156647:web:7ef858931f7fb4526b8a42"
 };
 
-// Инициализируем Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// ID создателя (замени на свой)
 const CREATOR_ID = "-P2SMujLobiiisghghw7";
 
-// Проверка подключения к Firebase
 const connectedRef = database.ref('.info/connected');
 connectedRef.on('value', (snap) => {
     if (snap.val() === true) {
