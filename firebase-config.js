@@ -1,7 +1,3 @@
-// ============================================
-// FIREBASE CONFIG
-// ============================================
-
 const firebaseConfig = {
     apiKey: "AIzaSyBHcptZefbC53BR6wMPEtyIF9GCx2y7xjw",
     authDomain: "dilic-clicker.firebaseapp.com",
@@ -12,25 +8,22 @@ const firebaseConfig = {
     appId: "1:651188156647:web:7ef858931f7fb4526b8a42"
 };
 
-// Инициализация (не дублируем если уже инициализирован)
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
+// Инициализируем Firebase
+firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// ID создателя
-const CREATOR_ID = "-P2SMujLobiiisghghw7";
+// ID создателя (замени на свой)
+const CREATOR_ID = "-OrjRkQiw3TQyxJjMi4i";
 
-// Проверка подключения
+// Проверка подключения к Firebase
 const connectedRef = database.ref('.info/connected');
 connectedRef.on('value', (snap) => {
     if (snap.val() === true) {
-        console.log('✅ Firebase ПОДКЛЮЧЕН');
+        console.log('✅ Firebase подключен!');
     } else {
-        console.log('⚠️ Firebase НЕ подключен');
+        console.log('❌ Firebase НЕ подключен!');
     }
 });
 
-console.log('🔥 Firebase инициализирован');
-console.log('👑 CREATOR_ID:', CREATOR_ID);
+console.log("🔥 Firebase инициализирован");
+console.log("👑 CREATOR_ID:", CREATOR_ID);
