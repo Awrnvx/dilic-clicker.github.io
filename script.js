@@ -1,5 +1,5 @@
 // ============================================
-// DILIC CLICKER - ПОЛНАЯ ВЕРСИЯ 3.1 (ФИКС)
+// DILIC CLICKER - ПОЛНАЯ ВЕРСИЯ 3.2 (SYNC FIX)
 // ============================================
 
 class ClickerGame {
@@ -32,10 +32,10 @@ class ClickerGame {
             'monsters_skin': { name: 'Монстр скин', price: 0, image: 'https://avatars.mds.yandex.net/i?id=83ac2b7a91b5b67b7ffb26da4b8b1a2abd4fc83f-8981816-images-thumbs&n=13', description: 'Эксклюзивный скин монстра', currency: 'money', multiplier: 1 },
             'dragon_skin': { name: 'Драконий скин', price: 15000, image: 'https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13', description: 'Мощный скин дракона', currency: 'dilicks', multiplier: 1 },
             'wheel_dragon_skin': { name: 'Колесный дракон', price: 0, image: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', description: 'Особенный скин дракона (×250 множитель)', currency: 'special', multiplier: 250 },
-            'uragan_dragon_top3': { name: 'ДИЛИК КОРОЛЬ', price: 0, image: 'https://th.bing.com/th/id/R.d2bbf70ad9d0dc038f3cb096294cf467?rik=3UM%2fM5%2bcMV2bXA&pid=ImgRaw&r=0', description: 'Легендарный скин Дилик Король! +145 множитель ко всем кликам!', currency: 'special', multiplier: 145, rarity: 'legendary' },
-            'uragan_holo_top10': { name: 'ДИЛИК ЛОРД', price: 0, image: 'https://th.bing.com/th/id/R.2c14187fb36da554c6d9ea52169a7ee4?rik=qJswO8RHNxDDZg&pid=ImgRaw&r=0', description: 'Ультра редкий скин Дилик Лорд! +100 множитель ко всем кликам!', currency: 'special', multiplier: 100, rarity: 'legendary' },
-            'uragan_banana_top50': { name: 'ДИЛИК МАСТЕР', price: 0, image: 'https://th.bing.com/th/id/R.c35e34219e9055516ff08d1a412844fa?rik=HbGovC7atZlh%2fw&pid=ImgRaw&r=0', description: 'Эксклюзивный скин Дилик Мастер! +55 множитель ко всем кликам!', currency: 'special', multiplier: 55, rarity: 'epic' },
-            'uragan_cursor_top100': { name: 'ДИЛИК', price: 0, image: 'https://th.bing.com/th/id/R.5493d8d74a695b06470e70593ca7419c?rik=gB7Dii9D3EP3YQ&pid=ImgRaw&r=0', description: 'Редкий скин Дилик! +15 множитель ко всем кликам!', currency: 'special', multiplier: 15, rarity: 'rare' }
+            'uragan_dragon_top3': { name: 'ДИЛИК КОРОЛЬ', price: 0, image: 'https://th.bing.com/th/id/R.d2bbf70ad9d0dc038f3cb096294cf467?rik=3UM%2fM5%2bcMV2bXA&pid=ImgRaw&r=0', description: 'Легендарный скин Дилик Король! +145 множитель!', currency: 'special', multiplier: 145, rarity: 'legendary' },
+            'uragan_holo_top10': { name: 'ДИЛИК ЛОРД', price: 0, image: 'https://th.bing.com/th/id/R.2c14187fb36da554c6d9ea52169a7ee4?rik=qJswO8RHNxDDZg&pid=ImgRaw&r=0', description: 'Ультра редкий скин Дилик Лорд! +100 множитель!', currency: 'special', multiplier: 100, rarity: 'legendary' },
+            'uragan_banana_top50': { name: 'ДИЛИК МАСТЕР', price: 0, image: 'https://th.bing.com/th/id/R.c35e34219e9055516ff08d1a412844fa?rik=HbGovC7atZlh%2fw&pid=ImgRaw&r=0', description: 'Эксклюзивный скин Дилик Мастер! +55 множитель!', currency: 'special', multiplier: 55, rarity: 'epic' },
+            'uragan_cursor_top100': { name: 'ДИЛИК', price: 0, image: 'https://th.bing.com/th/id/R.5493d8d74a695b06470e70593ca7419c?rik=gB7Dii9D3EP3YQ&pid=ImgRaw&r=0', description: 'Редкий скин Дилик! +15 множитель!', currency: 'special', multiplier: 15, rarity: 'rare' }
         };
         
         this.achievementsData = [
@@ -53,21 +53,20 @@ class ClickerGame {
             { id: 'critGod', name: 'Бог критов', description: 'Увеличьте шанс крита до 100%', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.critChance >= 100, reward: { money: 10000, dilicks: 1000 } },
             { id: 'autoClickerMaster', name: 'Автоматизация', description: 'Купите 10 уровней автокликера', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.autoClickerLevel >= 10, reward: { money: 5000, dilicks: 500 } },
             { id: 'autoClickerGod', name: 'Полная автоматизация', description: 'Купите 50 уровней автокликера', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.autoClickerLevel >= 50, reward: { money: 25000, dilicks: 2500 } },
-            { id: 'wheelMaster', name: 'Властелин колеса', description: 'Получите особенного скина из колеса фортуны', icon: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', condition: (data) => data.inventory && data.inventory.includes('wheel_dragon_skin'), reward: { money: 10000, dilicks: 5000 } },
-            { id: 'uraganKing', name: 'Король урагана', description: 'Получите скин ДИЛИК КОРОЛЬ в ивенте', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_dragon_top3'), reward: { money: 50000, dilicks: 10000 } },
-            { id: 'uraganLord', name: 'Повелитель урагана', description: 'Получите скин ДИЛИК ЛОРД в ивенте', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_holo_top10'), reward: { money: 25000, dilicks: 5000 } }
+            { id: 'wheelMaster', name: 'Властелин колеса', description: 'Получите особенного скина из колеса', icon: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', condition: (data) => data.inventory && data.inventory.includes('wheel_dragon_skin'), reward: { money: 10000, dilicks: 5000 } },
+            { id: 'uraganKing', name: 'Король урагана', description: 'Получите скин ДИЛИК КОРОЛЬ', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_dragon_top3'), reward: { money: 50000, dilicks: 10000 } },
+            { id: 'uraganLord', name: 'Повелитель урагана', description: 'Получите скин ДИЛИК ЛОРД', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_holo_top10'), reward: { money: 25000, dilicks: 5000 } }
         ];
         
         this.promocodesData = {
             'WELCOME': { code: 'WELCOME', reward: { money: 500, dilicks: 100 }, description: 'Приветственный бонус', maxActivations: 1, expiryDate: null },
-            'DILICKS100': { code: 'DILICKS100', reward: { money: 0, dilicks: 100 }, description: '100 диликов в подарок', maxActivations: 1, expiryDate: null },
+            'DILICKS100': { code: 'DILICKS100', reward: { money: 0, dilicks: 100 }, description: '100 диликов', maxActivations: 1, expiryDate: null },
             'MONEY1000': { code: 'MONEY1000', reward: { money: 1000, dilicks: 0 }, description: '1000 монет', maxActivations: 1, expiryDate: null },
-            'CLICKER2024': { code: 'CLICKER2024', reward: { money: 500, dilicks: 50 }, description: 'Новогодний промокод', maxActivations: 1, expiryDate: new Date('2024-12-31').getTime() },
             'SUPERBONUS': { code: 'SUPERBONUS', reward: { money: 2000, dilicks: 200 }, description: 'Супер бонус', maxActivations: 1, expiryDate: null },
             'NEONLOVER': { code: 'NEONLOVER', reward: { money: 1500, dilicks: 150 }, description: 'Для любителей неона', maxActivations: 1, expiryDate: null },
-            'MONSTERS-SKIN': { code: 'MONSTERS-SKIN', reward: { money: 0, dilicks: 0, skin: 'monsters_skin' }, description: 'Скин монстра в подарок!', maxActivations: 1, expiryDate: null },
-            'DRAGON-SKIN': { code: 'DRAGON-SKIN', reward: { money: 0, dilicks: 0, skin: 'dragon_skin' }, description: 'Скин дракона в подарок!', maxActivations: 1, expiryDate: null },
-            'URAGAN100': { code: 'URAGAN100', reward: { money: 0, dilicks: 1000 }, description: '1000 диликов для урагана!', maxActivations: 1, expiryDate: null }
+            'MONSTERS-SKIN': { code: 'MONSTERS-SKIN', reward: { money: 0, dilicks: 0, skin: 'monsters_skin' }, description: 'Скин монстра!', maxActivations: 1, expiryDate: null },
+            'DRAGON-SKIN': { code: 'DRAGON-SKIN', reward: { money: 0, dilicks: 0, skin: 'dragon_skin' }, description: 'Скин дракона!', maxActivations: 1, expiryDate: null },
+            'URAGAN100': { code: 'URAGAN100', reward: { money: 0, dilicks: 1000 }, description: '1000 диликов!', maxActivations: 1, expiryDate: null }
         };
         
         this.init();
@@ -116,6 +115,66 @@ class ClickerGame {
             loader.style.opacity = '0';
             setTimeout(() => { if (loader && loader.parentNode) loader.remove(); }, 300);
         }
+    }
+    
+    // ===== СИНХРОНИЗАЦИЯ С АДМИНКОЙ (чтобы выдача работала при активной игре) =====
+    startRemoteSync() {
+        const userId = localStorage.getItem('userId');
+        if (!userId) return;
+        
+        console.log('📡 Синхронизация с админкой включена');
+        
+        firebase.database().ref('users/' + userId).on('value', (snapshot) => {
+            const remoteData = snapshot.val();
+            if (!remoteData || !this.userData) return;
+            
+            let updated = false;
+            let updatedFields = [];
+            
+            // Дилики (только если БОЛЬШЕ — чтобы не откатывать при трате)
+            if (remoteData.dilicks !== undefined && remoteData.dilicks > this.userData.dilicks) {
+                const diff = remoteData.dilicks - this.userData.dilicks;
+                console.log('📥 Получено от админа:', diff, 'диликов');
+                this.userData.dilicks = remoteData.dilicks;
+                updated = true;
+                updatedFields.push(`+${diff} 💎`);
+            }
+            
+            // Деньги
+            if (remoteData.money !== undefined && remoteData.money > this.userData.money) {
+                const diff = remoteData.money - this.userData.money;
+                console.log('📥 Получено от админа:', diff, 'денег');
+                this.userData.money = remoteData.money;
+                updated = true;
+                updatedFields.push(`+${diff} 🪙`);
+            }
+            
+            // Инвентарь — если появились новые скины
+            if (remoteData.inventory && Array.isArray(remoteData.inventory)) {
+                const localInv = this.userData.inventory || [];
+                const newSkins = remoteData.inventory.filter(s => !localInv.includes(s));
+                
+                if (newSkins.length > 0) {
+                    console.log('📥 Получены скины:', newSkins);
+                    this.userData.inventory = remoteData.inventory;
+                    updated = true;
+                    updatedFields.push(`+${newSkins.length} скин(ов)`);
+                }
+            }
+            
+            // Премиум пасс
+            if (remoteData.premiumPass === true && this.userData.premiumPass !== true) {
+                this.userData.premiumPass = true;
+                updated = true;
+                updatedFields.push('Премиум');
+            }
+            
+            if (updated) {
+                this.updateUI();
+                this.updateInventory();
+                this.showToast(`🎁 Получено от администратора: ${updatedFields.join(', ')}`, 'success');
+            }
+        });
     }
     
     initBanListener() {
@@ -184,7 +243,7 @@ class ClickerGame {
         
         if (!banOverlay) return;
         
-        banReasonText.textContent = reason || 'Вы были забанены за нарушение правил';
+        banReasonText.textContent = reason || 'Вы были забанены';
         
         if (!isPermanent && endTime) {
             banTimerDisplay.style.display = 'block';
@@ -202,9 +261,7 @@ class ClickerGame {
     
     hideBanScreen() {
         const banOverlay = document.getElementById('banOverlay');
-        if (banOverlay) {
-            banOverlay.style.display = 'none';
-        }
+        if (banOverlay) banOverlay.style.display = 'none';
         
         document.querySelectorAll('.game-container, .glass-nav, .content, .click-btn').forEach(el => {
             if (el) el.style.pointerEvents = '';
@@ -224,7 +281,7 @@ class ClickerGame {
         const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
         
         if (days > 0) {
-            banTimerDisplay.textContent = `Бан истекает через: ${days}д ${hours}ч ${minutes}м ${seconds}с`;
+            banTimerDisplay.textContent = `Бан истекает через: ${days}д ${hours}ч ${minutes}м`;
         } else {
             banTimerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
@@ -308,7 +365,6 @@ class ClickerGame {
                     
                     const updateTimerDisplay = () => {
                         const remaining = Math.max(0, data.endTime - Date.now());
-                        
                         if (remaining <= 0) {
                             updateOverlay.style.display = 'none';
                             if (this.maintenanceTimerInterval) clearInterval(this.maintenanceTimerInterval);
@@ -334,45 +390,10 @@ class ClickerGame {
                     
                     updateTimerDisplay();
                     this.maintenanceTimerInterval = setInterval(updateTimerDisplay, 1000);
-                }
-                else {
+                } else {
                     techWorkOverlay.style.display = 'flex';
-                    
-                    if (data.endTime) {
-                        if (techWorkTimer) techWorkTimer.style.display = 'block';
-                        if (techWorkProgressBar) techWorkProgressBar.style.width = '100%';
-                        
-                        const updateTechTimer = () => {
-                            const remaining = Math.max(0, data.endTime - Date.now());
-                            
-                            if (remaining <= 0) {
-                                techWorkOverlay.style.display = 'none';
-                                if (this.maintenanceTimerInterval) clearInterval(this.maintenanceTimerInterval);
-                                return;
-                            }
-                            
-                            const totalSeconds = Math.floor(remaining / 1000);
-                            const hours = Math.floor(totalSeconds / 3600);
-                            const minutes = Math.floor((totalSeconds % 3600) / 60);
-                            const seconds = totalSeconds % 60;
-                            
-                            if (techWorkTimer) {
-                                techWorkTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                            }
-                            
-                            if (techWorkProgressBar) {
-                                const totalDuration = data.duration || 3600;
-                                const progress = ((totalDuration - totalSeconds) / totalDuration) * 100;
-                                techWorkProgressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
-                            }
-                        };
-                        
-                        updateTechTimer();
-                        this.maintenanceTimerInterval = setInterval(updateTechTimer, 1000);
-                    } else {
-                        if (techWorkTimer) techWorkTimer.style.display = 'none';
-                        if (techWorkProgressBar) techWorkProgressBar.style.width = '0%';
-                    }
+                    if (techWorkTimer) techWorkTimer.style.display = 'none';
+                    if (techWorkProgressBar) techWorkProgressBar.style.width = '0%';
                 }
             }
         });
@@ -380,11 +401,8 @@ class ClickerGame {
     
     checkPerformanceMode() {
         const isSlowDevice = () => {
-            const ua = navigator.userAgent.toLowerCase();
-            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|windows phone/i.test(ua);
-            const memory = navigator.deviceMemory;
-            const cores = navigator.hardwareConcurrency;
-            return isMobile && (memory < 4 || cores < 4);
+            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|windows phone/i.test(navigator.userAgent.toLowerCase());
+            return isMobile && ((navigator.deviceMemory || 8) < 4 || (navigator.hardwareConcurrency || 8) < 4);
         };
         
         const performanceMode = this.userData.settings?.performanceMode || isSlowDevice();
@@ -393,8 +411,6 @@ class ClickerGame {
             document.body.classList.add('no-liquid-animations');
             if (this.userData.settings) this.userData.settings.performanceMode = true;
             this.saveGame();
-        } else {
-            document.body.classList.remove('no-liquid-animations');
         }
         
         const perfCheckbox = document.getElementById('performanceMode');
@@ -404,7 +420,7 @@ class ClickerGame {
                 if (e.target.checked) {
                     document.body.classList.add('no-liquid-animations');
                     this.userData.settings.performanceMode = true;
-                    this.showToast('🎮 Режим экономии включен, анимации отключены', 'success');
+                    this.showToast('🎮 Режим экономии включен', 'success');
                 } else {
                     document.body.classList.remove('no-liquid-animations');
                     this.userData.settings.performanceMode = false;
@@ -425,9 +441,7 @@ class ClickerGame {
         }
         
         const banCheck = await this.checkBanStatus();
-        if (banCheck.isBanned) {
-            this.showBanScreen(banCheck.reason, banCheck.endTime, banCheck.isPermanent);
-        }
+        if (banCheck.isBanned) this.showBanScreen(banCheck.reason, banCheck.endTime, banCheck.isPermanent);
         
         this.showLoader(true);
         
@@ -498,6 +512,10 @@ class ClickerGame {
             
             this.isLoaded = true;
             this.showLoader(false);
+            
+            // ===== ВАЖНО: включаем синхронизацию с админкой =====
+            this.startRemoteSync();
+            console.log('✅ Игра загружена + синхронизация с админкой активна');
         }, 100);
     }
     
@@ -581,17 +599,13 @@ class ClickerGame {
             });
         });
         
-        // ===== ФИКС: ОБРАБОТЧИКИ ПОКУПКИ СКИНОВ =====
+        // ===== ФИКС: покупка скинов =====
         document.querySelectorAll('.buy-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
                 const item = btn.dataset.item || btn.dataset.skin;
                 const price = parseInt(btn.dataset.price) || 0;
-                
-                console.log('🛒 Клик покупки:', item, 'цена:', price);
-                
                 if (!item) return;
                 this.buyItem(item, price);
             });
@@ -751,15 +765,10 @@ class ClickerGame {
         const lastReset = this.userData.eventQuests?.lastReset || 0;
         
         if (now - lastReset >= FOUR_HOURS) {
-            this.userData.eventQuests = {
-                lastReset: now,
-                quests: this.generateDailyQuests()
-            };
+            this.userData.eventQuests = { lastReset: now, quests: this.generateDailyQuests() };
             this.saveGame();
             this.showToast('🔄 Задания ивента обновлены!', 'success');
-            if (document.getElementById('uraganContent').style.display === 'block') {
-                this.renderUraganQuests();
-            }
+            if (document.getElementById('uraganContent')?.style.display === 'block') this.renderUraganQuests();
         }
     }
     
@@ -795,8 +804,7 @@ class ClickerGame {
         
         const updateTimer = () => {
             const lastReset = this.userData.eventQuests?.lastReset || 0;
-            const FOUR_HOURS = 4 * 60 * 60 * 1000;
-            const nextReset = lastReset + FOUR_HOURS;
+            const nextReset = lastReset + (4 * 60 * 60 * 1000);
             const remaining = Math.max(0, nextReset - Date.now());
             
             if (remaining <= 0) {
@@ -828,7 +836,7 @@ class ClickerGame {
                     quest.completed = true;
                     this.userData.dilicks += quest.reward;
                     changed = true;
-                    this.showToast(`✅ Задание "${quest.name}" выполнено! +${quest.reward.toLocaleString()} ${this.getDilicksIcon()}`, 'success');
+                    this.showToast(`✅ Задание "${quest.name}" выполнено! +${quest.reward.toLocaleString()} 💎`, 'success');
                 }
                 break;
             }
@@ -840,7 +848,7 @@ class ClickerGame {
                 allQuest.completed = true;
                 this.userData.dilicks += allQuest.reward;
                 changed = true;
-                this.showToast(`✅ Задание "Выполнить все задания" выполнено! +${allQuest.reward.toLocaleString()} ${this.getDilicksIcon()}`, 'success');
+                this.showToast(`✅ Все задания выполнены! +${allQuest.reward.toLocaleString()} 💎`, 'success');
             }
         }
         if (changed) { this.saveGame(); this.renderUraganQuests(); }
@@ -857,17 +865,12 @@ class ClickerGame {
     async loadWishlist() {
         const wishlistGrid = document.getElementById('wishlistGrid');
         if (!wishlistGrid) return;
-        
         const savedWishlist = this.userData.wishlist || null;
-        
         const wishlistItems = wishlistGrid.querySelectorAll('.wishlist-item');
         wishlistItems.forEach(item => {
             const wishValue = item.dataset.wish;
-            if (savedWishlist === wishValue) {
-                item.classList.add('selected');
-            } else {
-                item.classList.remove('selected');
-            }
+            if (savedWishlist === wishValue) item.classList.add('selected');
+            else item.classList.remove('selected');
             
             item.removeEventListener('click', this.wishlistClickHandler);
             this.wishlistClickHandler = async () => {
@@ -875,7 +878,7 @@ class ClickerGame {
                 item.classList.add('selected');
                 this.userData.wishlist = wishValue;
                 await this.saveGame();
-                this.showToast(`🎁 Вишлист обновлен: ${item.querySelector('.reward-name').textContent}`, 'success');
+                this.showToast(`🎁 Вишлист обновлен`, 'success');
             };
             item.addEventListener('click', this.wishlistClickHandler);
         });
@@ -890,7 +893,7 @@ class ClickerGame {
             this.updateUraganUI();
         });
         setInterval(() => {
-            if (document.getElementById('uraganContent').style.display === 'block') {
+            if (document.getElementById('uraganContent')?.style.display === 'block') {
                 this.updateUraganTop();
                 this.renderUraganQuests();
             }
@@ -1009,7 +1012,6 @@ class ClickerGame {
             });
             if (top10.length === 0) topList.innerHTML = '<div class="top-item">Пока нет участников</div>';
         } catch (error) {
-            console.error(error);
             topList.innerHTML = '<div class="top-item">Ошибка загрузки</div>';
         }
     }
@@ -1045,9 +1047,7 @@ class ClickerGame {
         const dilicksEarned = uraganMultiplier;
         let moneyEarned = clickPower;
         
-        let critMultiplier = 2;
-        const masteryBonus = (this.userData.clickerMastery || 0) * 0.1;
-        critMultiplier = 2 + masteryBonus;
+        let critMultiplier = 2 + ((this.userData.clickerMastery || 0) * 0.1);
         
         const critRoll = Math.random() * 100;
         if (critRoll < this.userData.critChance) {
@@ -1086,47 +1086,23 @@ class ClickerGame {
     }
     
     async buyItem(item, price) {
-        console.log('💰 Покупка:', item, 'за', price);
-        
-        if (item === 'wheel_dragon_skin') { 
-            this.showToast('❌ Этот скин можно получить только в колесе фортуны!', 'error');
-            return; 
-        }
-        
-        if (item.startsWith('uragan_')) {
-            this.showToast('❌ Этот скин можно получить только в ивенте "Диликовый ураган"!', 'error');
-            return;
-        }
+        if (item === 'wheel_dragon_skin') { this.showToast('❌ Только в колесе фортуны!', 'error'); return; }
+        if (item.startsWith('uragan_')) { this.showToast('❌ Только в ивенте!', 'error'); return; }
         
         if (!this.userData.inventory) this.userData.inventory = ['classic'];
-        
-        if (this.userData.inventory.includes(item)) {
-            this.showToast('❌ У вас уже есть этот скин!', 'error');
-            return;
-        }
+        if (this.userData.inventory.includes(item)) { this.showToast('❌ Уже есть!', 'error'); return; }
         
         const skinData = this.skinsData[item];
-        if (!skinData) {
-            this.showToast('❌ Скин не найден!', 'error');
-            return;
-        }
+        if (!skinData) { this.showToast('❌ Скин не найден', 'error'); return; }
         
         const currency = skinData.currency || 'money';
         
         if (currency === 'dilicks') {
-            if (this.userData.dilicks >= price) {
-                this.userData.dilicks -= price;
-            } else { 
-                this.showToast(`❌ Недостаточно диликов! Есть: ${this.userData.dilicks.toLocaleString()}, нужно: ${price.toLocaleString()} 💎`, 'error');
-                return; 
-            }
+            if (this.userData.dilicks >= price) this.userData.dilicks -= price;
+            else { this.showToast(`❌ Нужно ${price.toLocaleString()} 💎`, 'error'); return; }
         } else {
-            if (this.userData.money >= price) {
-                this.userData.money -= price;
-            } else { 
-                this.showToast(`❌ Недостаточно денег! Есть: ${this.userData.money.toLocaleString()}, нужно: ${price.toLocaleString()} 🪙`, 'error');
-                return; 
-            }
+            if (this.userData.money >= price) this.userData.money -= price;
+            else { this.showToast(`❌ Нужно ${price.toLocaleString()} 🪙`, 'error'); return; }
         }
         
         this.userData.inventory.push(item);
@@ -1138,19 +1114,19 @@ class ClickerGame {
         this.updateInventory();
         this.updateShopStatus();
         this.checkAchievements();
-        this.showToast(`✅ Куплен скин: ${this.skinsData[item].name}`, 'success');
+        this.showToast(`✅ Куплен: ${this.skinsData[item].name}`, 'success');
     }
     
     renderUpgrades() {
         if (!this.upgradesGrid) return;
         
         const upgrades = [
-            { id: 'clickPower', name: 'Усилитель клика', description: 'Увеличивает силу клика', basePrice: 50, priceMultiplier: 25, getLevel: () => this.userData.clickPower, maxLevel: 100, effect: () => `+${this.userData.clickPower} к клику` },
-            { id: 'autoClicker', name: 'Автокликер', description: 'Автоматические клики каждую секунду', basePrice: 100, priceMultiplier: 100, getLevel: () => this.userData.autoClickerLevel, maxLevel: 100, effect: () => `${this.userData.autoClickerLevel} кликов/сек` },
-            { id: 'critChance', name: 'Критический удар', description: 'Шанс нанести крит урон', basePrice: 200, priceMultiplier: 50, getLevel: () => this.userData.critChance, maxLevel: 100, effect: () => `${this.userData.critChance}% шанс крита`, step: 5 },
-            { id: 'rechargeBonus', name: 'Бонус перезарядки', description: '+10% к силе клика каждые 10 уровней', basePrice: 500, priceMultiplier: 200, getLevel: () => this.userData.rechargeBonus || 0, maxLevel: 50, effect: () => `x${1 + (this.userData.rechargeBonus || 0) * 0.1} к силе` },
-            { id: 'clickerMastery', name: 'Мастерство кликера', description: 'Увеличивает множитель крита', basePrice: 1000, priceMultiplier: 300, getLevel: () => this.userData.clickerMastery || 0, maxLevel: 30, effect: () => `x${2 + (this.userData.clickerMastery || 0) * 0.1} крит множитель` },
-            { id: 'eventBooster', name: 'Усилитель ивентов', description: '+5% к диликам в ивентах', basePrice: 1500, priceMultiplier: 400, getLevel: () => this.userData.eventBooster || 0, maxLevel: 20, effect: () => `+${(this.userData.eventBooster || 0) * 5}% диликов в ивентах` }
+            { id: 'clickPower', name: 'Усилитель клика', description: 'Увеличивает силу клика', basePrice: 50, priceMultiplier: 25, getLevel: () => this.userData.clickPower, maxLevel: 100, effect: () => `+${this.userData.clickPower}` },
+            { id: 'autoClicker', name: 'Автокликер', description: 'Автоклики каждую секунду', basePrice: 100, priceMultiplier: 100, getLevel: () => this.userData.autoClickerLevel, maxLevel: 100, effect: () => `${this.userData.autoClickerLevel}/сек` },
+            { id: 'critChance', name: 'Крит удар', description: 'Шанс крита', basePrice: 200, priceMultiplier: 50, getLevel: () => this.userData.critChance, maxLevel: 100, effect: () => `${this.userData.critChance}%` },
+            { id: 'rechargeBonus', name: 'Бонус перезарядки', description: '+10% к силе', basePrice: 500, priceMultiplier: 200, getLevel: () => this.userData.rechargeBonus || 0, maxLevel: 50, effect: () => `x${1 + (this.userData.rechargeBonus || 0) * 0.1}` },
+            { id: 'clickerMastery', name: 'Мастерство', description: 'Крит множитель', basePrice: 1000, priceMultiplier: 300, getLevel: () => this.userData.clickerMastery || 0, maxLevel: 30, effect: () => `x${2 + (this.userData.clickerMastery || 0) * 0.1}` },
+            { id: 'eventBooster', name: 'Усилитель ивентов', description: '+5% диликов', basePrice: 1500, priceMultiplier: 400, getLevel: () => this.userData.eventBooster || 0, maxLevel: 20, effect: () => `+${(this.userData.eventBooster || 0) * 5}%` }
         ];
         
         this.upgradesGrid.innerHTML = '';
@@ -1176,40 +1152,26 @@ class ClickerGame {
                 const btn = card.querySelector('.upgrade-btn');
                 btn.addEventListener('click', () => this.buyUpgrade(upgrade.id, price));
             }
-            
             this.upgradesGrid.appendChild(card);
         }
     }
     
     async buyUpgrade(upgradeType, price) {
+        if (this.userData.dilicks < price) { this.showToast(`❌ Нужно ${price.toLocaleString()} 💎`, 'error'); return; }
+        
+        this.userData.dilicks -= price;
+        
         switch(upgradeType) {
-            case 'clickPower':
-                if (this.userData.dilicks >= price) { this.userData.dilicks -= price; this.userData.clickPower++; this.showToast(`✅ Усилитель клика улучшен до ${this.userData.clickPower} уровня!`, 'success'); }
-                else { this.showToast(`❌ Недостаточно диликов! Нужно: ${price.toLocaleString()} ${this.getDilicksIcon()}`, 'error'); return; }
-                break;
-            case 'autoClicker':
-                if (this.userData.dilicks >= price) { this.userData.dilicks -= price; this.userData.autoClickerLevel++; this.restartAutoClicker(); this.showToast(`✅ Автокликер улучшен до ${this.userData.autoClickerLevel} уровня!`, 'success'); }
-                else { this.showToast(`❌ Недостаточно диликов! Нужно: ${price.toLocaleString()} ${this.getDilicksIcon()}`, 'error'); return; }
-                break;
-            case 'critChance':
-                if (this.userData.dilicks >= price) { this.userData.dilicks -= price; this.userData.critChance += 5; this.showToast(`✅ Шанс крита увеличен до ${this.userData.critChance}%!`, 'success'); }
-                else { this.showToast(`❌ Недостаточно диликов! Нужно: ${price.toLocaleString()} ${this.getDilicksIcon()}`, 'error'); return; }
-                break;
-            case 'rechargeBonus':
-                if (this.userData.dilicks >= price) { this.userData.dilicks -= price; this.userData.rechargeBonus = (this.userData.rechargeBonus || 0) + 1; this.showToast(`✅ Бонус перезарядки улучшен до ${this.userData.rechargeBonus} уровня!`, 'success'); }
-                else { this.showToast(`❌ Недостаточно диликов! Нужно: ${price.toLocaleString()} ${this.getDilicksIcon()}`, 'error'); return; }
-                break;
-            case 'clickerMastery':
-                if (this.userData.dilicks >= price) { this.userData.dilicks -= price; this.userData.clickerMastery = (this.userData.clickerMastery || 0) + 1; this.showToast(`✅ Мастерство кликера улучшено до ${this.userData.clickerMastery} уровня!`, 'success'); }
-                else { this.showToast(`❌ Недостаточно диликов! Нужно: ${price.toLocaleString()} ${this.getDilicksIcon()}`, 'error'); return; }
-                break;
-            case 'eventBooster':
-                if (this.userData.dilicks >= price) { this.userData.dilicks -= price; this.userData.eventBooster = (this.userData.eventBooster || 0) + 1; this.showToast(`✅ Усилитель ивентов улучшен до ${this.userData.eventBooster} уровня!`, 'success'); }
-                else { this.showToast(`❌ Недостаточно диликов! Нужно: ${price.toLocaleString()} ${this.getDilicksIcon()}`, 'error'); return; }
-                break;
+            case 'clickPower': this.userData.clickPower++; break;
+            case 'autoClicker': this.userData.autoClickerLevel++; this.restartAutoClicker(); break;
+            case 'critChance': this.userData.critChance += 5; break;
+            case 'rechargeBonus': this.userData.rechargeBonus = (this.userData.rechargeBonus || 0) + 1; break;
+            case 'clickerMastery': this.userData.clickerMastery = (this.userData.clickerMastery || 0) + 1; break;
+            case 'eventBooster': this.userData.eventBooster = (this.userData.eventBooster || 0) + 1; break;
             default: return;
         }
         
+        this.showToast(`✅ Улучшено!`, 'success');
         this.renderUpgrades();
         this.updateUI();
         await this.saveGame();
@@ -1221,7 +1183,6 @@ class ClickerGame {
         document.querySelectorAll('.shop-item').forEach(item => {
             const skinId = item.dataset.skin || item.dataset.item;
             if (!skinId) return;
-            
             const statusEl = document.getElementById(`status-${skinId}`);
             const buyBtn = item.querySelector('.buy-btn');
             const isOwned = this.userData.inventory && this.userData.inventory.includes(skinId);
@@ -1260,7 +1221,7 @@ class ClickerGame {
                 <div class="skin-preview"><img src="${skin.image}" alt="${skin.name}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'"></div>
                 <h3>${skin.name}</h3>
                 <p class="skin-description">${skin.description}</p>
-                ${skin.multiplier > 1 ? `<p class="skin-multiplier">✨ x${skin.multiplier} множитель!</p>` : ''}
+                ${skin.multiplier > 1 ? `<p class="skin-multiplier">✨ x${skin.multiplier}</p>` : ''}
                 ${isCurrentSkin ? '<p class="skin-equipped">✅ ЭКИПИРОВАНО</p>' : '<button class="glass-btn equip-btn liquid-glass">ЭКИПИРОВАТЬ</button>'}
             `;
             const equipBtn = skinCard.querySelector('.equip-btn');
@@ -1272,22 +1233,9 @@ class ClickerGame {
     async equipSkin(skinId) {
         this.userData.currentSkin = skinId;
         if (this.clickIcon) this.clickIcon.src = this.skinsData[skinId].image;
-        
-        const multiplier = this.getSkinMultiplier(skinId);
-        if (multiplier > 1 && this.clickPowerSpan && this.userData) {
-            let basePower = this.userData.clickPower;
-            let totalPower = basePower * multiplier;
-            this.clickPowerSpan.textContent = totalPower;
-        }
-        
         await this.saveGame();
         this.updateInventory();
-        this.createClickEffect(window.innerWidth / 2, window.innerHeight / 2, `✨ ${this.skinsData[skinId].name} ✨`);
-        if (this.clickIcon) {
-            this.clickIcon.style.transform = 'scale(0.8)';
-            setTimeout(() => { if (this.clickIcon) this.clickIcon.style.transform = 'scale(1)'; }, 200);
-        }
-        this.showToast(`✨ Экипирован скин: ${this.skinsData[skinId].name}${multiplier > 1 ? ` (x${multiplier} множитель!)` : ''}`, 'success');
+        this.showToast(`✨ ${this.skinsData[skinId].name}`, 'success');
     }
     
     startAutoClicker() {
@@ -1307,8 +1255,7 @@ class ClickerGame {
                     
                     let moneyEarned = clickPower;
                     let critMultiplier = 2 + ((this.userData.clickerMastery || 0) * 0.1);
-                    const critRoll = Math.random() * 100;
-                    if (critRoll < this.userData.critChance) moneyEarned *= critMultiplier;
+                    if (Math.random() * 100 < this.userData.critChance) moneyEarned *= critMultiplier;
                     
                     this.userData.clicks++;
                     this.userData.money += moneyEarned;
@@ -1365,9 +1312,9 @@ class ClickerGame {
             this.userData.premiumPass = true;
             this.updateUI();
             await this.saveGame();
-            this.showToast('✅ Премиум пропуск активирован!', 'success');
+            this.showToast('✅ Премиум активирован!', 'success');
         } else {
-            this.showToast(`❌ Недостаточно диликов! Нужно: 500 ${this.getDilicksIcon()}`, 'error');
+            this.showToast(`❌ Нужно 500 💎`, 'error');
         }
     }
     
@@ -1378,7 +1325,6 @@ class ClickerGame {
         try {
             const snapshot = await firebase.database().ref('users/' + playerId).once('value');
             const userData = snapshot.val();
-            
             if (!userData) { this.showToast('❌ Игрок не найден', 'error'); return; }
             
             const username = userData.settings?.displayName || userData.username;
@@ -1391,8 +1337,6 @@ class ClickerGame {
             modalUsername.style.backgroundClip = 'text';
             modalUsername.style.fontSize = '28px';
             modalUsername.style.fontWeight = '700';
-            modalUsername.style.marginBottom = '10px';
-            modalUsername.style.textShadow = '0 2px 5px rgba(0, 0, 0, 0.3)';
             
             document.getElementById('modalClicks').textContent = (userData.clicks || 0).toLocaleString();
             document.getElementById('modalMoney').textContent = (userData.money || 0).toLocaleString();
@@ -1407,14 +1351,10 @@ class ClickerGame {
             }
             
             modal.classList.add('active');
-            
             const closeBtn = document.getElementById('closeProfileModal');
             if (closeBtn) closeBtn.onclick = () => modal.classList.remove('active');
             modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
-        } catch (error) {
-            console.error(error);
-            this.showToast('❌ Ошибка загрузки профиля', 'error');
-        }
+        } catch (error) { this.showToast('❌ Ошибка', 'error'); }
     }
     
     async updateLeaderboard(type) {
@@ -1422,10 +1362,7 @@ class ClickerGame {
         this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
         try {
             const snapshot = await firebase.database().ref('users').once('value');
-            if (!snapshot.exists()) { 
-                this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Нет данных</td></tr>'; 
-                return; 
-            }
+            if (!snapshot.exists()) { this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Нет данных</td></tr>'; return; }
             const users = snapshot.val();
             const leaderboard = [];
             for (let [id, userData] of Object.entries(users)) {
@@ -1436,7 +1373,7 @@ class ClickerGame {
                     case 'playtime': value = userData.playtime || 0; break;
                 }
                 const displayName = userData.settings?.displayName || userData.username;
-                leaderboard.push({ id: id, username: displayName, value, realUsername: userData.username });
+                leaderboard.push({ id, username: displayName, value, realUsername: userData.username });
             }
             leaderboard.sort((a, b) => b.value - a.value);
             const topPlayers = leaderboard.slice(0, 50);
@@ -1449,27 +1386,20 @@ class ClickerGame {
                 else if (index === 2) medal = '🥉';
                 row.innerHTML = `
                     <td style="width: 60px;">${medal ? medal : index + 1}</td>
-                    <td class="leaderboard-player" data-id="${entry.id}" style="cursor: pointer; transition: all 0.2s ease;">${entry.username} ${entry.realUsername === localStorage.getItem('currentUser') ? '👑' : ''}</td>
+                    <td class="leaderboard-player" data-id="${entry.id}" style="cursor: pointer;">${entry.username} ${entry.realUsername === localStorage.getItem('currentUser') ? '👑' : ''}</td>
                     <td>${this.formatLeaderboardValue(entry.value, type)}</td>
                 `;
-                
                 const playerCell = row.querySelector('.leaderboard-player');
                 if (playerCell) {
                     playerCell.addEventListener('click', (e) => { e.stopPropagation(); this.showPlayerProfile(entry.id, entry.username); });
-                    playerCell.addEventListener('mouseenter', () => { playerCell.style.textDecoration = 'underline'; playerCell.style.color = 'gold'; });
-                    playerCell.addEventListener('mouseleave', () => { playerCell.style.textDecoration = 'none'; playerCell.style.color = 'white'; });
                 }
-                
-                if (entry.realUsername === localStorage.getItem('currentUser')) { 
-                    row.style.background = 'rgba(255,215,0,0.1)'; 
-                    row.style.border = '1px solid gold'; 
+                if (entry.realUsername === localStorage.getItem('currentUser')) {
+                    row.style.background = 'rgba(255,215,0,0.1)';
+                    row.style.border = '1px solid gold';
                 }
                 this.leaderboardBody.appendChild(row);
             });
-        } catch (error) { 
-            console.error(error); 
-            this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Ошибка загрузки</td></tr>'; 
-        }
+        } catch (error) { this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Ошибка</td></tr>'; }
     }
     
     formatLeaderboardValue(value, type) {
@@ -1490,15 +1420,13 @@ class ClickerGame {
         
         if (this.clickPowerSpan && this.userData) {
             const skinMultiplier = this.getSkinMultiplier(this.userData.currentSkin);
-            const totalPower = this.userData.clickPower * skinMultiplier;
-            this.clickPowerSpan.textContent = totalPower;
+            this.clickPowerSpan.textContent = this.userData.clickPower * skinMultiplier;
         }
         
         this.updatePlaytimeDisplay();
         if (this.seasonProgress && this.seasonLevel) {
             const expNeeded = 100 + (this.userData.seasonLevel * 50);
-            const progress = (this.userData.seasonExp / expNeeded) * 100;
-            this.seasonProgress.style.width = progress + '%';
+            this.seasonProgress.style.width = ((this.userData.seasonExp / expNeeded) * 100) + '%';
             this.seasonLevel.textContent = this.userData.seasonLevel;
         }
         if (document.getElementById('profile')?.classList.contains('active')) this.updateProfile();
@@ -1559,8 +1487,7 @@ class ClickerGame {
         let newAchievementUnlocked = false;
         this.achievementsData.forEach(achievement => {
             const isCompleted = this.userData.completedAchievements.includes(achievement.id);
-            const canComplete = achievement.condition(this.userData);
-            if (canComplete && !isCompleted) {
+            if (achievement.condition(this.userData) && !isCompleted) {
                 this.userData.completedAchievements.push(achievement.id);
                 this.userData.money += achievement.reward.money;
                 this.userData.dilicks += achievement.reward.dilicks;
@@ -1568,7 +1495,11 @@ class ClickerGame {
                 this.showAchievementNotification(achievement);
             }
         });
-        if (newAchievementUnlocked) { this.saveGame(); this.updateUI(); if (document.getElementById('profile')?.classList.contains('active')) this.updateProfile(); }
+        if (newAchievementUnlocked) {
+            this.saveGame();
+            this.updateUI();
+            if (document.getElementById('profile')?.classList.contains('active')) this.updateProfile();
+        }
     }
     
     updateProfile() {
@@ -1620,7 +1551,7 @@ class ClickerGame {
             case 'millionaire': return Math.min(100, (this.userData.money / 1000000) * 100);
             case 'dilicMaster': return Math.min(100, (this.userData.dilicks / 5000) * 100);
             case 'dilicLord': return Math.min(100, (this.userData.dilicks / 50000) * 100);
-            case 'skinCollector': const totalSkins = Object.keys(this.skinsData).length; const owned = this.userData.inventory?.length || 0; return Math.min(100, (owned / totalSkins) * 100);
+            case 'skinCollector': return Math.min(100, ((this.userData.inventory?.length || 0) / Object.keys(this.skinsData).length) * 100);
             case 'critMaster': return Math.min(100, (this.userData.critChance / 50) * 100);
             case 'critGod': return Math.min(100, (this.userData.critChance / 100) * 100);
             case 'autoClickerMaster': return Math.min(100, (this.userData.autoClickerLevel / 10) * 100);
@@ -1655,7 +1586,7 @@ class ClickerGame {
         if (!this.ownedSkinsList) return;
         const totalSkins = Object.keys(this.skinsData).length;
         const ownedSkins = this.userData.inventory?.length || 0;
-        if (this.skinProgressFill) { this.skinProgressFill.style.width = (ownedSkins / totalSkins) * 100 + '%'; }
+        if (this.skinProgressFill) this.skinProgressFill.style.width = (ownedSkins / totalSkins) * 100 + '%';
         if (this.ownedSkins) this.ownedSkins.textContent = ownedSkins;
         if (this.totalSkins) this.totalSkins.textContent = totalSkins;
         this.ownedSkinsList.innerHTML = '';
@@ -1679,19 +1610,19 @@ class ClickerGame {
         if (!code) { this.showPromocodeMessage('Введите промокод', 'error'); return; }
         const promocode = this.promocodesData[code];
         if (!promocode) { this.showPromocodeMessage('Промокод не найден', 'error'); return; }
-        if (promocode.expiryDate && Date.now() > promocode.expiryDate) { this.showPromocodeMessage('Срок действия промокода истек', 'error'); return; }
-        if (this.userData.activatedPromocodes && this.userData.activatedPromocodes.includes(code)) { this.showPromocodeMessage('Вы уже активировали этот промокод', 'error'); return; }
+        if (promocode.expiryDate && Date.now() > promocode.expiryDate) { this.showPromocodeMessage('Промокод истёк', 'error'); return; }
+        if (this.userData.activatedPromocodes?.includes(code)) { this.showPromocodeMessage('Уже активировали', 'error'); return; }
         
         let rewardMessage = '';
-        if (promocode.reward.money > 0) { this.userData.money += promocode.reward.money; rewardMessage += `+${promocode.reward.money.toLocaleString()} ${this.getMoneyIcon()} `; }
-        if (promocode.reward.dilicks > 0) { this.userData.dilicks += promocode.reward.dilicks; rewardMessage += `+${promocode.reward.dilicks.toLocaleString()} ${this.getDilicksIcon()} `; }
+        if (promocode.reward.money > 0) { this.userData.money += promocode.reward.money; rewardMessage += `+${promocode.reward.money} 🪙 `; }
+        if (promocode.reward.dilicks > 0) { this.userData.dilicks += promocode.reward.dilicks; rewardMessage += `+${promocode.reward.dilicks} 💎 `; }
         if (promocode.reward.skin) {
             const skinId = promocode.reward.skin;
             if (this.skinsData[skinId] && !this.userData.inventory.includes(skinId)) {
                 this.userData.inventory.push(skinId);
                 rewardMessage += `+скин "${this.skinsData[skinId].name}" ✨`;
                 if (!this.userData.currentSkin) { this.userData.currentSkin = skinId; if (this.clickIcon) this.clickIcon.src = this.skinsData[skinId].image; }
-            } else { this.userData.dilicks += 100; rewardMessage += `+100 ${this.getDilicksIcon()} (скин уже был)`; }
+            } else { this.userData.dilicks += 100; rewardMessage += `+100 💎`; }
         }
         if (!this.userData.activatedPromocodes) this.userData.activatedPromocodes = [];
         this.userData.activatedPromocodes.push(code);
@@ -1704,7 +1635,7 @@ class ClickerGame {
         this.updateInventory();
         this.updatePromocodesList();
         this.updatePromocodesHistory();
-        this.showPromocodeMessage(`Промокод активирован! ${rewardMessage}`, 'success');
+        this.showPromocodeMessage(`✅ Активирован! ${rewardMessage}`, 'success');
         this.promocodeInput.value = '';
         this.checkAchievements();
     }
@@ -1725,7 +1656,6 @@ class ClickerGame {
             if (isActivated || isExpired) return;
             const item = document.createElement('div');
             item.className = 'promocode-item';
-            item.setAttribute('data-code', promocode.code);
             const rewardParts = [];
             if (promocode.reward.money > 0) rewardParts.push(`${this.getMoneyIcon()} +${promocode.reward.money.toLocaleString()}`);
             if (promocode.reward.dilicks > 0) rewardParts.push(`${this.getDilicksIcon()} +${promocode.reward.dilicks.toLocaleString()}`);
@@ -1734,14 +1664,18 @@ class ClickerGame {
             item.addEventListener('click', () => { if (this.promocodeInput) { this.promocodeInput.value = promocode.code; this.promocodeInput.focus(); } });
             this.promocodesList.appendChild(item);
         });
-        if (this.promocodesList.children.length === 0) { const empty = document.createElement('div'); empty.className = 'empty-history'; empty.textContent = 'Нет доступных промокодов'; this.promocodesList.appendChild(empty); }
+        if (this.promocodesList.children.length === 0) {
+            const empty = document.createElement('div'); empty.className = 'empty-history'; empty.textContent = 'Нет доступных промокодов'; this.promocodesList.appendChild(empty);
+        }
     }
     
     updatePromocodesHistory() {
         if (!this.promocodesHistory) return;
         this.promocodesHistory.innerHTML = '';
         const history = this.userData.promocodesHistory || [];
-        if (history.length === 0) { const empty = document.createElement('div'); empty.className = 'empty-history'; empty.textContent = 'История активаций пуста'; this.promocodesHistory.appendChild(empty); return; }
+        if (history.length === 0) {
+            const empty = document.createElement('div'); empty.className = 'empty-history'; empty.textContent = 'История пуста'; this.promocodesHistory.appendChild(empty); return;
+        }
         const sortedHistory = [...history].sort((a, b) => b.timestamp - a.timestamp);
         sortedHistory.forEach(item => {
             const historyItem = document.createElement('div');
@@ -1767,11 +1701,10 @@ class ClickerGame {
         this.compensationShown = true;
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
-        modal.id = 'compensationModal';
         modal.style.display = 'flex';
         modal.style.opacity = '1';
         modal.style.pointerEvents = 'all';
-        modal.innerHTML = `<div class="modal-content" style="max-width:450px;background:rgba(20,25,35,0.95);border:2px solid gold;border-radius:50px;padding:30px;text-align:center;"><h2 style="color:gold;font-size:2rem;margin-bottom:20px;">🎁 БОНУС ОБНОВЛЕНИЯ</h2><div style="margin:20px 0;"><img src="${this.DILICKS_ICON}" style="width:60px;height:60px;border-radius:50%;margin-bottom:15px;"><p style="color:white;font-size:1.2rem;margin-bottom:10px;">В игру добавлены новые скины!</p><p style="color:rgba(255,255,255,0.8);margin-bottom:20px;">Для коллекционеров мы подготовили компенсацию:</p><div style="background:rgba(255,215,0,0.1);border-radius:30px;padding:15px;margin-bottom:20px;"><span style="color:gold;font-size:2rem;font-weight:bold;">+4500</span><img src="${this.DILICKS_ICON}" style="width:30px;height:30px;border-radius:50%;margin-left:10px;"></div></div><div style="display:flex;gap:15px;justify-content:center;"><button class="modal-btn confirm" id="claimCompensation" style="background:rgba(76,175,80,0.2);border:1px solid #4CAF50;color:white;padding:12px 30px;border-radius:40px;font-weight:bold;cursor:pointer;">ПОЛУЧИТЬ</button><button class="modal-btn cancel" id="closeCompensation" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:12px 30px;border-radius:40px;font-weight:bold;cursor:pointer;">ПОЗЖЕ</button></div></div>`;
+        modal.innerHTML = `<div class="modal-content" style="max-width:450px;background:rgba(20,25,35,0.95);border:2px solid gold;border-radius:50px;padding:30px;text-align:center;"><h2 style="color:gold;font-size:2rem;margin-bottom:20px;">🎁 БОНУС</h2><div style="background:rgba(255,215,0,0.1);border-radius:30px;padding:15px;margin-bottom:20px;"><span style="color:gold;font-size:2rem;font-weight:bold;">+4500</span><img src="${this.DILICKS_ICON}" style="width:30px;height:30px;border-radius:50%;margin-left:10px;"></div><div style="display:flex;gap:15px;justify-content:center;"><button class="modal-btn confirm" id="claimCompensation" style="background:rgba(76,175,80,0.2);border:1px solid #4CAF50;color:white;padding:12px 30px;border-radius:40px;cursor:pointer;">ПОЛУЧИТЬ</button><button class="modal-btn cancel" id="closeCompensation" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:12px 30px;border-radius:40px;cursor:pointer;">ПОЗЖЕ</button></div></div>`;
         document.body.appendChild(modal);
         document.getElementById('claimCompensation').addEventListener('click', () => { this.claimCompensation(); modal.remove(); });
         document.getElementById('closeCompensation').addEventListener('click', () => { modal.remove(); });
@@ -1782,7 +1715,7 @@ class ClickerGame {
         this.userData.compensationReceived = true;
         await this.saveGame();
         this.updateUI();
-        this.showToast(`✅ +4500 ${this.getDilicksIcon()} получено!`, 'success');
+        this.showToast(`✅ +4500 💎 получено!`, 'success');
     }
     
     checkIfCreator() {
@@ -1822,11 +1755,11 @@ class Settings {
         const themeSelect = document.getElementById('themeSelect');
         if (themeSelect) themeSelect.addEventListener('change', (e) => this.saveTheme(e.target.value));
         const notificationsEnabled = document.getElementById('notificationsEnabled');
-        if (notificationsEnabled) notificationsEnabled.addEventListener('change', (e) => { this.game.userData.settings.notifications = e.target.checked; this.game.saveGame(); this.game.showToast('✅ Настройки уведомлений сохранены', 'success'); });
+        if (notificationsEnabled) notificationsEnabled.addEventListener('change', (e) => { this.game.userData.settings.notifications = e.target.checked; this.game.saveGame(); });
         const soundEnabled = document.getElementById('soundEnabled');
-        if (soundEnabled) soundEnabled.addEventListener('change', (e) => { this.game.userData.settings.sound = e.target.checked; this.game.saveGame(); this.game.showToast('✅ Настройки звука сохранены', 'success'); });
+        if (soundEnabled) soundEnabled.addEventListener('change', (e) => { this.game.userData.settings.sound = e.target.checked; this.game.saveGame(); });
         const animationsEnabled = document.getElementById('animationsEnabled');
-        if (animationsEnabled) animationsEnabled.addEventListener('change', (e) => { this.game.userData.settings.animations = e.target.checked; this.game.saveGame(); this.game.showToast('✅ Настройки анимаций сохранены', 'success'); });
+        if (animationsEnabled) animationsEnabled.addEventListener('change', (e) => { this.game.userData.settings.animations = e.target.checked; this.game.saveGame(); });
         const languageSelect = document.getElementById('languageSelect');
         if (languageSelect) languageSelect.addEventListener('change', (e) => this.saveLanguage(e.target.value));
         const exportDataBtn = document.getElementById('exportDataBtn');
@@ -1838,7 +1771,7 @@ class Settings {
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
         if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
         const checkUpdatesBtn = document.getElementById('checkUpdatesBtn');
-        if (checkUpdatesBtn) checkUpdatesBtn.addEventListener('click', () => this.checkUpdates());
+        if (checkUpdatesBtn) checkUpdatesBtn.addEventListener('click', () => this.game.showToast('🔄 Последняя версия 3.2', 'info'));
     }
     
     updateUI() {
@@ -1864,50 +1797,44 @@ class Settings {
         const input = document.getElementById('displayName');
         const newName = input.value.trim();
         if (!newName) { this.game.showToast('❌ Введите никнейм', 'error'); return; }
-        if (newName.length > 20) { this.game.showToast('❌ Никнейм не должен превышать 20 символов', 'error'); return; }
+        if (newName.length > 20) { this.game.showToast('❌ Максимум 20 символов', 'error'); return; }
         this.game.userData.settings.displayName = newName;
         await this.game.saveGame();
-        const profileUsername = document.getElementById('profileUsername');
-        if (profileUsername) profileUsername.textContent = newName;
-        const usernameDisplay = document.getElementById('usernameDisplay');
-        if (usernameDisplay) usernameDisplay.textContent = newName;
-        this.game.showToast(`✅ Никнейм изменен на "${newName}"`, 'success');
+        document.getElementById('profileUsername')?.textContent = newName;
+        document.getElementById('usernameDisplay')?.textContent = newName;
+        this.game.showToast(`✅ Никнейм: "${newName}"`, 'success');
     }
     
     async changePassword() {
         const oldPass = document.getElementById('oldPassword').value;
         const newPass = document.getElementById('newPassword').value;
         const confirmPass = document.getElementById('confirmPassword').value;
-        if (!oldPass || !newPass || !confirmPass) { this.game.showToast('❌ Заполните все поля', 'error'); return; }
-        if (newPass !== confirmPass) { this.game.showToast('❌ Новые пароли не совпадают', 'error'); return; }
-        if (newPass.length < 4) { this.game.showToast('❌ Пароль должен быть не менее 4 символов', 'error'); return; }
+        if (!oldPass || !newPass || !confirmPass) { this.game.showToast('❌ Заполните поля', 'error'); return; }
+        if (newPass !== confirmPass) { this.game.showToast('❌ Пароли не совпадают', 'error'); return; }
+        if (newPass.length < 4) { this.game.showToast('❌ Минимум 4 символа', 'error'); return; }
         if (oldPass !== this.game.userData.password) { this.game.showToast('❌ Неверный старый пароль', 'error'); return; }
         this.game.userData.password = newPass;
         await this.game.saveGame();
         document.getElementById('oldPassword').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('confirmPassword').value = '';
-        this.game.showToast('✅ Пароль успешно изменен', 'success');
+        this.game.showToast('✅ Пароль изменен', 'success');
     }
     
     saveTheme(theme) {
         this.game.userData.settings.theme = theme;
         this.game.saveGame();
         const themeNames = { 'dark': 'Тёмная', 'light': 'Светлая', 'auto': 'Как в системе' };
-        this.game.showToast(`✅ Тема изменена на ${themeNames[theme] || theme}`, 'success');
+        this.game.showToast(`✅ ${themeNames[theme] || theme}`, 'success');
         if (theme === 'light') document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
         else if (theme === 'dark') document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
-        else {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.style.background = 'linear-gradient(135deg, #0a0c15 0%, #121520 50%, #0a0c15 100%)';
-            else document.body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
-        }
     }
     
     async saveLanguage(lang) {
         this.game.userData.settings.language = lang;
         await this.game.saveGame();
         const langNames = { 'ru': 'Русский', 'en': 'English', 'tr': 'Türkçe', 'es': 'Español' };
-        this.game.showToast(`✅ Язык изменен на ${langNames[lang] || lang}`, 'success');
+        this.game.showToast(`✅ ${langNames[lang] || lang}`, 'success');
     }
     
     exportData() {
@@ -1927,7 +1854,6 @@ class Settings {
                 seasonExp: this.game.userData.seasonExp,
                 playtime: this.game.userData.playtime,
                 completedAchievements: this.game.userData.completedAchievements,
-                compensationReceived: this.game.userData.compensationReceived,
                 rechargeBonus: this.game.userData.rechargeBonus || 0,
                 clickerMastery: this.game.userData.clickerMastery || 0,
                 eventBooster: this.game.userData.eventBooster || 0,
@@ -1946,8 +1872,8 @@ class Settings {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            this.game.showToast('✅ Данные успешно экспортированы', 'success');
-        } catch (error) { console.error(error); this.game.showToast('❌ Ошибка при экспорте данных', 'error'); }
+            this.game.showToast('✅ Экспортировано', 'success');
+        } catch (error) { this.game.showToast('❌ Ошибка', 'error'); }
     }
     
     importData() {
@@ -1957,41 +1883,29 @@ class Settings {
         input.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            if (!confirm('⚠️ Импорт данных заменит текущий прогресс. Продолжить?')) return;
-            this.game.showToast('📤 Чтение файла...', 'info');
-            try {
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    try {
-                        const importedData = JSON.parse(event.target.result);
-                        if (!this.validateImportedData(importedData)) { this.game.showToast('❌ Неверный формат файла', 'error'); return; }
-                        importedData.username = this.game.userData.username;
-                        importedData.password = this.game.userData.password;
-                        this.game.userData = importedData;
-                        await this.game.saveGame();
-                        this.updateUI();
-                        this.game.updateUI();
-                        this.game.updateInventory();
-                        this.game.updateShopStatus();
-                        this.game.renderUpgrades();
-                        this.game.showToast('✅ Данные успешно импортированы', 'success');
-                    } catch (parseError) { this.game.showToast('❌ Ошибка чтения файла: неверный формат JSON', 'error'); }
-                };
-                reader.readAsText(file);
-            } catch (error) { console.error(error); this.game.showToast('❌ Ошибка при импорте данных', 'error'); }
+            if (!confirm('⚠️ Заменить текущий прогресс?')) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    importedData.username = this.game.userData.username;
+                    importedData.password = this.game.userData.password;
+                    this.game.userData = importedData;
+                    await this.game.saveGame();
+                    this.updateUI();
+                    this.game.updateUI();
+                    this.game.updateInventory();
+                    this.game.updateShopStatus();
+                    this.game.renderUpgrades();
+                    this.game.showToast('✅ Импортировано', 'success');
+                } catch (parseError) { this.game.showToast('❌ Ошибка чтения', 'error'); }
+            };
+            reader.readAsText(file);
         };
         input.click();
     }
     
-    validateImportedData(data) {
-        const requiredFields = ['clicks', 'money', 'dilicks', 'clickPower', 'inventory', 'currentSkin'];
-        for (const field of requiredFields) if (!(field in data)) { console.error(`Отсутствует поле: ${field}`); return false; }
-        if (typeof data.clicks !== 'number' || typeof data.money !== 'number' || typeof data.dilicks !== 'number') { console.error('Неверные типы данных'); return false; }
-        if (!Array.isArray(data.inventory)) { console.error('Инвентарь должен быть массивом'); return false; }
-        return true;
-    }
-    
-    confirmResetProgress() { this.showModal('🔄 Сброс прогресса', 'Вы уверены, что хотите сбросить весь прогресс? Все клики, деньги и дилики будут обнулены. Это действие нельзя отменить.', () => this.resetProgress()); }
+    confirmResetProgress() { this.showModal('🔄 Сброс', 'Сбросить весь прогресс?', () => this.resetProgress()); }
     
     async resetProgress() {
         const username = this.game.userData.username;
@@ -2002,7 +1916,7 @@ class Settings {
             premiumPass: false, completedAchievements: [], activatedPromocodes: [], promocodesHistory: [],
             compensationReceived: false, rechargeBonus: 0, clickerMastery: 0, eventBooster: 0,
             settings: this.game.userData.settings, lastSave: Date.now(),
-            username: username, password: password
+            username, password
         };
         this.game.userData = resetData;
         await this.game.saveGame();
@@ -2014,7 +1928,7 @@ class Settings {
         this.game.showToast('✅ Прогресс сброшен', 'success');
     }
     
-    confirmDeleteAccount() { this.showModal('🗑️ Удаление аккаунта', 'Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить. Все данные будут потеряны навсегда.', () => this.deleteAccount()); }
+    confirmDeleteAccount() { this.showModal('🗑️ Удаление', 'Удалить аккаунт? Это необратимо.', () => this.deleteAccount()); }
     
     async deleteAccount() {
         const userId = localStorage.getItem('userId');
@@ -2027,14 +1941,12 @@ class Settings {
         window.location.href = 'register.html';
     }
     
-    checkUpdates() { this.game.showToast('🔄 Установлена последняя версия 3.1.0 ULTRA', 'info'); }
-    
     showModal(title, message, onConfirm) {
         const oldModal = document.querySelector('.modal-overlay');
         if (oldModal) oldModal.remove();
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
-        modal.innerHTML = `<div class="modal-content"><h3>${title}</h3><p>${message}</p><div class="modal-buttons"><button class="modal-btn confirm">Да, подтверждаю</button><button class="modal-btn cancel">Отмена</button></div></div>`;
+        modal.innerHTML = `<div class="modal-content"><h3>${title}</h3><p>${message}</p><div class="modal-buttons"><button class="modal-btn confirm">Да</button><button class="modal-btn cancel">Отмена</button></div></div>`;
         document.body.appendChild(modal);
         setTimeout(() => modal.classList.add('active'), 10);
         modal.querySelector('.confirm').addEventListener('click', () => { onConfirm(); modal.classList.remove('active'); setTimeout(() => modal.remove(), 300); });
@@ -2072,9 +1984,7 @@ class WheelOfFortune {
     
     init() {
         this.canvas = document.getElementById('wheelCanvas');
-        if (this.canvas) {
-            this.ctx = this.canvas.getContext('2d');
-        }
+        if (this.canvas) this.ctx = this.canvas.getContext('2d');
         this.spinBtn = document.getElementById('wheelSpinBtn');
         this.balanceSpan = document.getElementById('wheelBalance');
         this.resultDisplay = document.getElementById('wheelResultDisplay');
@@ -2147,7 +2057,7 @@ class WheelOfFortune {
         this.updateSpinCost();
         if (this.game.userData.dilicks < this.SPIN_COST) {
             this.resultDisplay.innerHTML = '❌ Недостаточно диликов!';
-            this.game.showToast(`❌ Недостаточно диликов! Нужно: ${this.SPIN_COST} ${this.game.getDilicksIcon()}`, 'error');
+            this.game.showToast(`❌ Нужно ${this.SPIN_COST} 💎`, 'error');
             return;
         }
         this.game.userData.dilicks -= this.SPIN_COST;
@@ -2198,22 +2108,20 @@ class WheelOfFortune {
                 this.resultDisplay.style.color = '#ffb7c5';
                 this.resultDisplay.style.textShadow = '0 0 30px #ff69b4';
                 this.game.showAchievementNotification({ name: 'ОСОБЕННЫЙ СКИН', icon: this.game.skinsData[this.SKIN_ID].image, reward: { money: 0, dilicks: 0 } });
-                this.game.showToast(`🎉 ПОЗДРАВЛЯЕМ! Вы получили легендарный скин дракона с множителем x250! ${this.game.getDilicksIcon()}`, 'success');
+                this.game.showToast(`🎉 ПОЛУЧЕН СКИН x250! 💎`, 'success');
             } else {
                 this.game.userData.dilicks += 10000;
-                resultHTML = `<span>+10000</span><img src="${this.DILICKS_ICON}" class="wheel-result-icon"><span>(скин уже был)</span>`;
-                this.resultDisplay.style.color = 'gold';
-                this.resultDisplay.style.textShadow = '0 0 20px gold';
-                this.game.showToast(`+10000 ${this.game.getDilicksIcon()} (скин уже был)`, 'success');
+                resultHTML = `<span>+10000</span><img src="${this.DILICKS_ICON}" class="wheel-result-icon">`;
+                this.game.showToast(`+10000 💎 (скин уже был)`, 'success');
             }
         } else if (prize.type === 'money') {
             this.game.userData.money += prize.value;
             resultHTML = `<span>+${prize.value.toLocaleString()}</span><img src="${this.MONEY_ICON}" class="wheel-result-icon">`;
-            this.game.showToast(`+${prize.value.toLocaleString()} ${this.game.getMoneyIcon()}`, 'success');
+            this.game.showToast(`+${prize.value.toLocaleString()} 🪙`, 'success');
         } else {
             this.game.userData.dilicks += prize.value;
             resultHTML = `<span>+${prize.value.toLocaleString()}</span><img src="${this.DILICKS_ICON}" class="wheel-result-icon">`;
-            this.game.showToast(`+${prize.value.toLocaleString()} ${this.game.getDilicksIcon()}`, 'success');
+            this.game.showToast(`+${prize.value.toLocaleString()} 💎`, 'success');
         }
         this.resultDisplay.innerHTML = resultHTML;
         this.balanceSpan.textContent = this.game.userData.dilicks.toLocaleString();
