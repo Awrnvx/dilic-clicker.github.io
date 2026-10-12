@@ -1,5 +1,5 @@
 // ============================================
-// DILIC CLICKER - ПОЛНАЯ ВЕРСИЯ 3.2 (SYNC FIX)
+// DILIC CLICKER - ПОЛНАЯ ВЕРСИЯ 3.3 (REFRESH FIX)
 // ============================================
 
 class ClickerGame {
@@ -53,7 +53,7 @@ class ClickerGame {
             { id: 'critGod', name: 'Бог критов', description: 'Увеличьте шанс крита до 100%', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.critChance >= 100, reward: { money: 10000, dilicks: 1000 } },
             { id: 'autoClickerMaster', name: 'Автоматизация', description: 'Купите 10 уровней автокликера', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.autoClickerLevel >= 10, reward: { money: 5000, dilicks: 500 } },
             { id: 'autoClickerGod', name: 'Полная автоматизация', description: 'Купите 50 уровней автокликера', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.autoClickerLevel >= 50, reward: { money: 25000, dilicks: 2500 } },
-            { id: 'wheelMaster', name: 'Властелин колеса', description: 'Получите особенного скина из колеса', icon: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', condition: (data) => data.inventory && data.inventory.includes('wheel_dragon_skin'), reward: { money: 10000, dilicks: 5000 } },
+            { id: 'wheelMaster', name: 'Властелин колеса', description: 'Получите особенного скина', icon: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', condition: (data) => data.inventory && data.inventory.includes('wheel_dragon_skin'), reward: { money: 10000, dilicks: 5000 } },
             { id: 'uraganKing', name: 'Король урагана', description: 'Получите скин ДИЛИК КОРОЛЬ', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_dragon_top3'), reward: { money: 50000, dilicks: 10000 } },
             { id: 'uraganLord', name: 'Повелитель урагана', description: 'Получите скин ДИЛИК ЛОРД', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_holo_top10'), reward: { money: 25000, dilicks: 5000 } }
         ];
@@ -117,64 +117,75 @@ class ClickerGame {
         }
     }
     
-    // ===== СИНХРОНИЗАЦИЯ С АДМИНКОЙ (чтобы выдача работала при активной игре) =====
-    startRemoteSync() {
+    // ===== ОБНОВЛЕНИЕ БАЛАНСА ИЗ БАЗЫ (кнопка 🔄) =====
+    async refreshBalance() {
         const userId = localStorage.getItem('userId');
         if (!userId) return;
         
-        console.log('📡 Синхронизация с админкой включена');
-        
-        firebase.database().ref('users/' + userId).on('value', (snapshot) => {
+        try {
+            console.log('🔄 Обновляю баланс из базы...');
+            
+            const snapshot = await firebase.database().ref('users/' + userId).once('value');
             const remoteData = snapshot.val();
-            if (!remoteData || !this.userData) return;
             
-            let updated = false;
-            let updatedFields = [];
-            
-            // Дилики (только если БОЛЬШЕ — чтобы не откатывать при трате)
-            if (remoteData.dilicks !== undefined && remoteData.dilicks > this.userData.dilicks) {
-                const diff = remoteData.dilicks - this.userData.dilicks;
-                console.log('📥 Получено от админа:', diff, 'диликов');
-                this.userData.dilicks = remoteData.dilicks;
-                updated = true;
-                updatedFields.push(`+${diff} 💎`);
+            if (!remoteData) {
+                this.showToast('❌ Данные не найдены', 'error');
+                return;
             }
             
-            // Деньги
-            if (remoteData.money !== undefined && remoteData.money > this.userData.money) {
-                const diff = remoteData.money - this.userData.money;
-                console.log('📥 Получено от админа:', diff, 'денег');
-                this.userData.money = remoteData.money;
-                updated = true;
-                updatedFields.push(`+${diff} 🪙`);
+            const oldDilicks = this.userData.dilicks || 0;
+            const oldMoney = this.userData.money || 0;
+            const oldInventory = this.userData.inventory || [];
+            
+            // Обновляем поля из базы
+            this.userData.dilicks = remoteData.dilicks || 0;
+            this.userData.money = remoteData.money || 0;
+            this.userData.inventory = remoteData.inventory || ['classic'];
+            this.userData.currentSkin = remoteData.currentSkin || 'classic';
+            this.userData.clicks = remoteData.clicks || 0;
+            this.userData.clickPower = remoteData.clickPower || 1;
+            this.userData.autoClickerLevel = remoteData.autoClickerLevel || 0;
+            this.userData.critChance = remoteData.critChance || 5;
+            this.userData.premiumPass = remoteData.premiumPass || false;
+            this.userData.eventContribution = remoteData.eventContribution || 0;
+            this.userData.rechargeBonus = remoteData.rechargeBonus || 0;
+            this.userData.clickerMastery = remoteData.clickerMastery || 0;
+            this.userData.eventBooster = remoteData.eventBooster || 0;
+            
+            // Считаем разницу
+            const dilicksDiff = this.userData.dilicks - oldDilicks;
+            const moneyDiff = this.userData.money - oldMoney;
+            const newSkins = this.userData.inventory.filter(s => !oldInventory.includes(s));
+            
+            // Обновляем UI
+            this.updateUI();
+            this.updateInventory();
+            this.updateShopStatus();
+            if (this.clickIcon) {
+                const skinImage = this.skinsData[this.userData.currentSkin]?.image || 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png';
+                this.clickIcon.src = skinImage;
+            }
+            if (document.getElementById('profile')?.classList.contains('active')) this.updateProfile();
+            
+            // Показываем уведомление
+            let msg = '🔄 Баланс обновлён';
+            const parts = [];
+            if (dilicksDiff > 0) parts.push(`+${dilicksDiff.toLocaleString()} 💎`);
+            if (moneyDiff > 0) parts.push(`+${moneyDiff.toLocaleString()} 🪙`);
+            if (newSkins.length > 0) parts.push(`+${newSkins.length} скин(ов) ✨`);
+            
+            if (parts.length > 0) {
+                this.showToast(`🎁 Получено от админа:<br>${parts.join('<br>')}`, 'success');
+            } else {
+                this.showToast('🔄 Баланс обновлён (без изменений)', 'info');
             }
             
-            // Инвентарь — если появились новые скины
-            if (remoteData.inventory && Array.isArray(remoteData.inventory)) {
-                const localInv = this.userData.inventory || [];
-                const newSkins = remoteData.inventory.filter(s => !localInv.includes(s));
-                
-                if (newSkins.length > 0) {
-                    console.log('📥 Получены скины:', newSkins);
-                    this.userData.inventory = remoteData.inventory;
-                    updated = true;
-                    updatedFields.push(`+${newSkins.length} скин(ов)`);
-                }
-            }
+            console.log('✅ Баланс обновлён:', { dilicks: this.userData.dilicks, money: this.userData.money });
             
-            // Премиум пасс
-            if (remoteData.premiumPass === true && this.userData.premiumPass !== true) {
-                this.userData.premiumPass = true;
-                updated = true;
-                updatedFields.push('Премиум');
-            }
-            
-            if (updated) {
-                this.updateUI();
-                this.updateInventory();
-                this.showToast(`🎁 Получено от администратора: ${updatedFields.join(', ')}`, 'success');
-            }
-        });
+        } catch (error) {
+            console.error('❌ Ошибка обновления:', error);
+            this.showToast('❌ Ошибка обновления баланса', 'error');
+        }
     }
     
     initBanListener() {
@@ -513,9 +524,7 @@ class ClickerGame {
             this.isLoaded = true;
             this.showLoader(false);
             
-            // ===== ВАЖНО: включаем синхронизацию с админкой =====
-            this.startRemoteSync();
-            console.log('✅ Игра загружена + синхронизация с админкой активна');
+            console.log('✅ Игра загружена. Кнопка 🔄 для обновления баланса готова.');
         }, 100);
     }
     
@@ -564,6 +573,8 @@ class ClickerGame {
         this.navLinks = document.querySelector('.nav-links');
         this.upgradesGrid = document.getElementById('upgradesGrid');
         
+        this.refreshBalanceBtn = document.getElementById('refreshBalanceBtn');
+        
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) logoutBtn.addEventListener('click', () => this.logout());
     }
@@ -599,7 +610,7 @@ class ClickerGame {
             });
         });
         
-        // ===== ФИКС: покупка скинов =====
+        // Кнопка покупки скинов
         document.querySelectorAll('.buy-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -610,6 +621,14 @@ class ClickerGame {
                 this.buyItem(item, price);
             });
         });
+        
+        // ===== КНОПКА ОБНОВЛЕНИЯ БАЛАНСА =====
+        if (this.refreshBalanceBtn) {
+            this.refreshBalanceBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.refreshBalance();
+            });
+        }
     }
     
     switchTab(tabId) {
@@ -1771,7 +1790,7 @@ class Settings {
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
         if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
         const checkUpdatesBtn = document.getElementById('checkUpdatesBtn');
-        if (checkUpdatesBtn) checkUpdatesBtn.addEventListener('click', () => this.game.showToast('🔄 Последняя версия 3.2', 'info'));
+        if (checkUpdatesBtn) checkUpdatesBtn.addEventListener('click', () => this.game.showToast('🔄 Последняя версия 3.3', 'info'));
     }
     
     updateUI() {
@@ -1833,7 +1852,7 @@ class Settings {
     async saveLanguage(lang) {
         this.game.userData.settings.language = lang;
         await this.game.saveGame();
-        const langNames = { 'ru': 'Русский', 'en': 'English', 'tr': 'Türkçe', 'es': 'Español' };
+        const langNames = { 'ru': 'Русский', 'en': 'English' };
         this.game.showToast(`✅ ${langNames[lang] || lang}`, 'success');
     }
     
