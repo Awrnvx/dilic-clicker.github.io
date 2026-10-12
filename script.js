@@ -30,10 +30,9 @@ class ClickerGame {
         this.skinsData = {
             'classic': { name: 'Классический скин', price: 0, image: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', description: 'Стандартный курсор', currency: 'money', multiplier: 1 },
             'neon': { name: 'Неоновый скин', price: 1000, image: 'https://img.freepik.com/premium-photo/neon-style-computer-cursor-arrow-design-vector_1018059-4.jpg?semt=ais_hybrid&w=740', description: 'Яркий неоновый курсор', currency: 'money', multiplier: 1 },
-            'monsters_skin': { name: 'Монстр скин', price: 0, image: 'https://avatars.mds.yandex.net/i?id=83ac2b7a91b5b67b7ffb26da4b8b1a2abd4fc83f-8981816-images-thumbs&n=13', description: 'Эксклюзивный скин монстра', currency: 'money', multiplier: 1 },
+            'monsters_skin': { name: 'Монстр скин', price: 0, image: 'https://static.wikia.nocookie.net/d72429a0-efb9-4e95-bde1-dc811f2bfccf/scale-to-width/755', description: 'Эксклюзивный скин монстра', currency: 'money', multiplier: 1 },
             'dragon_skin': { name: 'Драконий скин', price: 15000, image: 'https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13', description: 'Мощный скин дракона', currency: 'dilicks', multiplier: 1 },
             'wheel_dragon_skin': { name: 'Колесный дракон', price: 0, image: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', description: 'Особенный скин дракона (×250 множитель)', currency: 'special', multiplier: 250 },
-            // НОВЫЕ СКИНЫ ДЛЯ ИВЕНТА ДИЛИКОВЫЙ УРАГАН
             'uragan_dragon_top3': { 
                 name: 'ДИЛИК КОРОЛЬ', 
                 price: 0, 
@@ -623,6 +622,24 @@ class ClickerGame {
                 this.updateLeaderboard(btn.dataset.leaderboard);
             });
         });
+
+        // ===== ИСПРАВЛЕНИЕ: ОБРАБОТЧИКИ ДЛЯ КНОПОК ПОКУПКИ В МАГАЗИНЕ =====
+        this.buyBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Проверяем, не заблокирована ли кнопка
+                if (btn.disabled || btn.classList.contains('disabled')) {
+                    return;
+                }
+                
+                const item = btn.dataset.item;
+                const price = parseInt(btn.dataset.price);
+                console.log(`🛒 Попытка покупки: ${item} за ${price}`);
+                this.buyItem(item, price);
+            });
+        });
     }
     
     switchTab(tabId) {
@@ -1120,7 +1137,10 @@ class ClickerGame {
         setTimeout(() => { if (effect.parentNode) effect.remove(); }, 600);
     }
     
+    // ===== ИСПРАВЛЕННЫЙ МЕТОД ПОКУПКИ =====
     async buyItem(item, price) {
+        console.log(`🛒 buyItem вызван: item=${item}, price=${price}`);
+        
         if (item === 'wheel_dragon_skin') { 
             this.showToast('❌ Этот скин можно получить только в колесе фортуны!', 'error');
             return; 
@@ -1128,6 +1148,12 @@ class ClickerGame {
         
         if (item.startsWith('uragan_')) {
             this.showToast('❌ Этот скин можно получить только в ивенте "Диликовый ураган"!', 'error');
+            return;
+        }
+        
+        // Проверяем, не куплен ли уже скин
+        if (this.userData.inventory && this.userData.inventory.includes(item)) {
+            this.showToast('⚠️ Этот скин уже куплен!', 'warning');
             return;
         }
         
@@ -1147,6 +1173,7 @@ class ClickerGame {
             }
         }
         
+        if (!this.userData.inventory) this.userData.inventory = [];
         if (!this.userData.inventory.includes(item)) this.userData.inventory.push(item);
         this.userData.currentSkin = item;
         if (this.clickIcon) this.clickIcon.src = this.skinsData[item].image;
@@ -2485,125 +2512,3 @@ if (document.readyState === 'loading') {
     
     console.log('✅ Режим производительности: эмодзи для мобилок готов');
 })();
-
-// ===== ОЧИСТКА ТОПА ИВЕНТА =====
-
-// Функция показа модального окна подтверждения
-function showConfirmModal(title, message, onConfirm) {
-    const modal = document.createElement('div');
-    modal.className = 'confirm-modal';
-    modal.innerHTML = `
-        <div class="confirm-modal-content">
-            <h3>${title}</h3>
-            <p>${message}</p>
-            <div class="confirm-modal-buttons">
-                <button class="confirm-btn">✅ ДА, ОЧИСТИТЬ</button>
-                <button class="cancel-btn">❌ ОТМЕНА</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    setTimeout(() => modal.classList.add('active'), 10);
-    
-    modal.querySelector('.confirm-btn').onclick = () => {
-        onConfirm();
-        modal.classList.remove('active');
-        setTimeout(() => modal.remove(), 300);
-    };
-    modal.querySelector('.cancel-btn').onclick = () => {
-        modal.classList.remove('active');
-        setTimeout(() => modal.remove(), 300);
-    };
-}
-
-// Очистка всего топа ивента
-document.getElementById('clearUraganTopBtn')?.addEventListener('click', () => {
-    showConfirmModal(
-        '⚠️ ОЧИСТКА ТОПА ИВЕНТА',
-        'Вы уверены, что хотите ОБНУЛИТЬ вклад ВСЕХ игроков в ивенте "Диликовый ураган"?\n\nЭто действие НЕЛЬЗЯ отменить!'
-    , async () => {
-        showToast('🔄 Очистка топа ивента...', 'warning');
-        addDebugMessage('🗑️ Начинаем очистку топа ивента');
-        
-        try {
-            const snapshot = await usersRef.once('value');
-            const users = snapshot.val();
-            let count = 0;
-            
-            for (const [id, user] of Object.entries(users)) {
-                if (user.eventContribution && user.eventContribution > 0) {
-                    await usersRef.child(id).update({ eventContribution: 0 });
-                    count++;
-                    if (count % 10 === 0) await new Promise(r => setTimeout(r, 50));
-                }
-            }
-            
-            // Также очищаем копилку ивента
-            await eventsRef.child('dilicksHurricane').update({ totalPool: 0 });
-            
-            showToast(`✅ Очищено ${count} игроков! Копилка сброшена.`, 'success');
-            addDebugMessage(`✅ Очищено ${count} игроков, копилка сброшена`);
-            
-            // Обновляем топ если он открыт
-            const topList = document.getElementById('topList');
-            if (topList && topList.style.display === 'block') {
-                document.getElementById('loadTopBtn')?.click();
-            }
-            
-        } catch (error) {
-            console.error(error);
-            showToast('❌ Ошибка при очистке топа', 'error');
-            addDebugMessage(`❌ Ошибка очистки топа: ${error.message}`);
-        }
-    });
-});
-
-// Очистка конкретного игрока
-document.getElementById('clearPlayerBtn')?.addEventListener('click', async () => {
-    const playerId = document.getElementById('clearPlayerId').value.trim();
-    
-    if (!playerId) {
-        showToast('❌ Введите ID игрока', 'error');
-        return;
-    }
-    
-    showConfirmModal(
-        '⚠️ ОЧИСТКА ИГРОКА',
-        `Вы уверены, что хотите ОБНУЛИТЬ вклад игрока с ID: ${playerId}?\n\nЭто действие НЕЛЬЗЯ отменить!`
-    , async () => {
-        showToast(`🔄 Очистка игрока ${playerId}...`, 'warning');
-        addDebugMessage(`🗑️ Очистка игрока ${playerId}`);
-        
-        try {
-            const playerRef = usersRef.child(playerId);
-            const snapshot = await playerRef.once('value');
-            
-            if (!snapshot.exists()) {
-                showToast('❌ Игрок с таким ID не найден', 'error');
-                addDebugMessage(`❌ Игрок ${playerId} не найден`);
-                return;
-            }
-            
-            const userData = snapshot.val();
-            const username = userData.settings?.displayName || userData.username;
-            
-            await playerRef.update({ eventContribution: 0 });
-            
-            showToast(`✅ Очищен вклад игрока ${username} (${playerId})`, 'success');
-            addDebugMessage(`✅ Очищен вклад игрока ${username} (${playerId})`);
-            
-            document.getElementById('clearPlayerId').value = '';
-            
-            // Обновляем топ если он открыт
-            const topList = document.getElementById('topList');
-            if (topList && topList.style.display === 'block') {
-                document.getElementById('loadTopBtn')?.click();
-            }
-            
-        } catch (error) {
-            console.error(error);
-            showToast('❌ Ошибка при очистке игрока', 'error');
-            addDebugMessage(`❌ Ошибка очистки игрока: ${error.message}`);
-        }
-    });
-});
