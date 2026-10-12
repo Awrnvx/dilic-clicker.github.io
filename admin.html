@@ -279,7 +279,7 @@
             font-size: 11px;
             font-family: monospace;
             color: #0f0;
-            max-height: 100px;
+            max-height: 150px;
             overflow-y: auto;
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
@@ -322,7 +322,6 @@
         .toast-notification.error { border-color: #ff6b6b; color: #ff6b6b; }
         .toast-notification.warning { border-color: #ffc107; color: #ffc107; }
 
-        hr { border-color: rgba(255, 215, 0, 0.2); margin: 15px 0; }
         .custom-multiplier-group { display: flex; gap: 10px; margin-top: 10px; }
         .custom-multiplier-group input {
             flex: 1;
@@ -394,9 +393,7 @@
             border-radius: 30px;
             padding: 25px;
             text-align: center;
-            animation: modalAppear 0.3s ease;
         }
-        @keyframes modalAppear { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .confirm-modal-content h3 { color: #ff6b6b; font-size: 1.5rem; margin-bottom: 15px; }
         .confirm-modal-content p { color: white; margin-bottom: 20px; line-height: 1.5; }
         .confirm-modal-buttons { display: flex; gap: 15px; justify-content: center; }
@@ -407,9 +404,7 @@
             padding: 10px 25px;
             border-radius: 30px;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
-        .confirm-btn:hover { background: rgba(244, 67, 54, 0.4); transform: scale(1.02); }
         .cancel-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -417,9 +412,7 @@
             padding: 10px 25px;
             border-radius: 30px;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
-        .cancel-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.02); }
 
         @media (max-width: 768px) {
             body { padding: 10px; }
@@ -430,8 +423,6 @@
             .admin-input-group input, .admin-input-group select, .admin-input-group textarea, .glass-btn { width: 100%; }
             .multiplier-buttons { justify-content: center; }
             .custom-multiplier-group { flex-direction: column; }
-            .poll-option { flex-direction: column; align-items: flex-start; }
-            .poll-option-votes { text-align: left; }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -455,6 +446,7 @@
             
             <div id="adminContent" style="display: none;">
                 <div class="admin-grid">
+                    <!-- ГЛОБАЛЬНЫЕ АНОНСЫ -->
                     <div class="admin-card">
                         <h2>📢 ГЛОБАЛЬНЫЕ АНОНСЫ <span class="realtime-badge">LIVE</span></h2>
                         <div class="admin-command">
@@ -471,13 +463,14 @@
                         </div>
                     </div>
                     
+                    <!-- ОПРОСЫ -->
                     <div class="admin-card">
                         <h2>📊 ОПРОСЫ <span class="realtime-badge">LIVE</span></h2>
                         <div class="admin-command">
                             <div class="admin-command-code">/poll &lt;вопрос&gt; | &lt;вариант1&gt; | &lt;вариант2&gt;</div>
                             <div class="admin-input-group">
                                 <input type="text" id="pollQuestion" placeholder="Вопрос опроса...">
-                                <input type="text" id="pollOptions" placeholder="Варианты через |">
+                                <input type="text" id="pollOptions" placeholder="Варианты через | (Да|Нет)">
                                 <button class="glass-btn success-btn" id="createPollBtn">📊 СОЗДАТЬ</button>
                             </div>
                         </div>
@@ -487,6 +480,7 @@
                         </div>
                     </div>
                     
+                    <!-- УПРАВЛЕНИЕ БАНАМИ -->
                     <div class="admin-card">
                         <h2>🔨 УПРАВЛЕНИЕ БАНАМИ <span class="realtime-badge">LIVE</span></h2>
                         <div class="admin-command">
@@ -494,7 +488,7 @@
                             <div class="admin-input-group">
                                 <input type="text" id="banUserId" placeholder="ID игрока">
                                 <input type="text" id="banReason" placeholder="Причина">
-                                <input type="number" id="banHours" placeholder="Часы" value="0">
+                                <input type="number" id="banHours" placeholder="Часы (0=навсегда)" value="0">
                                 <button class="glass-btn danger-btn" id="banUserBtn">⛔ ЗАБАНИТЬ</button>
                             </div>
                         </div>
@@ -511,15 +505,18 @@
                         </div>
                     </div>
                     
+                    <!-- ТЕХНИЧЕСКИЕ РАБОТЫ -->
                     <div class="admin-card">
                         <h2>🔧 ТЕХНИЧЕСКИЕ РАБОТЫ</h2>
                         <div id="maintenanceStatus" class="admin-status inactive">✅ Технические работы ОТКЛЮЧЕНЫ</div>
                         <div id="maintenanceTimerDisplay" class="admin-timer" style="display: none;"></div>
+                        
                         <div class="admin-command">
                             <div class="admin-command-code">/technical work</div>
                             <div class="admin-command-desc">🔧 Включить бесконечный экран техработ</div>
                             <button class="glass-btn warning-btn" id="techWorkBtn">ВЫПОЛНИТЬ</button>
                         </div>
+                        
                         <div class="admin-command">
                             <div class="admin-command-code">/technical work time &lt;секунды&gt;</div>
                             <div class="admin-command-desc">⏱️ Включить экран обновления с таймером</div>
@@ -528,6 +525,7 @@
                                 <button class="glass-btn" id="updateTimeBtn">ВЫПОЛНИТЬ</button>
                             </div>
                         </div>
+                        
                         <div class="admin-command">
                             <div class="admin-command-code">/update screen &lt;секунды&gt;</div>
                             <div class="admin-command-desc">🆙 Показать экран обновления с прогресс-баром</div>
@@ -536,6 +534,7 @@
                                 <button class="glass-btn warning-btn" id="updateScreenBtn">ПОКАЗАТЬ</button>
                             </div>
                         </div>
+                        
                         <div class="admin-command">
                             <div class="admin-command-code">/not technical work</div>
                             <div class="admin-command-desc">✅ Выключить все экраны техработ</div>
@@ -543,11 +542,13 @@
                         </div>
                     </div>
                     
+                    <!-- ДИЛИКОВЫЙ УРАГАН -->
                     <div class="admin-card">
                         <h2>💎 ДИЛИКОВЫЙ УРАГАН</h2>
                         
                         <div class="admin-command">
                             <div class="admin-command-code">/start event dilicks</div>
+                            <div class="admin-command-desc">🚀 Запустить ивент на N дней</div>
                             <div class="admin-input-group">
                                 <input type="number" id="uraganDays" placeholder="дней" value="7" min="1" max="365">
                                 <button class="glass-btn success-btn" id="startDilicksEventBtn">ЗАПУСТИТЬ</button>
@@ -556,6 +557,7 @@
                         
                         <div class="admin-command">
                             <div class="admin-command-code">/stop event dilicks</div>
+                            <div class="admin-command-desc">⏹️ Остановить ивент</div>
                             <button class="glass-btn danger-btn" id="stopDilicksEventBtn">ОСТАНОВИТЬ</button>
                         </div>
                         
@@ -567,10 +569,18 @@
                                 <button class="multiplier-btn" data-mult="5">x5</button>
                                 <button class="multiplier-btn" data-mult="10">x10</button>
                                 <button class="multiplier-btn" data-mult="20">x20</button>
+                                <button class="multiplier-btn" data-mult="30">x30</button>
                                 <button class="multiplier-btn" data-mult="50">x50</button>
                                 <button class="multiplier-btn" data-mult="100">x100</button>
+                                <button class="multiplier-btn" data-mult="200">x200</button>
+                                <button class="multiplier-btn" data-mult="500">x500</button>
                                 <button class="multiplier-btn" data-mult="1000">x1000</button>
+                                <button class="multiplier-btn" data-mult="2500">x2500</button>
+                                <button class="multiplier-btn" data-mult="5000">x5000</button>
                                 <button class="multiplier-btn" data-mult="10000">x10000</button>
+                                <button class="multiplier-btn" data-mult="100000">x100K</button>
+                                <button class="multiplier-btn" data-mult="1000000">x1M</button>
+                                <button class="multiplier-btn" data-mult="10000000">x10M</button>
                             </div>
                             <div class="custom-multiplier-group">
                                 <input type="number" id="customMultiplier" placeholder="Свой множитель" value="100" min="1">
@@ -604,7 +614,8 @@
                         </div>
                         
                         <div class="admin-command">
-                            <div class="admin-command-code">🔄 ОБНОВИТЬ ЗАДАНИЯ</div>
+                            <div class="admin-command-code">🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ</div>
+                            <div class="admin-command-desc">Обновить задания ивента для всех игроков</div>
                             <button class="glass-btn warning-btn" id="forceRefreshQuestsBtn">ОБНОВИТЬ ЗАДАНИЯ</button>
                         </div>
                         
@@ -633,11 +644,12 @@
                         <div class="admin-command">
                             <div class="admin-command-code">/uragan clear top</div>
                             <div class="admin-command-desc">🗑️ ОЧИСТИТЬ ТОП УЧАСТНИКОВ ИВЕНТА</div>
-                            <button class="glass-btn danger-btn" id="clearUraganTopBtn" style="width:100%;">⚠️ ОЧИСТИТЬ ВЕСЬ ТОП</button>
+                            <button class="glass-btn danger-btn" id="clearUraganTopBtn" style="background:rgba(244,67,54,0.2);width:100%;">⚠️ ОЧИСТИТЬ ВЕСЬ ТОП ИВЕНТА</button>
                         </div>
                         
                         <div class="admin-command">
                             <div class="admin-command-code">/uragan clear player &lt;ID&gt;</div>
+                            <div class="admin-command-desc">🗑️ ОЧИСТИТЬ ВКЛАД КОНКРЕТНОГО ИГРОКА</div>
                             <div class="admin-input-group">
                                 <input type="text" id="clearPlayerId" placeholder="ID игрока">
                                 <button class="glass-btn warning-btn" id="clearPlayerBtn">ОЧИСТИТЬ ИГРОКА</button>
@@ -646,16 +658,18 @@
                         
                         <div class="admin-command">
                             <div class="admin-command-code">/uragan clear admin</div>
+                            <div class="admin-command-desc">👑 ОЧИСТИТЬ ВКЛАД АДМИНИСТРАТОРА</div>
                             <button class="glass-btn danger-btn" id="clearAdminBtn" style="background:rgba(244,67,54,0.3);">👑 ОЧИСТИТЬ АДМИНА</button>
                         </div>
                     </div>
                     
+                    <!-- ВЫДАЧА НАГРАД -->
                     <div class="admin-card">
                         <h2>🎁 ВЫДАЧА НАГРАД</h2>
                         <div class="admin-command">
                             <div class="admin-command-code">/give &lt;ID&gt; &lt;предмет&gt; &lt;количество&gt;</div>
                             <div class="admin-input-group">
-                                <input type="text" id="rewardUserId" placeholder="ID игрока">
+                                <input type="text" id="rewardUserId" placeholder="ID игрока (из Firebase)">
                                 <select id="rewardType">
                                     <option value="dilicks">💎 Дилики</option>
                                     <option value="money">🪙 Деньги</option>
@@ -664,12 +678,16 @@
                             </div>
                             <div class="admin-input-group">
                                 <input type="text" id="rewardAmount" placeholder="количество / ID скина">
-                                <button class="glass-btn success-btn" id="giveRewardBtn">ВЫДАТЬ</button>
+                                <button class="glass-btn success-btn" id="giveRewardBtn">🎁 ВЫДАТЬ</button>
                             </div>
                             <div class="admin-command-desc" style="margin-top: 8px; font-size: 11px;">
                                 📝 Скины: classic, neon, monsters_skin, dragon_skin, wheel_dragon_skin, uragan_dragon_top3, uragan_holo_top10, uragan_banana_top50, uragan_cursor_top100
                             </div>
+                            <div class="admin-command-desc" style="margin-top: 8px; font-size: 11px; color: #ffc107;">
+                                💡 Не знаешь ID? Открой игру → F12 → Console → localStorage.getItem('userId')
+                            </div>
                         </div>
+                        
                         <div class="admin-command">
                             <div class="admin-command-code">/give all &lt;предмет&gt; &lt;количество&gt;</div>
                             <div class="admin-command-desc">⚠️ ВНИМАНИЕ! Выдать ВСЕМ игрокам</div>
@@ -684,6 +702,7 @@
                         </div>
                     </div>
                     
+                    <!-- КОЛЕСО ФОРТУНЫ -->
                     <div class="admin-card">
                         <h2>🎡 КОЛЕСО ФОРТУНЫ</h2>
                         <div class="admin-command">
@@ -706,6 +725,7 @@
                         </div>
                     </div>
                     
+                    <!-- СТАТУС ИВЕНТОВ -->
                     <div class="admin-card">
                         <h2>📊 СТАТУС ИВЕНТОВ</h2>
                         <div id="eventsStatus" class="events-status-info">Загрузка...</div>
@@ -736,7 +756,7 @@
                     const time = new Date().toLocaleTimeString();
                     debugDiv.innerHTML += `<div>[${time}] ${msg}</div>`;
                     debugDiv.scrollTop = debugDiv.scrollHeight;
-                    while (debugDiv.children.length > 30) {
+                    while (debugDiv.children.length > 40) {
                         debugDiv.removeChild(debugDiv.firstChild);
                     }
                 }
@@ -757,7 +777,7 @@
                 setTimeout(() => {
                     toast.classList.remove('show');
                     setTimeout(() => toast.remove(), 300);
-                }, 3000);
+                }, 4000);
             }
             
             function showConfirmModal(title, message, onConfirm) {
@@ -799,7 +819,7 @@
                     const errorDiv = document.getElementById('accessError');
                     if (errorDiv) {
                         errorDiv.style.display = 'block';
-                        errorDiv.innerHTML = '⚠️ Ошибка загрузки конфигурации.';
+                        errorDiv.innerHTML = '⚠️ Ошибка загрузки конфигурации. Проверьте firebase-config.js';
                     }
                 }
             }, 500);
@@ -816,13 +836,13 @@
                 }
                 if (userId !== CREATOR_ID) {
                     document.getElementById('accessError').style.display = 'block';
-                    document.getElementById('accessError').innerHTML = `⚠️ У вас нет доступа.<br><br>Ваш ID: ${userId}<br>ID создателя: ${CREATOR_ID}<br><br>Только создатель игры может заходить в админ-панель.`;
-                    addDebugMessage(`❌ Доступ запрещен: userId ${userId} не равен CREATOR_ID`);
+                    document.getElementById('accessError').innerHTML = `⚠️ У вас нет доступа.<br><br>Ваш ID: ${userId}<br>ID создателя: ${CREATOR_ID}`;
+                    addDebugMessage(`❌ Доступ запрещен`);
                     return;
                 }
                 document.getElementById('adminContent').style.display = 'block';
                 document.getElementById('adminUserId').textContent = userId;
-                addDebugMessage('✅ Доступ разрешен, инициализируем админ-панель');
+                addDebugMessage('✅ Доступ разрешен');
                 initAdminControls();
             }
             
@@ -836,6 +856,7 @@
                 
                 addDebugMessage('📡 Firebase ссылки инициализированы');
                 
+                // ===== АНОНСЫ =====
                 function initRealtimeAnnouncements() {
                     const container = document.getElementById('announcementsList');
                     if (!container) return;
@@ -843,7 +864,7 @@
                     announcementsRef.on('value', (snapshot) => {
                         const announcements = snapshot.val();
                         if (!announcements) {
-                            container.innerHTML = '<div style="color:rgba(255,255,255,0.5); text-align:center;">Нет анонсов</div>';
+                            container.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;">Нет анонсов</div>';
                             return;
                         }
                         container.innerHTML = '';
@@ -867,6 +888,7 @@
                     });
                 }
                 
+                // ===== БАНЫ =====
                 function initRealtimeBans() {
                     const container = document.getElementById('bannedList');
                     if (!container) return;
@@ -874,21 +896,17 @@
                     banRef.on('value', (snapshot) => {
                         const bans = snapshot.val();
                         if (!bans) {
-                            container.innerHTML = '<div style="color:rgba(255,255,255,0.5); text-align:center;">Нет забаненных игроков</div>';
+                            container.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;">Нет забаненных</div>';
                             return;
                         }
                         container.innerHTML = '';
                         for (const [id, ban] of Object.entries(bans)) {
                             if (!ban.active) continue;
-                            let info = `${id.substring(0, 12)}...: ${ban.reason || 'Нарушение правил'}`;
+                            let info = `${id.substring(0, 12)}...: ${ban.reason || 'Нарушение'}`;
                             if (!ban.isPermanent && ban.endTime) {
                                 const remaining = Math.max(0, Math.floor((ban.endTime - Date.now()) / 1000));
-                                const hours = Math.floor(remaining / 3600);
-                                const mins = Math.floor((remaining % 3600) / 60);
-                                info += ` (осталось: ${hours}ч ${mins}м)`;
-                            } else {
-                                info += ' (НАВСЕГДА)';
-                            }
+                                info += ` (${Math.floor(remaining / 3600)}ч ${Math.floor((remaining % 3600) / 60)}м)`;
+                            } else info += ' (НАВСЕГДА)';
                             const div = document.createElement('div');
                             div.className = 'ban-item';
                             div.innerHTML = `<div class="ban-info">${info}</div><button class="ban-unban" data-id="${id}">Разбан</button>`;
@@ -903,6 +921,7 @@
                     });
                 }
                 
+                // ===== ОПРОСЫ =====
                 function initRealtimePolls() {
                     const container = document.getElementById('pollsList');
                     if (!container) return;
@@ -910,7 +929,7 @@
                     pollsRef.on('value', (snapshot) => {
                         const polls = snapshot.val();
                         if (!polls) {
-                            container.innerHTML = '<div style="color:rgba(255,255,255,0.5); text-align:center;">Нет активных опросов</div>';
+                            container.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;">Нет опросов</div>';
                             return;
                         }
                         container.innerHTML = '';
@@ -927,13 +946,13 @@
                                         return `
                                             <div class="poll-option">
                                                 <div class="poll-option-text">${opt.text}</div>
-                                                <div class="poll-option-votes">${(opt.votes || 0).toLocaleString()} гол. (${percent}%)</div>
+                                                <div class="poll-option-votes">${(opt.votes || 0).toLocaleString()} (${percent}%)</div>
                                                 <div class="poll-option-bar"><div class="poll-option-bar-fill" style="width: ${percent}%"></div></div>
                                             </div>
                                         `;
-                                    }).join('') : 'Нет вариантов'}
+                                    }).join('') : ''}
                                 </div>
-                                <div class="poll-total-votes">Всего голосов: ${totalVotes.toLocaleString()}</div>
+                                <div class="poll-total-votes">Всего: ${totalVotes.toLocaleString()}</div>
                                 <button class="poll-delete" data-id="${id}">🗑️ Удалить опрос</button>
                             `;
                             container.appendChild(div);
@@ -949,97 +968,65 @@
                     });
                 }
                 
+                // ===== ОБРАБОТЧИКИ =====
+                
                 document.getElementById('sendAnnounceBtn')?.addEventListener('click', async () => {
                     const text = document.getElementById('announceText').value.trim();
-                    if (!text) {
-                        showToast('❌ Введите текст анонса', 'error');
-                        return;
-                    }
+                    if (!text) { showToast('❌ Введите текст', 'error'); return; }
                     try {
                         await announcementsRef.push().set({
                             text: text,
                             date: new Date().toLocaleString(),
-                            timestamp: Date.now(),
-                            isPinned: false
+                            timestamp: Date.now()
                         });
                         document.getElementById('announceText').value = '';
-                        showToast('✅ Анонс отправлен всем игрокам!', 'success');
-                    } catch (error) {
-                        showToast(`❌ Ошибка: ${error.message}`, 'error');
-                    }
+                        showToast('✅ Анонс отправлен!', 'success');
+                    } catch (error) { showToast(`❌ Ошибка: ${error.message}`, 'error'); }
                 });
                 
                 document.getElementById('createPollBtn')?.addEventListener('click', async () => {
                     const question = document.getElementById('pollQuestion').value.trim();
                     const optionsStr = document.getElementById('pollOptions').value.trim();
-                    
-                    if (!question || !optionsStr) {
-                        showToast('❌ Заполните все поля', 'error');
-                        return;
-                    }
-                    
+                    if (!question || !optionsStr) { showToast('❌ Заполните поля', 'error'); return; }
                     const optionsList = optionsStr.split('|').map(opt => opt.trim()).filter(opt => opt);
-                    if (optionsList.length < 2) {
-                        showToast('❌ Минимум 2 варианта через |', 'error');
-                        return;
-                    }
-                    
+                    if (optionsList.length < 2) { showToast('❌ Минимум 2 варианта', 'error'); return; }
                     const options = {};
-                    optionsList.forEach((opt, index) => {
-                        options[`opt_${index}`] = { text: opt, votes: 0 };
-                    });
-                    
+                    optionsList.forEach((opt, index) => { options[`opt_${index}`] = { text: opt, votes: 0 }; });
                     try {
-                        await pollsRef.push().set({
-                            question: question,
-                            options: options,
-                            timestamp: Date.now(),
-                            createdAt: new Date().toLocaleString()
-                        });
+                        await pollsRef.push().set({ question, options, timestamp: Date.now() });
                         showToast('✅ Опрос создан!', 'success');
                         document.getElementById('pollQuestion').value = '';
                         document.getElementById('pollOptions').value = '';
-                    } catch (error) {
-                        showToast('❌ Ошибка создания опроса', 'error');
-                    }
+                    } catch (error) { showToast('❌ Ошибка', 'error'); }
                 });
                 
                 document.getElementById('banUserBtn')?.addEventListener('click', async () => {
                     const userId = document.getElementById('banUserId').value.trim();
                     const reason = document.getElementById('banReason').value.trim() || 'Нарушение правил';
                     const hours = parseInt(document.getElementById('banHours').value) || 0;
-                    if (!userId) {
-                        showToast('❌ Введите ID игрока', 'error');
-                        return;
-                    }
+                    if (!userId) { showToast('❌ Введите ID', 'error'); return; }
                     const banData = { active: true, reason: reason, bannedAt: Date.now(), isPermanent: hours === 0 };
                     if (hours > 0) banData.endTime = Date.now() + (hours * 60 * 60 * 1000);
                     try {
                         await banRef.child(userId).set(banData);
-                        showToast(`⛔ Игрок ${userId} забанен${hours > 0 ? ` на ${hours} часов` : ' навсегда'}`, 'warning');
+                        showToast(`⛔ Забанен ${userId}`, 'warning');
                         document.getElementById('banUserId').value = '';
                         document.getElementById('banReason').value = '';
                         document.getElementById('banHours').value = '0';
-                    } catch (error) {
-                        showToast(`❌ Ошибка: ${error.message}`, 'error');
-                    }
+                    } catch (error) { showToast(`❌ Ошибка: ${error.message}`, 'error'); }
                 });
                 
                 document.getElementById('unbanUserBtn')?.addEventListener('click', async () => {
                     const userId = document.getElementById('unbanUserId').value.trim();
-                    if (!userId) {
-                        showToast('❌ Введите ID игрока', 'error');
-                        return;
-                    }
+                    if (!userId) { showToast('❌ Введите ID', 'error'); return; }
                     try {
                         await banRef.child(userId).remove();
-                        showToast(`✅ Игрок ${userId} разбанен`, 'success');
+                        showToast(`✅ Разбанен ${userId}`, 'success');
                         document.getElementById('unbanUserId').value = '';
-                    } catch (error) {
-                        showToast(`❌ Ошибка: ${error.message}`, 'error');
-                    }
+                    } catch (error) { showToast(`❌ Ошибка: ${error.message}`, 'error'); }
                 });
                 
+                // ТЕХРАБОТЫ
                 function updateStatusDisplay() {
                     maintRef.once('value').then(snapshot => {
                         const data = snapshot.val();
@@ -1056,36 +1043,37 @@
                 
                 document.getElementById('updateTimeBtn')?.addEventListener('click', async () => {
                     const seconds = parseInt(document.getElementById('techWorkSeconds').value);
-                    if (!seconds || seconds < 1) return showToast('❌ Введите корректное время', 'error');
+                    if (!seconds || seconds < 1) return showToast('❌ Введите время', 'error');
                     await maintRef.set({ active: true, startTime: Date.now(), endTime: Date.now() + seconds * 1000, duration: seconds, type: 'timer' });
                     updateStatusDisplay();
-                    showToast(`🆙 Экран обновления включен на ${seconds} сек`, 'success');
+                    showToast(`🆙 Экран на ${seconds} сек`, 'success');
                 });
                 
                 document.getElementById('techWorkBtn')?.addEventListener('click', async () => {
                     await maintRef.set({ active: true, startTime: Date.now(), endTime: null, type: 'infinite' });
                     updateStatusDisplay();
-                    showToast('🔧 Технические работы включены', 'warning');
+                    showToast('🔧 Техработы включены', 'warning');
                 });
                 
                 document.getElementById('updateScreenBtn')?.addEventListener('click', async () => {
                     const seconds = parseInt(document.getElementById('updateScreenSeconds').value);
-                    if (!seconds || seconds < 1) return showToast('❌ Введите корректное время', 'error');
+                    if (!seconds || seconds < 1) return showToast('❌ Введите время', 'error');
                     await maintRef.set({ active: true, type: 'timer', startTime: Date.now(), endTime: Date.now() + seconds * 1000, duration: seconds });
-                    showToast(`🆙 Экран обновы включен на ${seconds} секунд`, 'success');
+                    showToast(`🆙 Экран обновы на ${seconds} сек`, 'success');
                     updateStatusDisplay();
                 });
                 
                 document.getElementById('notTechWorkBtn')?.addEventListener('click', async () => {
                     await maintRef.set({ active: false });
                     updateStatusDisplay();
-                    showToast('✅ Все экраны техработ отключены', 'success');
+                    showToast('✅ Отключено', 'success');
                 });
                 
+                // УРАГАН
                 document.getElementById('startDilicksEventBtn')?.addEventListener('click', async () => {
                     const days = parseInt(document.getElementById('uraganDays').value) || 7;
                     await eventsRef.child('dilicksHurricane').set({ active: true, startTime: Date.now(), endTime: Date.now() + days * 24 * 60 * 60 * 1000, duration: days, multiplier: 2, day: 1, totalPool: 0 });
-                    showToast(`💎 Ивент запущен на ${days} дней!`, 'success');
+                    showToast(`💎 Ивент на ${days} дней!`, 'success');
                 });
                 
                 document.getElementById('stopDilicksEventBtn')?.addEventListener('click', async () => {
@@ -1096,15 +1084,15 @@
                 document.querySelectorAll('.multiplier-btn').forEach(btn => {
                     btn.addEventListener('click', async () => {
                         await eventsRef.child('dilicksHurricane').update({ multiplier: parseInt(btn.dataset.mult) });
-                        showToast(`⚡ Множитель изменен на x${parseInt(btn.dataset.mult)}`, 'success');
+                        showToast(`⚡ x${parseInt(btn.dataset.mult)}`, 'success');
                     });
                 });
                 
                 document.getElementById('setCustomMultiplierBtn')?.addEventListener('click', async () => {
                     const mult = parseInt(document.getElementById('customMultiplier').value);
-                    if (!mult || mult < 1) return showToast('❌ Введите корректный множитель', 'error');
+                    if (!mult || mult < 1) return showToast('❌ Неверный множитель', 'error');
                     await eventsRef.child('dilicksHurricane').update({ multiplier: mult });
-                    showToast(`⚡ Множитель изменен на x${mult}`, 'success');
+                    showToast(`⚡ x${mult}`, 'success');
                 });
                 
                 document.getElementById('addPoolBtn')?.addEventListener('click', async () => {
@@ -1112,14 +1100,14 @@
                     if (!amount || amount < 1) return showToast('❌ Введите сумму', 'error');
                     const snap = await eventsRef.child('dilicksHurricane').once('value');
                     await eventsRef.child('dilicksHurricane').update({ totalPool: (snap.val()?.totalPool || 0) + amount });
-                    showToast(`💰 Добавлено ${amount.toLocaleString()} 💎`, 'success');
+                    showToast(`💰 +${amount.toLocaleString()} 💎`, 'success');
                 });
                 
                 document.getElementById('setPoolBtn')?.addEventListener('click', async () => {
                     const amount = parseInt(document.getElementById('setPoolAmount').value);
-                    if (isNaN(amount) || amount < 0) return showToast('❌ Введите корректную сумму', 'error');
+                    if (isNaN(amount) || amount < 0) return showToast('❌ Введите сумму', 'error');
                     await eventsRef.child('dilicksHurricane').update({ totalPool: amount });
-                    showToast(`💰 Копилка установлена на ${amount.toLocaleString()} 💎`, 'success');
+                    showToast(`💰 Копилка = ${amount.toLocaleString()} 💎`, 'success');
                 });
                 
                 document.getElementById('removePoolBtn')?.addEventListener('click', async () => {
@@ -1127,7 +1115,7 @@
                     if (!amount || amount < 1) return showToast('❌ Введите сумму', 'error');
                     const snap = await eventsRef.child('dilicksHurricane').once('value');
                     await eventsRef.child('dilicksHurricane').update({ totalPool: Math.max(0, (snap.val()?.totalPool || 0) - amount) });
-                    showToast(`➖ Вычтено ${amount.toLocaleString()} 💎`, 'success');
+                    showToast(`➖ -${amount.toLocaleString()} 💎`, 'success');
                 });
                 
                 document.getElementById('resetPoolBtn')?.addEventListener('click', async () => {
@@ -1139,9 +1127,9 @@
                 
                 document.getElementById('setEventDayBtn')?.addEventListener('click', async () => {
                     const day = parseInt(document.getElementById('eventDay').value);
-                    if (!day || day < 1 || day > 30) return showToast('❌ Введите день от 1 до 30', 'error');
+                    if (!day || day < 1 || day > 30) return showToast('❌ День от 1 до 30', 'error');
                     await eventsRef.child('dilicksHurricane').update({ day: day });
-                    showToast(`📅 День ивента изменен на ${day}`, 'success');
+                    showToast(`📅 День ${day}`, 'success');
                 });
                 
                 document.getElementById('forceRefreshQuestsBtn')?.addEventListener('click', async () => {
@@ -1174,18 +1162,12 @@
                             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
                             topListDiv.innerHTML += `<div class="top-item"><div class="top-rank">${medal}</div><div class="top-name">${player.name} ${player.id === CREATOR_ID ? '👑' : ''}</div><div class="top-value">${player.contribution.toLocaleString()} 💎</div></div>`;
                         });
-                        if (topPlayers.length === 0) topListDiv.innerHTML = '<div class="top-item">Пока нет участников</div>';
-                    } catch (error) {
-                        topListDiv.innerHTML = '<div class="top-item">Ошибка загрузки</div>';
-                    }
+                        if (topPlayers.length === 0) topListDiv.innerHTML = '<div class="top-item">Пусто</div>';
+                    } catch (error) { topListDiv.innerHTML = '<div class="top-item">Ошибка</div>'; }
                 });
                 
                 document.getElementById('clearUraganTopBtn')?.addEventListener('click', () => {
-                    showConfirmModal(
-                        '⚠️ ОЧИСТКА ТОПА ИВЕНТА',
-                        'Вы уверены, что хотите ОБНУЛИТЬ вклад ВСЕХ игроков? Это действие НЕЛЬЗЯ отменить!'
-                    , async () => {
-                        showToast('🔄 Очистка топа...', 'warning');
+                    showConfirmModal('⚠️ ОЧИСТКА ТОПА', 'Обнулить вклад ВСЕХ игроков?', async () => {
                         try {
                             const snapshot = await usersRef.once('value');
                             const users = snapshot.val();
@@ -1194,116 +1176,128 @@
                                 if (user.eventContribution && user.eventContribution > 0) {
                                     await usersRef.child(id).update({ eventContribution: 0 });
                                     count++;
-                                    if (count % 10 === 0) await new Promise(r => setTimeout(r, 50));
                                 }
                             }
                             await usersRef.child(CREATOR_ID).update({ eventContribution: 0 });
                             await eventsRef.child('dilicksHurricane').update({ totalPool: 0 });
-                            showToast(`✅ Очищено ${count + 1} игроков!`, 'success');
-                        } catch (error) {
-                            showToast('❌ Ошибка при очистке', 'error');
-                        }
+                            showToast(`✅ Очищено ${count + 1}`, 'success');
+                        } catch (error) { showToast('❌ Ошибка', 'error'); }
                     });
                 });
                 
                 document.getElementById('clearPlayerBtn')?.addEventListener('click', async () => {
                     const playerId = document.getElementById('clearPlayerId').value.trim();
-                    if (!playerId) {
-                        showToast('❌ Введите ID игрока', 'error');
-                        return;
-                    }
-                    
-                    showConfirmModal('⚠️ ОЧИСТКА ИГРОКА', `ОБНУЛИТЬ вклад игрока ${playerId}?`, async () => {
+                    if (!playerId) { showToast('❌ Введите ID', 'error'); return; }
+                    showConfirmModal('⚠️ ОЧИСТКА ИГРОКА', `Обнулить ${playerId}?`, async () => {
                         try {
                             const playerRef = usersRef.child(playerId);
                             const snapshot = await playerRef.once('value');
-                            if (!snapshot.exists()) {
-                                showToast('❌ Игрок не найден', 'error');
-                                return;
-                            }
+                            if (!snapshot.exists()) { showToast('❌ Не найден', 'error'); return; }
                             const userData = snapshot.val();
                             const username = userData.settings?.displayName || userData.username;
                             await playerRef.update({ eventContribution: 0 });
-                            showToast(`✅ Очищен вклад ${username}`, 'success');
+                            showToast(`✅ Очищен ${username}`, 'success');
                             document.getElementById('clearPlayerId').value = '';
-                        } catch (error) {
-                            showToast('❌ Ошибка', 'error');
-                        }
+                        } catch (error) { showToast('❌ Ошибка', 'error'); }
                     });
                 });
                 
                 document.getElementById('clearAdminBtn')?.addEventListener('click', () => {
-                    showConfirmModal('👑 ОЧИСТКА АДМИНА', `ОБНУЛИТЬ вклад администратора?`, async () => {
-                        try {
-                            await usersRef.child(CREATOR_ID).update({ eventContribution: 0 });
-                            showToast(`✅ Вклад администратора обнулен!`, 'success');
-                        } catch (error) {
-                            showToast('❌ Ошибка', 'error');
-                        }
+                    showConfirmModal('👑 ОЧИСТКА АДМИНА', 'Обнулить вклад админа?', async () => {
+                        await usersRef.child(CREATOR_ID).update({ eventContribution: 0 });
+                        showToast(`✅ Обнулен админ`, 'success');
                     });
                 });
                 
-                // ===== ВЫДАЧА НАГРАД (ФИКС) =====
+                // ===== ВЫДАЧА НАГРАД (УСИЛЕННАЯ) =====
                 document.getElementById('giveRewardBtn')?.addEventListener('click', async () => {
+                    addDebugMessage('🎁 НАЖАТА КНОПКА ВЫДАТЬ');
+                    
                     const userId = document.getElementById('rewardUserId').value.trim();
                     const rewardType = document.getElementById('rewardType').value;
-                    const amount = document.getElementById('rewardAmount').value;
+                    const amount = document.getElementById('rewardAmount').value.trim();
                     
-                    if (!userId) {
-                        showToast('❌ Введите ID игрока', 'error');
-                        return;
-                    }
+                    addDebugMessage(`📝 ID="${userId}", Тип="${rewardType}", Сумма="${amount}"`);
+                    
+                    if (!userId) { showToast('❌ Введите ID игрока', 'error'); return; }
+                    if (!amount) { showToast('❌ Введите количество', 'error'); return; }
                     
                     try {
-                        const userSnapshot = await firebase.database().ref('users/' + userId).once('value');
-                        if (!userSnapshot.exists()) {
-                            showToast('❌ Игрок не найден', 'error');
-                            addDebugMessage(`❌ Игрок ${userId} не найден`);
+                        const db = firebase.database();
+                        const userRef = db.ref('users/' + userId);
+                        addDebugMessage(`🔍 Ищу игрока ${userId}...`);
+                        
+                        const snapshot = await userRef.once('value');
+                        addDebugMessage(`📦 Snapshot exists: ${snapshot.exists()}`);
+                        
+                        if (!snapshot.exists()) {
+                            addDebugMessage(`⚠️ Не найден по ID, ищу по username...`);
+                            const searchSnap = await db.ref('users').orderByChild('username').equalTo(userId).once('value');
+                            
+                            if (searchSnap.exists()) {
+                                let foundId = null;
+                                searchSnap.forEach(child => { foundId = child.key; });
+                                showToast(`⚠️ Введён логин, а не ID!<br>Правильный ID: <span style="color:#4CAF50;font-size:1.2em;font-weight:bold;">${foundId}</span><br>Скопируй и вставь`, 'warning');
+                                addDebugMessage(`✅ Найден по username! ID: ${foundId}`);
+                                return;
+                            }
+                            
+                            showToast('❌ Игрок не найден ни по ID, ни по username', 'error');
+                            addDebugMessage(`❌ Игрок не найден`);
                             return;
                         }
-                        const userData = userSnapshot.val();
+                        
+                        const userData = snapshot.val();
                         const username = userData.settings?.displayName || userData.username;
+                        addDebugMessage(`✅ Найден: ${username}`);
                         
                         if (rewardType === 'dilicks') {
-                            const dilicksAmount = parseInt(amount);
-                            if (isNaN(dilicksAmount) || dilicksAmount < 1) {
-                                showToast('❌ Введите количество', 'error');
-                                return;
-                            }
-                            await firebase.database().ref('users/' + userId).update({ dilicks: (userData.dilicks || 0) + dilicksAmount });
-                            showToast(`✅ Выдано ${dilicksAmount.toLocaleString()} 💎 игроку ${username}`, 'success');
-                            addDebugMessage(`✅ Выдано ${dilicksAmount} диликов игроку ${username}`);
+                            const amt = parseInt(amount);
+                            if (isNaN(amt) || amt < 1) { showToast('❌ Неверное количество', 'error'); return; }
+                            const old = userData.dilicks || 0;
+                            const newVal = old + amt;
+                            addDebugMessage(`💎 ${old} + ${amt} = ${newVal}`);
+                            await userRef.child('dilicks').set(newVal);
+                            addDebugMessage(`✅ Записано!`);
+                            showToast(`✅ Выдано ${amt.toLocaleString()} 💎 → "${username}"`, 'success');
+                            
                         } else if (rewardType === 'money') {
-                            const moneyAmount = parseInt(amount);
-                            if (isNaN(moneyAmount) || moneyAmount < 1) {
-                                showToast('❌ Введите количество', 'error');
-                                return;
-                            }
-                            await firebase.database().ref('users/' + userId).update({ money: (userData.money || 0) + moneyAmount });
-                            showToast(`✅ Выдано ${moneyAmount.toLocaleString()} 🪙 игроку ${username}`, 'success');
-                            addDebugMessage(`✅ Выдано ${moneyAmount} денег игроку ${username}`);
+                            const amt = parseInt(amount);
+                            if (isNaN(amt) || amt < 1) { showToast('❌ Неверное количество', 'error'); return; }
+                            const old = userData.money || 0;
+                            const newVal = old + amt;
+                            addDebugMessage(`🪙 ${old} + ${amt} = ${newVal}`);
+                            await userRef.child('money').set(newVal);
+                            addDebugMessage(`✅ Записано!`);
+                            showToast(`✅ Выдано ${amt.toLocaleString()} 🪙 → "${username}"`, 'success');
+                            
                         } else if (rewardType === 'skin') {
-                            const skinId = amount.trim();
-                            if (!skinId) {
-                                showToast('❌ Введите ID скина', 'error');
+                            const skinId = amount;
+                            let inventory = userData.inventory || ['classic'];
+                            if (!Array.isArray(inventory)) inventory = ['classic'];
+                            if (inventory.includes(skinId)) {
+                                showToast(`⚠️ У игрока уже есть "${skinId}"`, 'warning');
                                 return;
                             }
-                            const inventory = userData.inventory || [];
-                            if (!inventory.includes(skinId)) {
-                                inventory.push(skinId);
-                                await firebase.database().ref('users/' + userId).update({ inventory: inventory });
-                                showToast(`✅ Выдан скин "${skinId}" игроку ${username}`, 'success');
-                                addDebugMessage(`✅ Выдан скин ${skinId} игроку ${username}`);
-                            } else {
-                                showToast(`⚠️ У игрока уже есть скин "${skinId}"`, 'warning');
-                            }
+                            inventory.push(skinId);
+                            await userRef.child('inventory').set(inventory);
+                            addDebugMessage(`✅ Скин "${skinId}" выдан`);
+                            showToast(`✅ Выдан скин "${skinId}" → "${username}"`, 'success');
                         }
+                        
                         document.getElementById('rewardUserId').value = '';
                         document.getElementById('rewardAmount').value = '';
+                        
+                        setTimeout(async () => {
+                            const check = await userRef.once('value');
+                            const c = check.val();
+                            addDebugMessage(`🔍 ПРОВЕРКА: дилики=${c.dilicks}, деньги=${c.money}`);
+                        }, 800);
+                        
                     } catch (error) {
-                        console.error(error);
-                        showToast('❌ Ошибка при выдаче: ' + error.message, 'error');
-                        addDebugMessage(`❌ Ошибка выдачи: ${error.message}`);
+                        console.error('Ошибка:', error);
+                        addDebugMessage(`❌ ОШИБКА: ${error.message}`);
+                        showToast(`❌ Ошибка: ${error.message}`, 'error');
                     }
                 });
                 
@@ -1327,10 +1321,11 @@
                     showToast(`✅ Выдано ${count} игрокам`, 'success');
                 });
                 
+                // КОЛЕСО
                 document.getElementById('startWheelEventBtn')?.addEventListener('click', async () => {
                     const days = parseInt(document.getElementById('wheelDays').value) || 150;
                     await eventsRef.child('wheelEvent').set({ active: true, startTime: Date.now(), endTime: Date.now() + days * 24 * 60 * 60 * 1000, duration: days, spinCost: 2500 });
-                    showToast(`🎡 Ивент запущен на ${days} дней!`, 'success');
+                    showToast(`🎡 Ивент на ${days} дней!`, 'success');
                 });
                 
                 document.getElementById('stopWheelEventBtn')?.addEventListener('click', async () => {
@@ -1342,7 +1337,7 @@
                     const cost = parseInt(document.getElementById('spinCostInput').value);
                     if (!cost || cost < 1) return showToast('❌ Введите стоимость', 'error');
                     await eventsRef.child('wheelEvent').update({ spinCost: cost });
-                    showToast(`🎡 Стоимость крутки: ${cost} 💎`, 'success');
+                    showToast(`🎡 Стоимость: ${cost} 💎`, 'success');
                 });
                 
                 document.getElementById('refreshStatusBtn')?.addEventListener('click', () => {
