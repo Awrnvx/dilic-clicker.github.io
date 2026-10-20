@@ -1,5 +1,5 @@
 // ============================================
-// DILIC CLICKER - ПОЛНАЯ ВЕРСИЯ 3.0 ULTRA
+// DILIC CLICKER - ВЕРСИЯ 0.0.4 BETA
 // ============================================
 
 // ============================================
@@ -3049,7 +3049,7 @@ class Settings {
         localStorage.clear();
         window.location.href = 'register.html';
     }
-    checkUpdates() { this.game.showToast('🔄 Установлена последняя версия 3.0.0 ULTRA', 'info'); }
+    checkUpdates() { this.game.showToast('🔄 Установлена последняя версия 0.0.4 BETA', 'info'); }
     showModal(title, message, onConfirm) {
         const oldModal = document.querySelector('.modal-overlay');
         if (oldModal) oldModal.remove();
