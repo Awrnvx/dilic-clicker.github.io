@@ -30,6 +30,27 @@ const GAME_LOCAL_ICONS = {
     dilicks: (window.GAME_CURRENCY_ICONS && window.GAME_CURRENCY_ICONS.dilick) || gameAssetPath('assets/dilick.png'),
     money: (window.GAME_CURRENCY_ICONS && window.GAME_CURRENCY_ICONS.money) || gameAssetPath('assets/money.png')
 };
+
+// ============================================
+// СКРЫТЫЕ ИГРОКИ В ТАБЛИЦЕ ЛИДЕРОВ
+// ============================================
+// Сюда записывай ID игроков, которых не должно быть видно в топе.
+// ID — это ключ игрока в базе (users/<ID>), он же хранится в localStorage
+// под именем 'userId'. Скрытые игроки не видны НИКОМУ, включая создателя.
+//
+// Как добавить ещё одного: допиши его ID новой строкой в массив ниже.
+//     '-P2SMujLobiiisghghw7',   // мой аккаунт (админ)
+//     '-XXXXXXXXXXXX',          // ещё один игрок
+const HIDDEN_LEADERBOARD_IDS = [
+    '-P2SMujLobiiisghghw7'   // создатель / админ
+];
+
+// Быстрая проверка: скрыт ли игрок
+function isHiddenInLeaderboard(id) {
+    return HIDDEN_LEADERBOARD_IDS.indexOf(String(id)) !== -1;
+}
+
+
 class ClickerGame {
     constructor() {
         this.userData = null;
@@ -80,6 +101,10 @@ class ClickerGame {
         this._leaderboardFailed = 0;
         // Признак идущей загрузки: не запускаем две параллельно
         this._leaderboardLoading = false;
+        // Вкладка, которую выбрали во время загрузки другой — покажем после
+        this._leaderboardPendingType = null;
+        // Сколько строк рисуем в списке (остальные остаются в кэше для поиска)
+        this.LEADERBOARD_LIMIT = 100;
         
         this.MONEY_ICON = GAME_LOCAL_ICONS.money; this.MONEY_ICON_REMOTE = GAME_REMOTE_ICONS.money;
         // Картинка дилика. Сначала локальный файл рядом с игрой: внешние
@@ -319,6 +344,11 @@ class ClickerGame {
             if (this.maintenanceTimerInterval) clearInterval(this.maintenanceTimerInterval);
             techWorkOverlay.style.display = 'none';
             updateOverlay.style.display = 'none';
+            // Админу блокирующие экраны не показываем — только мини-плашка
+            if (isCreatorUser()) {
+                renderAdminMaintenanceBadge(data);
+                return;
+            }
             if (data && data.active === true) {
                 if (data.type === 'timer' && data.endTime) {
                     updateOverlay.style.display = 'flex';
@@ -556,6 +586,12 @@ class ClickerGame {
         this.buyPremiumBtn = document.getElementById('buyPremiumBtn');
         this.leaderboardBtns = document.querySelectorAll('[data-leaderboard]');
         this.leaderboardBody = document.getElementById('leaderboardBody');
+        // Иконки валют во вкладках таблицы — встроенные (assets в Telegram не грузится)
+        document.querySelectorAll('.lb-tab-icon').forEach(img => {
+            const kind = img.dataset.currency === 'money' ? 'money' : 'dilicks';
+            img.src = GAME_LOCAL_ICONS[kind];
+            img.onerror = () => { img.onerror = null; img.src = GAME_REMOTE_ICONS[kind]; };
+        });
         this.inventoryGrid = document.getElementById('inventoryGrid');
         this.profileUsername = document.getElementById('profileUsername');
         this.profileLevel = document.getElementById('profileLevel');
@@ -615,8 +651,26 @@ class ClickerGame {
             e.preventDefault();
             this.leaderboardBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            const input = document.getElementById('lbSearchInput');
+            if (input) input.value = '';
             this.updateLeaderboard(btn.dataset.leaderboard);
         }));
+        const lbRefreshBtn = document.getElementById('lbRefreshBtn');
+        if (lbRefreshBtn) lbRefreshBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (this._leaderboardLoading) return;
+            lbRefreshBtn.classList.add('spinning');
+            this.updateLeaderboard(this._leaderboardType || 'clicks', true)
+                .finally(() => setTimeout(() => lbRefreshBtn.classList.remove('spinning'), 400));
+        });
+        const lbSearch = document.getElementById('lbSearchInput');
+        if (lbSearch) {
+            let searchTimer = null;
+            lbSearch.addEventListener('input', () => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => this._lbApplyFilter(), 120);
+            });
+        }
         this.buyBtns.forEach(btn => btn.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation();
             if (btn.disabled || btn.classList.contains('disabled')) return;
@@ -2160,15 +2214,38 @@ class ClickerGame {
         try {
             const userData = await this._restGet('/users/' + playerId + '.json', 10000);
             if (!userData || typeof userData !== 'object') { this.showToast('❌ Игрок не найден', 'error'); return; }
-            const username = userData.settings?.displayName || userData.username;
+            const username = userData.settings?.displayName || userData.username || playerName || 'Игрок';
             document.getElementById('modalUsername').textContent = username;
-            document.getElementById('modalClicks').textContent = (userData.clicks || 0).toLocaleString();
-            document.getElementById('modalMoney').textContent = (userData.money || 0).toLocaleString();
-            document.getElementById('modalDilicks').textContent = (userData.dilicks || 0).toLocaleString();
+
+            // Длинные суммы (миллиарды) рисуем мельче — иначе не влезают в плашку
+            const setStat = (id, text) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.textContent = text;
+                el.classList.toggle('is-long', text.length > 11);
+                el.classList.toggle('is-xlong', text.length > 14);
+            };
+            setStat('modalClicks', this.formatNumber(userData.clicks || 0));
+            setStat('modalMoney', this.formatNumber(userData.money || 0));
+            setStat('modalDilicks', this.formatNumber(userData.dilicks || 0));
             document.getElementById('modalLevel').textContent = userData.seasonLevel || 1;
+            const playtime = Math.max(0, Math.floor(Number(userData.playtime) || 0));
+            setStat('modalPlaytime',
+                Math.floor(playtime / 3600) + 'ч ' + Math.floor((playtime % 3600) / 60) + 'м');
+
+            // Скин игрока: если его нет или картинка не загрузилась — рисуем курсор.
             const avatarImg = document.getElementById('modalAvatar');
-            if (userData.currentSkin && this.skinsData[userData.currentSkin]) avatarImg.src = this.skinsData[userData.currentSkin].image;
-            else avatarImg.src = 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png';
+            const avatarBox = modal.querySelector('.pp-avatar');
+            const skin = userData.currentSkin && this.skinsData ? this.skinsData[userData.currentSkin] : null;
+            avatarImg.onerror = () => { if (avatarBox) avatarBox.classList.add('no-skin'); };
+            if (skin && skin.image) {
+                avatarImg.src = skin.image;
+                if (avatarBox) avatarBox.classList.remove('no-skin');
+            } else {
+                avatarImg.removeAttribute('src');
+                if (avatarBox) avatarBox.classList.add('no-skin');
+            }
+
             modal.classList.add('active');
             const closeBtn = document.getElementById('closeProfileModal');
             if (closeBtn) closeBtn.onclick = () => modal.classList.remove('active');
@@ -2176,58 +2253,69 @@ class ClickerGame {
         } catch (error) { console.error(error); this.showToast('❌ Ошибка загрузки профиля', 'error'); }
     }
     
-    async updateLeaderboard(type) {
+    // ===== ТАБЛИЦА ЛИДЕРОВ =====
+    // Пересобрана: пять метрик (клики, деньги, дилики, время, сезон),
+    // подиум топ-3, поиск по игроку, отдельная плашка своей позиции,
+    // снимок в localStorage с отметкой времени и ручное обновление.
+    async updateLeaderboard(type, force) {
         if (!this.leaderboardBody) return;
+        type = type || 'clicks';
         this._leaderboardType = type;
 
         // Сразу показываем прошлую удачную загрузку (если была) — таблица
         // появляется мгновенно, а свежие данные подставляются по мере чтения.
-        const cached = this._leaderboardCache && this._leaderboardCache[type];
-        if (cached && cached.length > 0) {
-            this._renderLeaderboard(cached.slice(), type, { count: 0 });
-        } else {
-            this.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty-history">Загрузка...</td></tr>';
+        const cached = this._lbCacheEntries(type);
+        if (cached.length > 0) {
+            this._renderLeaderboard(cached.slice(), type, { count: 0, fromCache: true });
+            if (force) this._lbSetStatus('Обновление…');
+        } else if (!this._leaderboardLoading) {
+            this._lbSetStatus('Загрузка…');
+            this._renderLeaderboard([], type, { count: 0, loading: true });
         }
 
         // Загрузка идёт и при старте игры, и при открытии вкладки — не запускаем
         // вторую параллельно, иначе база получает двойную нагрузку и обе тормозят.
         if (this._leaderboardLoading) {
-            console.log('Таблица уже загружается — показываю то, что есть');
+            this._leaderboardPendingType = type;
             return;
         }
         this._leaderboardLoading = true;
+        if (this.leaderboardBody) this.leaderboardBody.classList.add('lb-loading');
         try {
             await this._loadLeaderboard(type);
         } finally {
             this._leaderboardLoading = false;
+            if (this.leaderboardBody) this.leaderboardBody.classList.remove('lb-loading');
+            const pending = this._leaderboardPendingType;
+            this._leaderboardPendingType = null;
+            // Пока грузились, игрок переключил вкладку — показываем её из снимка
+            if (pending && pending !== this._leaderboardType) {
+                this._leaderboardType = pending;
+                this._renderLeaderboard(this._lbCacheEntries(pending).slice(), pending, { count: 0, fromCache: true });
+            }
         }
     }
 
     async _loadLeaderboard(type) {
         const failed = { count: 0 };
-        const cached = this._leaderboardCache && this._leaderboardCache[type];
+        const cached = this._lbCacheEntries(type);
 
-        // ОСНОВНОЙ ПУТЬ: список игроков + чтение по одному.
         // ПУТЬ 1 (основной): вся ветка одним запросом.
-        // База пересобрана (октябрь 2026) и теперь отдаёт ветку целиком за ~170 мс
-        // против ~540 мс при чтении по одному. Если запрос не пройдёт — уходим
-        // на путь 2, поэтому резкость базы игру больше не ломает.
+        // База отдаёт ветку целиком за ~170 мс против ~540 мс при чтении
+        // по одному. Если запрос не пройдёт — уходим на путь 2.
         let reason = '';
         try {
             const users = await this._restGetOnce('/users.json', 8000) || {};
             const entries = [];
             for (const [id, userData] of Object.entries(users)) {
                 if (!userData || typeof userData !== 'object') continue;
-                entries.push({
-                    id,
-                    username: (userData.settings && userData.settings.displayName) || userData.username || 'Игрок',
-                    value: this._leaderboardValue(userData, type),
-                    realUsername: userData.username
-                });
+                if (isHiddenInLeaderboard(id)) continue;   // скрытые не попадают в таблицу
+                entries.push(this._makeLeaderboardEntry(id, userData, type));
             }
             if (entries.length === 0) throw new Error('ветка users пуста');
-            this._rememberLeaderboardEntries(entries, type);
-            this._renderLeaderboard(this._leaderboardCache[type].slice(), type, { count: 0 });
+            // Полное чтение — заменяем снимок целиком, чтобы выбывшие игроки не висели
+            this._rememberLeaderboardEntries(entries, type, true);
+            this._renderLeaderboard(this._lbCacheEntries(type).slice(), type, { count: 0 });
             return;
         } catch (error) {
             reason = (error && error.message) ? error.message : String(error);
@@ -2242,51 +2330,66 @@ class ClickerGame {
 
             const entries = await this._fetchLeaderboardEntries(list, failed);
             if (entries.length === 0) {
-                this.leaderboardBody.innerHTML = `<tr><td colspan="3" class="empty-history">Не удалось прочитать профили (${failed.count} из ${list.length})</td></tr>`;
+                this._lbSetStatus('Не удалось прочитать профили');
+                this._renderLeaderboard(cached.slice(), type, { count: failed.count, fromCache: true });
                 return;
             }
             this._rememberLeaderboardEntries(entries, type);
-            this._renderLeaderboard(this._leaderboardCache[type].slice(), type, failed);
+            this._renderLeaderboard(this._lbCacheEntries(type).slice(), type, failed);
             return;
         } catch (error) {
             console.error(error);
             const reason2 = (error && error.message) ? error.message : String(error);
             // Если есть прошлая удачная загрузка — показываем её, а не пустой экран
-            if (cached && cached.length > 0) {
-                this._renderLeaderboard(cached.slice(), type, { count: cached.length });
+            if (cached.length > 0) {
+                this._lbSetStatus('Нет связи · показан прошлый снимок');
+                this._renderLeaderboard(cached.slice(), type, { count: 0, fromCache: true });
                 console.warn('Показываю сохранённую таблицу: свежую загрузить не удалось (' + (reason || reason2) + ')');
             } else {
                 // Показываем настоящую причину: без неё невозможно понять, что чинить
-                this.leaderboardBody.innerHTML = `<tr><td colspan="3" class="empty-history">Не удалось загрузить таблицу<br><span style="opacity:.6;font-size:.8em">${reason || reason2}</span></td></tr>`;
+                this._lbSetStatus('Ошибка загрузки');
+                this._renderLeaderboard([], type, { count: 0, error: reason || reason2 });
             }
         }
+    }
+
+    // Запись таблицы из данных игрока
+    _makeLeaderboardEntry(id, userData, type) {
+        const settings = userData.settings || {};
+        return {
+            id: id,
+            name: settings.displayName || userData.username || 'Игрок',
+            username: userData.username || '',
+            value: this._leaderboardValue(userData, type),
+            skin: userData.currentSkin || '',
+            premium: !!userData.premiumPass,
+            level: Number(userData.seasonLevel) || 1
+        };
     }
 
     // value из уже загруженной записи игрока
     _leaderboardValue(userData, type) {
         if (!userData) return 0;
-        const id = this.userData ? this.userData.username : null;
-        if (userData.username === id) {
-            if (type === 'clicks') return this.userData.clicks || 0;
-            if (type === 'money') return this.userData.money || 0;
-            if (type === 'playtime') return this.userData.playtime || 0;
-        }
-        const raw = type === 'clicks' ? userData.clicks : type === 'money' ? userData.money : userData.playtime;
-        return typeof raw === 'number' && isFinite(raw) ? raw : 0;
+        const self = this.userData;
+        const isSelf = !!(self && userData.username && userData.username === self.username);
+        let raw;
+        if (type === 'clicks') raw = isSelf ? self.clicks : userData.clicks;
+        else if (type === 'money') raw = isSelf ? self.money : userData.money;
+        else if (type === 'dilicks') raw = isSelf ? self.dilicks : userData.dilicks;
+        else if (type === 'playtime') raw = isSelf ? self.playtime : userData.playtime;
+        else raw = isSelf ? self.seasonLevel : userData.seasonLevel;
+        const num = Number(raw);
+        return isFinite(num) && num > 0 ? num : 0;
     }
 
     // Один запрос профиля БЕЗ внутренних повторов (повторы делает вызывающий код).
     // База периодически тормозит на отдельных записях, поэтому «не ответил» —
     // это нормальная ситуация, которую нужно пережить, а не выбросить игрока.
     async _fetchPlayerEntry(id, ms) {
+        if (isHiddenInLeaderboard(id)) return null;   // скрытый игрок — не читаем вовсе
         const userData = await this._restGetOnce('/users/' + id + '.json', ms);
         if (!userData || typeof userData !== 'object') return null;
-        return {
-            id,
-            username: (userData.settings && userData.settings.displayName) || userData.username || 'Игрок',
-            value: this._leaderboardValue(userData, this._leaderboardType),
-            realUsername: userData.username
-        };
+        return this._makeLeaderboardEntry(id, userData, this._leaderboardType);
     }
 
     // Один проход по списку игроков
@@ -2357,53 +2460,315 @@ class ClickerGame {
     // Версия в ключе: если формат записей изменится, старый кэш не подхватится.
     _loadLeaderboardCache() {
         try {
-            const raw = localStorage.getItem('dilicLeaderboardCache_v1');
+            const raw = localStorage.getItem('dilicLeaderboardCache_v2');
             if (!raw) return null;
             const data = JSON.parse(raw);
-            return (data && typeof data === 'object') ? data : null;
+            if (!data || typeof data !== 'object') return null;
+            // Записи без имени (старый формат) отбрасываем — они не отрисуются
+            for (const key of Object.keys(data)) {
+                if (key.charAt(0) === '_') continue;          // служебные поля (_updated)
+                if (!Array.isArray(data[key])) { delete data[key]; continue; }
+                data[key] = data[key].filter(e => e && e.id && e.name !== undefined && !isHiddenInLeaderboard(e.id));
+            }
+            return data;
         } catch (e) { return null; }
     }
 
     _saveLeaderboardCache() {
         try {
-            localStorage.setItem('dilicLeaderboardCache_v1', JSON.stringify(this._leaderboardCache || {}));
+            localStorage.setItem('dilicLeaderboardCache_v2', JSON.stringify(this._leaderboardCache || {}));
         } catch (e) { /* localStorage может быть недоступен или переполнен */ }
+    }
+
+    // Записи нужной метрики из кэша (пустой массив, если ничего нет).
+    // Скрытые игроки (HIDDEN_LEADERBOARD_IDS) отсеиваются здесь — это единая
+    // точка чтения для рендера, поэтому они не попадут ни в топ, ни в поиск.
+    _lbCacheEntries(type) {
+        const list = this._leaderboardCache && this._leaderboardCache[type];
+        if (!Array.isArray(list)) return [];
+        return list.filter(e => e && !isHiddenInLeaderboard(e.id));
     }
 
     // Одна запись кэша: свежие данные заменяют старые, но если свежих по игроку
     // нет (не ответил) — остаётся прошлое значение. Так список не «худеет».
-    _rememberLeaderboardEntries(entries, type) {
+    // replace = true — полное чтение, снимок заменяется целиком.
+    _rememberLeaderboardEntries(entries, type, replace) {
         this._leaderboardCache = this._leaderboardCache || {};
-        const byId = {};
-        const previous = this._leaderboardCache[type] || [];
-        for (const e of previous) byId[e.id] = e;
-        for (const e of entries) byId[e.id] = e;      // свежие перекрывают старые
-        this._leaderboardCache[type] = Object.values(byId);
+        // Скрытых игроков не храним в снимке вообще — чтобы их не было
+        // ни в таблице, ни в localStorage.
+        entries = entries.filter(e => e && !isHiddenInLeaderboard(e.id));
+        let result;
+        if (replace) {
+            result = entries.slice();
+        } else {
+            const byId = {};
+            for (const e of this._lbCacheEntries(type)) byId[e.id] = e;
+            for (const e of entries) byId[e.id] = e;      // свежие перекрывают старые
+            result = Object.values(byId);
+        }
+        result.sort((a, b) => b.value - a.value);
+        this._leaderboardCache[type] = result;
+        this._leaderboardCache['_updated'] = Date.now();
         this._saveLeaderboardCache();
     }
 
-    _renderLeaderboard(entries, type, failed) {
-        entries.sort((a, b) => b.value - a.value);
-        const top = entries.slice(0, 50);
-        const myName = localStorage.getItem('currentUser');
-        this.leaderboardBody.innerHTML = '';
-        top.forEach((entry, index) => {
-            const row = document.createElement('tr');
-            let medal = '';
-            if (index === 0) medal = '🥇'; else if (index === 1) medal = '🥈'; else if (index === 2) medal = '🥉';
-            row.innerHTML = `<td style="width: 60px;">${medal ? medal : index + 1}</td><td class="leaderboard-player" data-id="${entry.id}" style="cursor: pointer;">${entry.username} ${entry.realUsername === myName ? '👑' : ''}</td><td>${this.formatLeaderboardValue(entry.value, type)}</td>`;
-            const playerCell = row.querySelector('.leaderboard-player');
-            if (playerCell) playerCell.addEventListener('click', (e) => { e.stopPropagation(); this.showPlayerProfile(entry.id, entry.username); });
-            if (entry.realUsername === myName) { row.style.background = 'rgba(255,215,0,0.1)'; row.style.border = '1px solid gold'; }
-            this.leaderboardBody.appendChild(row);
-        });
-        // Если часть профилей не открылась — честно говорим об этом, а не показываем
-        // неполный список как полный
-        if (failed && failed.count > 0) {
-            const note = document.createElement('tr');
-            note.innerHTML = `<td colspan="3" class="empty-history">Часть игроков не загрузилась (${failed.count})</td>`;
-            this.leaderboardBody.appendChild(note);
+    // Скин игрока для аватара (внешние адреса не грузятся в Telegram — падаем
+    // на стандартную картинку).
+    _lbAvatarFor(entry) {
+        const skin = entry && entry.skin && this.skinsData[entry.skin];
+        return (skin && skin.image) || this.skinsData.classic.image;
+    }
+
+    _lbSetStatus(text, tone) {
+        const el = document.getElementById('lbStatus');
+        if (!el) return;
+        el.textContent = text || '';
+        el.dataset.tone = tone || '';
+    }
+
+    _lbFormatTime(ts) {
+        try {
+            const d = new Date(ts);
+            const pad = (n) => String(n).padStart(2, '0');
+            return pad(d.getHours()) + ':' + pad(d.getMinutes());
+        } catch (e) { return ''; }
+    }
+
+    _renderLeaderboard(entries, type, state) {
+        state = state || {};
+        const body = this.leaderboardBody;
+        if (!body) return;
+
+        const myName = localStorage.getItem('currentUser') || (this.userData && this.userData.username) || '';
+        const sorted = entries.slice().sort((a, b) => b.value - a.value);
+        // Своё место ищем по логину, а не по отображаемому имени
+        const myIndex = myName ? sorted.findIndex(e => e.username === myName) : -1;
+
+        // Полный список и состояние запоминаем: поиск и смена метрики
+        // перерисовывают строки из него, без повторного запроса к базе.
+        this._lbLastSorted = sorted;
+        this._lbLastType = type;
+        this._lbLastState = state;
+
+        // ---- Подиум: первые три места ----
+        const podium = document.getElementById('lbPodium');
+        if (podium) {
+            podium.innerHTML = '';
+            const top3 = sorted.slice(0, 3);
+            // Порядок показа: 2-1-3 (серебро слева, золото в центре)
+            const order = [1, 0, 2];
+            order.forEach((place) => {
+                const entry = top3[place];
+                if (!entry) return;
+                const card = document.createElement('div');
+                card.className = 'lb-podium-card lb-place-' + (place + 1) + (entry.username === myName ? ' is-me' : '');
+                card.dataset.id = entry.id;
+                const medal = place === 0 ? '🥇' : place === 1 ? '🥈' : '🥉';
+                const avatar = document.createElement('img');
+                avatar.className = 'lb-podium-avatar';
+                avatar.loading = 'lazy';
+                avatar.alt = '';
+                avatar.src = this._lbAvatarFor(entry);
+                avatar.onerror = () => { avatar.onerror = null; avatar.src = this.skinsData.classic.image; };
+                const crown = document.createElement('div');
+                crown.className = 'lb-podium-medal';
+                crown.textContent = medal;
+                const name = document.createElement('div');
+                name.className = 'lb-podium-name';
+                name.textContent = entry.name;
+                const score = document.createElement('div');
+                score.className = 'lb-podium-score';
+                score.innerHTML = this._lbScoreHtml(entry.value, type);
+                card.append(crown, avatar, name, score);
+                card.addEventListener('click', () => this.showPlayerProfile(entry.id, entry.name));
+                podium.appendChild(card);
+            });
         }
+
+        // ---- Список: с 4-го места ----
+        body.innerHTML = '';
+        if (state.error) {
+            body.innerHTML = '<div class="lb-empty">Не удалось загрузить таблицу<br><span class="lb-empty-sub">' +
+                this._lbEscape(state.error) + '</span></div>';
+        } else if (state.loading) {
+            body.innerHTML = '<div class="lb-empty lb-skeleton"><span></span><span></span><span></span><span></span></div>';
+        } else if (sorted.length <= 3) {
+            let emptyText = 'Пока никого нет';
+            if (sorted.length > 0) {
+                emptyText = myIndex >= 0
+                    ? 'Ты в топ-3 — остальных игроков пока нет'
+                    : 'Список закончился';
+            }
+            body.innerHTML = '<div class="lb-empty">' + emptyText + '</div>';
+        } else {
+            const limit = this.LEADERBOARD_LIMIT || 100;
+            const items = sorted.slice(3, limit + 3).map((entry, i) => ({ entry: entry, place: i + 4 }));
+            this._lbRenderRows(items, type, myName);
+        }
+
+        // ---- Своя позиция ----
+        // Скрытый из топа игрок (создатель) в списке отсутствует, но своё место
+        // он всё равно видит — считаем его по всем остальным игрокам.
+        const selfBox = document.getElementById('lbSelf');
+        if (selfBox) {
+            let me = myIndex >= 0 ? sorted[myIndex] : null;
+            let myPlace = myIndex >= 0 ? myIndex + 1 : 0;
+
+            const myId = localStorage.getItem('userId') || '';
+            const canShowHidden = !state.error && !state.loading && !me &&
+                isHiddenInLeaderboard(myId) && this.userData;
+            if (canShowHidden) {
+                const settings = this.userData.settings || {};
+                me = {
+                    id: myId,
+                    name: settings.displayName || this.userData.username || 'Игрок',
+                    username: this.userData.username || '',
+                    value: this._leaderboardValue(this.userData, type)
+                };
+                // Место = сколько игроков набрали больше + 1
+                myPlace = sorted.filter(e => Number(e.value) > Number(me.value)).length + 1;
+            }
+
+            if (me) {
+                selfBox.hidden = false;
+                selfBox.innerHTML = '<span class="lb-self-rank">#' + myPlace + '</span>' +
+                    '<span class="lb-self-name">' + this._lbEscape(me.name) + '</span>' +
+                    '<span class="lb-self-score">' + this._lbScoreHtml(me.value, type) + '</span>';
+            } else {
+                selfBox.hidden = true;
+                selfBox.innerHTML = '';
+            }
+        }
+
+        // ---- Статус сверху ----
+        if (state.error) {
+            this._lbSetStatus('Ошибка загрузки', 'error');
+        } else if (state.loading) {
+            this._lbSetStatus('Загрузка…');
+        } else if (state.fromCache) {
+            const ts = this._leaderboardCache && this._leaderboardCache['_updated'];
+            this._lbSetStatus('Снимок' + (ts ? ' · ' + this._lbFormatTime(ts) : ''), 'muted');
+        } else if (state.count > 0) {
+            this._lbSetStatus(sorted.length + ' игроков · не ответили: ' + state.count, 'warn');
+        } else {
+            this._lbSetStatus(sorted.length + ' игроков · обновлено ' + this._lbFormatTime(Date.now()));
+        }
+
+        this._lbApplyFilter();
+    }
+
+    // Строки списка: items = [{entry, place}]
+    _lbRenderRows(items, type, myName) {
+        const body = this.leaderboardBody;
+        if (!body) return;
+        const fragment = document.createDocumentFragment();
+        items.forEach(({ entry, place }) => {
+            const row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'lb-row' + (entry.username === myName ? ' is-me' : '');
+            row.dataset.id = entry.id;
+            row.dataset.name = entry.name;
+
+            const rank = document.createElement('span');
+            rank.className = 'lb-rank';
+            rank.textContent = place;
+
+            const avatar = document.createElement('img');
+            avatar.className = 'lb-avatar';
+            avatar.loading = 'lazy';
+            avatar.alt = '';
+            avatar.src = this._lbAvatarFor(entry);
+            avatar.onerror = () => { avatar.onerror = null; avatar.src = this.skinsData.classic.image; };
+
+            const name = document.createElement('span');
+            name.className = 'lb-name';
+            name.textContent = entry.name;
+            if (entry.premium) {
+                const crown = document.createElement('span');
+                crown.className = 'lb-premium';
+                crown.textContent = '👑';
+                crown.title = 'Премиум-пропуск';
+                name.appendChild(crown);
+            }
+
+            // Аватар и имя — одна ячейка сетки
+            const player = document.createElement('span');
+            player.className = 'lb-player';
+            player.append(avatar, name);
+
+            const score = document.createElement('span');
+            score.className = 'lb-score';
+            score.innerHTML = this._lbScoreHtml(entry.value, type);
+
+            row.append(rank, player, score);
+            row.addEventListener('click', () => this.showPlayerProfile(entry.id, entry.name));
+            fragment.appendChild(row);
+        });
+        body.appendChild(fragment);
+    }
+
+    // Значение с иконкой валюты / единицей измерения
+    _lbScoreHtml(value, type) {
+        if (type === 'money') return this.formatNumber(value) + ' ' + this.getMoneyIcon();
+        if (type === 'dilicks') return this.formatNumber(value) + ' ' + this.getDilicksIcon();
+        if (type === 'playtime') return this._lbEscape(this.formatLeaderboardValue(value, type));
+        if (type === 'season') return '⭐ ' + this.formatNumber(value);
+        return this.formatNumber(value);
+    }
+
+    _lbEscape(text) {
+        return String(text == null ? '' : text)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Поиск по игроку: строки перерисовываются из полного списка,
+    // поэтому находятся и те, кто не попал в первые LEADERBOARD_LIMIT мест.
+    _lbApplyFilter() {
+        const input = document.getElementById('lbSearchInput');
+        const query = ((input && input.value) || '').trim().toLowerCase();
+        const body = this.leaderboardBody;
+        if (!body) return;
+
+        const podium = document.getElementById('lbPodium');
+        if (podium) podium.classList.toggle('is-filtered', !!query);
+
+        const sorted = this._lbLastSorted;
+        const state = this._lbLastState || {};
+        if (!sorted || state.error || state.loading) return;
+
+        const myName = localStorage.getItem('currentUser') || (this.userData && this.userData.username) || '';
+        const old = body.querySelector('.lb-no-match');
+        if (old) old.remove();
+
+        if (!query) {
+            // Нет запроса — обычный вид: топ и первые 100 строк
+            body.innerHTML = '';
+            if (sorted.length <= 3) {
+                body.innerHTML = '<div class="lb-empty">' + (sorted.length ? 'Список закончился' : 'Пока никого нет') + '</div>';
+                return;
+            }
+            const limit = this.LEADERBOARD_LIMIT || 100;
+            const items = sorted.slice(3, limit + 3).map((entry, i) => ({ entry: entry, place: i + 4 }));
+            this._lbRenderRows(items, this._lbLastType, myName);
+            return;
+        }
+
+        // С запросом — все совпадения с их настоящими местами
+        const items = [];
+        sorted.forEach((entry, i) => {
+            if (String(entry.name || '').toLowerCase().includes(query)) items.push({ entry: entry, place: i + 1 });
+        });
+
+        body.innerHTML = '';
+        if (items.length === 0) {
+            const note = document.createElement('div');
+            note.className = 'lb-empty lb-no-match';
+            note.textContent = 'Никого не нашли по запросу «' + query + '»';
+            body.appendChild(note);
+            return;
+        }
+        this._lbRenderRows(items, this._lbLastType, myName);
     }
 
     // Обёртка с таймаутом: промис Firebase отменить нельзя, поэтому просто
@@ -3263,19 +3628,109 @@ class WheelOfFortune {
 // ============================================
 document.addEventListener('DOMContentLoaded', () => { window.clickerGame = new ClickerGame(); });
 
-function checkMaintenanceScreen() {
-    const userId = localStorage.getItem('userId');
-    if (userId === CREATOR_ID) {
-        const overlay1 = document.getElementById('techWorkOverlay');
-        const overlay2 = document.getElementById('updateOverlay');
-        if (overlay1) overlay1.style.display = 'none';
-        if (overlay2) overlay2.style.display = 'none';
+// ===== МИНИ-ПЛАШКА ТЕХРАБОТ ДЛЯ АДМИНА =====
+// Админу полноэкранные оверлеи не показываем: он видит компактную плашку
+// в углу с типом работ и таймером.
+let adminMaintInterval = null;
+
+function isCreatorUser() {
+    try {
+        return localStorage.getItem('userId') === CREATOR_ID;
+    } catch (e) {
+        return false;
+    }
+}
+
+function hideMaintenanceOverlays() {
+    const techWorkOverlay = document.getElementById('techWorkOverlay');
+    const updateOverlay = document.getElementById('updateOverlay');
+    if (techWorkOverlay) techWorkOverlay.style.display = 'none';
+    if (updateOverlay) updateOverlay.style.display = 'none';
+}
+
+function formatMaintTime(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function renderAdminMaintenanceBadge(data) {
+    const badge = document.getElementById('adminMaintenanceBadge');
+    if (!badge) return;
+
+    if (adminMaintInterval) { clearInterval(adminMaintInterval); adminMaintInterval = null; }
+
+    const active = !!(data && data.active === true);
+    if (!active) { badge.style.display = 'none'; return; }
+
+    const timerEl = document.getElementById('adminMaintTimer');
+    const barEl = document.getElementById('adminMaintBar');
+    const iconEl = document.getElementById('adminMaintIcon');
+    const titleEl = document.getElementById('adminMaintTitle');
+
+    const isUpdate = data.type === 'timer' && !!data.endTime;
+    if (iconEl) iconEl.textContent = isUpdate ? '🆙' : '🔧';
+    if (titleEl) titleEl.textContent = isUpdate ? 'До обновы' : 'Технические работы';
+
+    badge.style.display = 'block';
+
+    if (!data.endTime) {
+        if (timerEl) timerEl.style.display = 'none';
+        if (barEl) barEl.style.width = '0%';
         return;
     }
+
+    const duration = data.duration || 3600;
+    const tick = () => {
+        const remaining = Math.max(0, Math.floor((data.endTime - Date.now()) / 1000));
+        if (remaining <= 0) {
+            badge.style.display = 'none';
+            if (adminMaintInterval) { clearInterval(adminMaintInterval); adminMaintInterval = null; }
+            return;
+        }
+        if (timerEl) {
+            timerEl.style.display = 'block';
+            timerEl.textContent = formatMaintTime(remaining);
+        }
+        if (barEl) {
+            const progress = ((duration - remaining) / duration) * 100;
+            barEl.style.width = Math.max(0, Math.min(100, progress)) + '%';
+        }
+    };
+
+    tick();
+    adminMaintInterval = setInterval(tick, 1000);
+}
+
+(function initAdminMaintBadgeToggle() {
+    const bind = () => {
+        const toggle = document.getElementById('adminMaintToggle');
+        const badge = document.getElementById('adminMaintenanceBadge');
+        if (!toggle || !badge) return;
+        toggle.addEventListener('click', () => {
+            const collapsed = badge.classList.toggle('collapsed');
+            toggle.textContent = collapsed ? '+' : '–';
+            toggle.title = collapsed ? 'Развернуть' : 'Свернуть';
+        });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+    else bind();
+})();
+
+function checkMaintenanceScreen() {
     const maintRef = firebase.database().ref('maintenance');
     maintRef.once('value').then(snapshot => {
         const data = snapshot.val();
+        // Админу — только мини-плашка, без полноэкранной блокировки
+        if (isCreatorUser()) {
+            hideMaintenanceOverlays();
+            if (window.timerInterval) clearInterval(window.timerInterval);
+            renderAdminMaintenanceBadge(data);
+            return;
+        }
         const normalOverlay = document.getElementById('techWorkOverlay');
+
         const updateOverlay = document.getElementById('updateOverlay');
         const timerDiv = document.getElementById('techWorkTimer');
         const updateTimerDiv = document.getElementById('updateTimer');
@@ -3349,7 +3804,13 @@ function checkAllScreens() {
         updateOverlay.style.display = 'none';
         if (activeTechInterval) clearInterval(activeTechInterval);
         if (activeUpdateInterval) clearInterval(activeUpdateInterval);
+        // Админу вместо блокирующих экранов — мини-плашка
+        if (isCreatorUser()) {
+            renderAdminMaintenanceBadge(data);
+            return;
+        }
         if (!data || data.active !== true) return;
+
         if (data.type !== 'timer' || !data.endTime) {
             techWorkOverlay.style.display = 'flex';
             const timerDiv = document.getElementById('techWorkTimer');
