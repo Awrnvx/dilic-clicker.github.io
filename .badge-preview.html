@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>badge preview</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body { background: radial-gradient(circle at 50% 30%, #2a1038, #0b0614); min-height: 100vh; }
+  /* стенд: показываем плашку всегда и без fixed-позиционирования */
+  .admin-maint-badge { position: static !important; display: block !important; margin: 18px auto; }
+</style>
+</head>
+<body>
+    <div id="adminMaintenanceBadge" class="admin-maint-badge">
+        <div class="hw-maint-decor" aria-hidden="true"><span>🎃</span><span>👻</span><span>🦇</span><span>🕸️</span><span>💀</span><span>🍬</span></div>
+        <button class="admin-maint-toggle" id="adminMaintToggle" type="button" title="Свернуть">–</button>
+        <div class="admin-maint-body">
+            <div class="admin-maint-head">
+                <span class="admin-maint-icon" id="adminMaintIcon">🎃</span>
+                <span class="admin-maint-title" id="adminMaintTitle">Технические работы</span>
+            </div>
+            <div class="admin-maint-note" id="adminMaintNote">Ведутся технические работы. Скоро всё заработает!</div>
+            <div class="admin-maint-timer" id="adminMaintTimer">00:04:37</div>
+            <div class="admin-maint-progress"><div class="admin-maint-bar" id="adminMaintBar" style="width: 62%;"></div></div>
+            <div class="admin-maint-hint">Это видишь только ты</div>
+        </div>
+    </div>
+
+    <div class="admin-maint-badge collapsed">
+        <div class="hw-maint-decor" aria-hidden="true"><span>🎃</span><span>👻</span><span>🦇</span><span>🕸️</span><span>💀</span><span>🍬</span></div>
+        <button class="admin-maint-toggle" type="button" title="Развернуть">+</button>
+        <div class="admin-maint-body">
+            <div class="admin-maint-head">
+                <span class="admin-maint-icon">🎃</span>
+                <span class="admin-maint-title">Технические работы</span>
+            </div>
+            <div class="admin-maint-note">Ведутся технические работы. Скоро всё заработает!</div>
+            <div class="admin-maint-timer">00:04:37</div>
+            <div class="admin-maint-progress"><div class="admin-maint-bar" style="width: 62%;"></div></div>
+            <div class="admin-maint-hint">Это видишь только ты</div>
+        </div>
+    </div>
+
+    <div class="admin-maint-badge is-update">
+        <div class="hw-maint-decor" aria-hidden="true"><span>🎃</span><span>👻</span><span>🦇</span><span>🕸️</span><span>💀</span><span>🍬</span></div>
+        <button class="admin-maint-toggle" type="button" title="Свернуть">–</button>
+        <div class="admin-maint-body">
+            <div class="admin-maint-head">
+                <span class="admin-maint-icon">👻</span>
+                <span class="admin-maint-title">До обновы</span>
+            </div>
+            <div class="admin-maint-note">Ведутся технические работы. Скоро обнова появится!</div>
+            <div class="admin-maint-timer">00:12:05</div>
+            <div class="admin-maint-progress"><div class="admin-maint-bar" style="width: 34%;"></div></div>
+            <div class="admin-maint-hint">Это видишь только ты</div>
+        </div>
+    </div>
+</body>
+</html>

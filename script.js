@@ -63,8 +63,9 @@ class ClickerGame {
         this.compensationShown = false;
         this.isLoaded = false;
         this.CREATOR_ID = typeof CREATOR_ID !== 'undefined' ? CREATOR_ID : "-OrjRkQiw3TQyxJjMi4i";
-        this.currentUraganMultiplier = 1;
-        this.uraganEventActive = false;
+        // Хэллоуин-ивент: конфеты за клики и общая копилка
+        this.halloweenEventActive = false;
+        this.halloweenGoal = 1000000;
         this.questTimerInterval = null;
         this.banTimerInterval = null;
         this.maintenanceTimerInterval = null;
@@ -113,17 +114,65 @@ class ClickerGame {
         this.DILICKS_ICON = GAME_LOCAL_ICONS.dilicks;
         
         
+        // limited: true — скин из ивента/колеса/сезона, его нельзя купить в магазине.
+        // По этому флагу работает фильтр «ЛИМИТКИ» в инвентаре.
         this.skinsData = {
             'classic': { name: 'Классический скин', price: 0, image: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', description: 'Стандартный курсор', currency: 'money', multiplier: 1 },
             'neon': { name: 'Неоновый скин', price: 1000, image: 'https://img.freepik.com/premium-photo/neon-style-computer-cursor-arrow-design-vector_1018059-4.jpg?semt=ais_hybrid&w=740', description: 'Яркий неоновый курсор', currency: 'money', multiplier: 1 },
             'monsters_skin': { name: 'Монстр скин', price: 0, image: 'https://static.wikia.nocookie.net/d72429a0-efb9-4e95-bde1-dc811f2bfccf/scale-to-width/755', description: 'Эксклюзивный скин монстра', currency: 'money', multiplier: 1 },
             'dragon_skin': { name: 'Драконий скин', price: 15000, image: 'https://avatars.mds.yandex.net/i?id=78aac0954c4f305798014e687e3d7f1d_l-6327735-images-thumbs&n=13', description: 'Мощный скин дракона', currency: 'dilicks', multiplier: 1 },
-            'wheel_dragon_skin': { name: 'Колесный дракон', price: 0, image: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', description: 'Особенный скин дракона (×250)', multiplier: 250 },
-            'uragan_dragon_top3': { name: 'ДИЛИК КОРОЛЬ', price: 0, image: 'https://i.pinimg.com/736x/d3/9b/60/d39b60c70e6abbaf059e4fb5131612e8.jpg', description: '+145 множитель!', multiplier: 145 },
-            'uragan_holo_top10': { name: 'ДИЛИК ЛОРД', price: 0, image: 'https://i.pinimg.com/originals/6b/0c/79/6b0c79aaba43d9d2e3f2e59c98ed98b8.jpg?nii=t', description: '+100 множитель!', multiplier: 100 },
-            'uragan_banana_top50': { name: 'ДИЛИК МАСТЕР', price: 0, image: 'https://thumbs.dreamstime.com/b/старый-колдун-символ-мастера-рисунков-пикселов-иллюстрация-вектора-242507131.jpg?w=768', description: '+55 множитель!', multiplier: 55 },
-            'uragan_cursor_top100': { name: 'ДИЛИК', price: 0, image: 'https://th.bing.com/th/id/R.5493d8d74a695b06470e70593ca7419c?rik=gB7Dii9D3EP3YQ&pid=ImgRaw&r=0', description: '+15 множитель!', multiplier: 15 }
+            'wheel_dragon_skin': { name: 'Колесный дракон', price: 0, image: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', description: 'Особенный скин дракона (×250)', multiplier: 250, limited: true },
+            'uragan_dragon_top3': { name: 'ДИЛИК КОРОЛЬ', price: 0, image: 'https://i.pinimg.com/736x/d3/9b/60/d39b60c70e6abbaf059e4fb5131612e8.jpg', description: '+145 множитель!', multiplier: 145, limited: true },
+            'uragan_holo_top10': { name: 'ДИЛИК ЛОРД', price: 0, image: 'https://i.pinimg.com/originals/6b/0c/79/6b0c79aaba43d9d2e3f2e59c98ed98b8.jpg?nii=t', description: '+100 множитель!', multiplier: 100, limited: true },
+            'uragan_banana_top50': { name: 'ДИЛИК МАСТЕР', price: 0, image: 'https://thumbs.dreamstime.com/b/старый-колдун-символ-мастера-рисунков-пикселов-иллюстрация-вектора-242507131.jpg?w=768', description: '+55 множитель!', multiplier: 55, limited: true },
+            'uragan_cursor_top100': { name: 'ДИЛИК', price: 0, image: 'https://th.bing.com/th/id/R.5493d8d74a695b06470e70593ca7419c?rik=gB7Dii9D3EP3YQ&pid=ImgRaw&r=0', description: '+15 множитель!', multiplier: 15, limited: true },
+            // Скин-призрак из колеса. Картинка — SVG прямо в коде (data URI):
+            'wheel_ghost_skin': { name: 'ПРИЗРАК КОЛЕСА', price: 0, image: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#101024"/><circle cx="60" cy="60" r="42" fill="#1c1c38" stroke="#f5f5ff" stroke-width="3"/><text x="60" y="82" font-size="56" text-anchor="middle">👻</text></svg>'), description: 'Скин призрака из колеса (×35)', multiplier: 35, limited: true },
+            // Хэллоуинский скин. Картинка — SVG прямо в коде (data URI):
+            // внешние файлы и папка assets в Telegram WebView на телефоне не грузятся.
+            'halloween_pumpkin': { name: 'ТЫКВЕННЫЙ ДИЛИК', price: 0, image: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#140a1f"/><circle cx="60" cy="64" r="40" fill="#2a1038" stroke="#ff8c1a" stroke-width="3"/><text x="60" y="84" font-size="58" text-anchor="middle">🎃</text></svg>'), description: 'Хэллоуинский скин (×5)', multiplier: 5, limited: true }
         };
+
+        // Цвета скинов: ими красится не только карточка в инвентаре, но и сама
+        // платформа кликера на главной (accent — рамка, glow — свечение,
+        // tint — заливка карточки).
+        this.skinColors = {
+            'uragan_dragon_top3':   { accent: '#2f9bff', glow: 'rgba(47, 155, 255, 0.55)',  tint: 'rgba(47, 155, 255, 0.12)' },
+            'uragan_holo_top10':    { accent: '#00ffff', glow: 'rgba(0, 255, 255, 0.45)',   tint: 'rgba(0, 255, 255, 0.10)' },
+            'uragan_banana_top50':  { accent: '#ffd700', glow: 'rgba(255, 215, 0, 0.40)',   tint: 'rgba(255, 215, 0, 0.10)' },
+            'uragan_cursor_top100': { accent: '#c0c0c0', glow: 'rgba(192, 192, 192, 0.40)', tint: 'rgba(192, 192, 192, 0.08)' },
+            'wheel_dragon_skin':    { accent: '#a855f7', glow: 'rgba(168, 85, 247, 0.60)',  tint: 'rgba(168, 85, 247, 0.12)' },
+            'wheel_ghost_skin':     { accent: '#f5f5ff', glow: 'rgba(245, 245, 255, 0.65)', tint: 'rgba(245, 245, 255, 0.12)' },
+            'halloween_pumpkin':    { accent: '#ff8c1a', glow: 'rgba(255, 140, 26, 0.60)',  tint: 'rgba(255, 140, 26, 0.12)' }
+        };
+
+        // Награды хэллоуин-ивента за личные конфеты. Скин выдаётся здесь,
+        // а не промокодом: конфеты собираются кликами в ивенте.
+        this.halloweenRewards = [
+            { at: 5000,    type: 'money',   value: 50000,   label: '50 000 монет' },
+            { at: 20000,   type: 'dilicks', value: 5000,    label: '5 000 диликов' },
+            { at: 100000,  type: 'money',   value: 250000,  label: '250 000 монет' },
+            { at: 500000,  type: 'dilicks', value: 50000,   label: '50 000 диликов' },
+            { at: 1000000, type: 'skin',    skinId: 'halloween_pumpkin', label: 'Скин «Тыквенный дилик» + 100 000 диликов', extraDilicks: 100000 }
+        ];
+
+        // Награды за топ-3 по конфетам (общая копилка ивента).
+        this.halloweenTopRewards = [
+            { place: 1, medal: '🥇', money: 1000000, dilicks: 100000, title: '1 место' },
+            { place: 2, medal: '🥈', money: 500000,  dilicks: 50000,  title: '2 место' },
+            { place: 3, medal: '🥉', money: 250000,  dilicks: 25000,  title: '3 место' }
+        ];
+
+        // Фильтр инвентаря: 'all' — все скины, 'limited' — только лимитные.
+        this.inventoryFilter = 'all';
+        this.shopFilter = 'all';
+
+        // Максимум бустов одного типа в день (покупка в магазине)
+        this.MAX_DAILY_BOOST = 10;
+
+        // Конфетный бонус на главной: раз в 4 часа можно забрать 25 конфет.
+        this.CANDY_BONUS_AMOUNT = 2500;
+        this.CANDY_BONUS_COOLDOWN = 4 * 60 * 60 * 1000;
         
         this.achievementsData = [
             { id: 'firstClick', name: 'Первый шаг', description: 'Сделайте первый клик', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.clicks >= 1, reward: { money: 100, dilicks: 10 } },
@@ -135,14 +184,15 @@ class ClickerGame {
             { id: 'millionaire', name: 'Миллионер', description: 'Накопите 1 000 000 денег', icon: this.MONEY_ICON, condition: (data) => data.money >= 1000000, reward: { money: 0, dilicks: 5000 } },
             { id: 'dilicMaster', name: 'Мастер диликов', description: 'Накопите 5000 диликов', icon: this.DILICKS_ICON, condition: (data) => data.dilicks >= 5000, reward: { money: 5000, dilicks: 0 } },
             { id: 'dilicLord', name: 'Повелитель диликов', description: 'Накопите 50000 диликов', icon: this.DILICKS_ICON, condition: (data) => data.dilicks >= 50000, reward: { money: 25000, dilicks: 5000 } },
-            { id: 'skinCollector', name: 'Коллекционер', description: 'Соберите все скины', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.inventory && data.inventory.length >= 9, reward: { money: 35000, dilicks: 0 } },
+            { id: 'skinCollector', name: 'Коллекционер', description: 'Соберите все скины', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.inventory && data.inventory.length >= 10, reward: { money: 35000, dilicks: 0 } },
             { id: 'critMaster', name: 'Повелитель критов', description: 'Увеличьте шанс крита до 50%', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.critChance >= 50, reward: { money: 2000, dilicks: 200 } },
             { id: 'critGod', name: 'Бог критов', description: 'Увеличьте шанс крита до 100%', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.critChance >= 100, reward: { money: 10000, dilicks: 1000 } },
             { id: 'autoClickerMaster', name: 'Автоматизация', description: 'Купите 10 уровней автокликера', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.autoClickerLevel >= 10, reward: { money: 5000, dilicks: 500 } },
             { id: 'autoClickerGod', name: 'Полная автоматизация', description: 'Купите 50 уровней автокликера', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', condition: (data) => data.autoClickerLevel >= 50, reward: { money: 25000, dilicks: 2500 } },
             { id: 'wheelMaster', name: 'Властелин колеса', description: 'Получите особенного скина из колеса фортуны', icon: 'https://static.wikia.nocookie.net/59310fd4-7c46-4895-930e-6cea7982a142/scale-to-width/755', condition: (data) => data.inventory && data.inventory.includes('wheel_dragon_skin'), reward: { money: 10000, dilicks: 5000 } },
             { id: 'uraganKing', name: 'Король урагана', description: 'Получите скин ДИЛИК КОРОЛЬ в ивенте', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_dragon_top3'), reward: { money: 50000, dilicks: 10000 } },
-            { id: 'uraganLord', name: 'Повелитель урагана', description: 'Получите скин ДИЛИК ЛОРД в ивенте', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_holo_top10'), reward: { money: 25000, dilicks: 5000 } }
+            { id: 'uraganLord', name: 'Повелитель урагана', description: 'Получите скин ДИЛИК ЛОРД в ивенте', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('uragan_holo_top10'), reward: { money: 25000, dilicks: 5000 } },
+            { id: 'halloweenKing', name: 'Повелитель тыкв', description: 'Получите хэллоуинский скин ТЫКВЕННЫЙ ДИЛИК', icon: this.DILICKS_ICON, condition: (data) => data.inventory && data.inventory.includes('halloween_pumpkin'), reward: { money: 10000, dilicks: 1000 } }
         ];
         
         this.promocodesData = {
@@ -160,13 +210,36 @@ class ClickerGame {
         this.init();
     }
     
+    // Красит платформу кликера в цвет надетого скина.
+    // Цвета нет — снимаем тему, остаётся обычное оформление.
+    applySkinTheme(skinId) {
+        const color = this.skinColors && this.skinColors[skinId];
+        const card = document.getElementById('clickerCard');
+        [card, this.clickButton].forEach((el) => {
+            if (!el) return;
+            if (color) {
+                el.style.setProperty('--skin-accent', color.accent);
+                el.style.setProperty('--skin-glow', color.glow);
+                el.style.setProperty('--skin-tint', color.tint);
+                el.classList.add('skin-themed');
+            } else {
+                el.classList.remove('skin-themed');
+                el.style.removeProperty('--skin-accent');
+                el.style.removeProperty('--skin-glow');
+                el.style.removeProperty('--skin-tint');
+            }
+        });
+    }
+
     getSkinMultiplier(skinId) {
         const multipliers = {
             'uragan_dragon_top3': 145,
             'uragan_holo_top10': 100,
             'uragan_banana_top50': 55,
             'uragan_cursor_top100': 15,
-            'wheel_dragon_skin': 250
+            'wheel_dragon_skin': 250,
+            'wheel_ghost_skin': 35,
+            'halloween_pumpkin': 5
         };
         return multipliers[skinId] || 1;
     }
@@ -433,6 +506,8 @@ class ClickerGame {
         const perfCheckbox = document.getElementById('performanceMode');
         if (perfCheckbox) {
             perfCheckbox.checked = performanceMode;
+            if (window.syncLiquidToggles) window.syncLiquidToggles();
+
             perfCheckbox.addEventListener('change', (e) => {
                 if (e.target.checked) {
                     document.body.classList.add('no-liquid-animations');
@@ -470,6 +545,9 @@ class ClickerGame {
                 if (this.userData.username !== currentUser) { localStorage.clear(); window.location.href = 'register.html'; return; }
                 if (!this.userData.eventQuests) this.userData.eventQuests = { lastReset: 0, quests: [] };
                 if (this.userData.eventContribution === undefined) this.userData.eventContribution = 0;
+                if (this.userData.halloweenContribution === undefined) this.userData.halloweenContribution = 0;
+                if (!Array.isArray(this.userData.halloweenClaimed)) this.userData.halloweenClaimed = [];
+                if (this.userData.halloweenBonusAt === undefined) this.userData.halloweenBonusAt = 0;
                 if (!this.userData.wishlist) this.userData.wishlist = null;
                 if (!this.userData.rechargeBonus) this.userData.rechargeBonus = 0;
                 if (!this.userData.clickerMastery) this.userData.clickerMastery = 0;
@@ -500,12 +578,15 @@ class ClickerGame {
             return;
         }
         this.loadElements();
+        this.decorateTabs();
+        this.migrateBoosts();
         this.setupEventListeners();
         this.updateUI();
         this.updateInventory();
         this.updateShopStatus();
         this.renderUpgrades();
         if (this.clickIcon && this.userData.currentSkin) this.clickIcon.src = this.skinsData[this.userData.currentSkin].image;
+        this.applySkinTheme(this.userData.currentSkin);
         this.checkIfCreator();
         this.settings = new Settings(this);
         this.checkPerformanceMode();
@@ -518,7 +599,7 @@ class ClickerGame {
             this.updatePromocodesHistory();
             this.updateLeaderboard('clicks');
             this.initEventsPage();
-            this.initUraganEvent();
+            this.initHalloweenEvent();
             this.loadGlobalAnnouncements();
             this.initBanListener();
             this.initMaintenanceListener();
@@ -629,6 +710,48 @@ class ClickerGame {
         if (logoutBtn) logoutBtn.addEventListener('click', () => this.logout());
     }
     
+    // Хэллоуин-оформление (декор + баннер) на всех разделах, а не только на главной.
+    // На главной блоки уже есть в HTML — их не дублируем, остальным добавляем.
+    // Старые бусты могли попасть в inventory (покупались до введения стока).
+    // Убираем их из inventory — больше они там не хранятся.
+    migrateBoosts() {
+        if (!this.userData || !Array.isArray(this.userData.inventory)) return;
+        this.userData.inventory = this.userData.inventory.filter(id => !id.startsWith('boost_'));
+    }
+
+    decorateTabs() {
+        const tabs = document.querySelectorAll('.content > .tab');
+        const decorHtml = '<span>🎃</span><span>👻</span><span>🦇</span><span>🍬</span><span>🕸️</span><span>💀</span>';
+        const bannerHtml = '<span class="hb-emoji">🎃</span>' +
+            '<div class="hb-body">' +
+                '<div class="hb-title">ХЭЛЛОУИН В DILIC CLICKER</div>' +
+                '<div class="hb-text">Собирай конфеты в ивенте и попадай в топ!</div>' +
+            '</div>' +
+            '<span class="hb-emoji">👻</span>';
+        const openEvent = () => { this.switchTab('events'); this.showHalloweenEvent(); };
+        tabs.forEach((tab) => {
+            if (!tab.querySelector('.hw-decor')) {
+                const decor = document.createElement('div');
+                decor.className = 'hw-decor';
+                decor.setAttribute('aria-hidden', 'true');
+                decor.innerHTML = decorHtml;
+                tab.insertBefore(decor, tab.firstChild);
+            }
+            if (!tab.querySelector('.halloween-banner') && tab.id !== 'events') {
+                const banner = document.createElement('div');
+                banner.className = 'halloween-banner liquid-glass';
+                banner.setAttribute('role', 'button');
+                banner.tabIndex = 0;
+                banner.innerHTML = bannerHtml;
+                banner.addEventListener('click', openEvent);
+                banner.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEvent(); }
+                });
+                tab.insertBefore(banner, tab.firstChild);
+            }
+        });
+    }
+    
     setupEventListeners() {
         // Сброс кэша позиций эффектов: положение кликера меняется при скролле/повороте
         window.addEventListener('resize', () => this._invalidateRects(), { passive: true });
@@ -636,6 +759,53 @@ class ClickerGame {
         window.addEventListener('scroll', () => this._invalidateRects(), { passive: true });
         this.navBtns.forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); this.switchTab(btn.dataset.tab); }));
         if (this.clickButton) this.clickButton.addEventListener('click', (e) => { e.preventDefault(); this.handleClick(e); });
+        // Баннер на главной: клик открывает хэллоуин-ивент
+        const halloweenBanner = document.getElementById('halloweenBanner');
+        if (halloweenBanner) {
+            const openHalloween = () => { this.switchTab('events'); this.showHalloweenEvent(); };
+            halloweenBanner.addEventListener('click', openHalloween);
+            halloweenBanner.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHalloween(); }
+            });
+        }
+        // Конфетный бонус на главной
+        const candyBonusBtn = document.getElementById('candyBonusBtn');
+        if (candyBonusBtn) candyBonusBtn.addEventListener('click', () => this.claimCandyBonus());
+        // Фильтры инвентаря: «Все скины» / «ЛИМИТКИ»
+        document.querySelectorAll('.inv-filter-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const filter = btn.dataset.filter;
+                // Определяем родительский таб
+                const parentTab = btn.closest('.tab');
+                if (parentTab && parentTab.id === 'shop') {
+                    // Фильтр магазина
+                    this.shopFilter = filter;
+                    document.querySelectorAll('#shop .inv-filter-btn').forEach((b) => b.classList.toggle('active', b === btn));
+                    document.querySelectorAll('#shop .shop-item').forEach((item) => {
+                        const cat = item.dataset.category;
+                        if (filter === 'all') { item.style.display = ''; }
+                        else if (filter === 'skins') { item.style.display = cat === 'skins' ? '' : 'none'; }
+                        else if (filter === 'boosts') { item.style.display = cat === 'boosts' ? '' : 'none'; }
+                    });
+                } else {
+                    // Фильтр инвентаря
+                    this.inventoryFilter = filter;
+                    document.querySelectorAll('#inventory .inv-filter-btn').forEach((b) => b.classList.toggle('active', b === btn));
+                    const skinGrid = document.getElementById('inventoryGrid');
+                    const boostGrid = document.getElementById('boostInventoryGrid');
+                    if (filter === 'boosts') {
+                        if (skinGrid) skinGrid.style.display = 'none';
+                        if (boostGrid) boostGrid.style.display = '';
+                        this.renderBoostInventory();
+                    } else {
+                        if (skinGrid) skinGrid.style.display = '';
+                        if (boostGrid) boostGrid.style.display = 'none';
+                        this._inventoryKey = null;
+                        this.updateInventory();
+                    }
+                }
+            });
+        });
         if (this.buyPremiumBtn) this.buyPremiumBtn.addEventListener('click', (e) => { e.preventDefault(); this.buyPremiumPass(); });
         if (this.activatePromocodeBtn) this.activatePromocodeBtn.addEventListener('click', (e) => { e.preventDefault(); this.activatePromocode(); });
         if (this.promocodeInput) this.promocodeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.activatePromocode(); });
@@ -886,15 +1056,15 @@ class ClickerGame {
 
     // Быстрый кэшированный формат чисел (toLocaleString в цикле клика — дорого).
     // Локаль не задаём жёстко — формат остаётся ровно таким, как был.
-    formatNumber(value) {
-        const num = Number(value) || 0;
-        if (this._numberFormatter === undefined) {
-            try { this._numberFormatter = new Intl.NumberFormat(); }
-            catch (e) { this._numberFormatter = null; }
-        }
-        if (this._numberFormatter) return this._numberFormatter.format(num);
-        return num.toLocaleString();
-    }
+     formatNumber(value) {
+         const num = Number(value) || 0;
+         if (num < 10000000) return num.toLocaleString();
+         const suffixes = ['', '', 'M', 'B', 'QA', 'QI', 'S', 'O', 'N', 'D', 'U', 'Du'];
+         const tier = Math.floor(Math.log10(num) / 3);
+         if (tier >= suffixes.length) return num.toExponential(2);
+         const scaled = num / Math.pow(10, tier * 3);
+         return scaled.toFixed(1).replace(/\.0$/, '') + suffixes[tier];
+     }
     
     async claimAllSeasonRewards() {
         const level = this.userData.seasonLevel || 1;
@@ -1523,33 +1693,32 @@ class ClickerGame {
     // ===== ИВЕНТЫ =====
     showEventsList() {
         const eventsList = document.getElementById('eventsList');
-        const uraganContent = document.getElementById('uraganContent');
+        const halloweenContent = document.getElementById('halloweenContent');
         const wheelContent = document.getElementById('wheelContent');
         if (eventsList) eventsList.style.display = 'block';
-        if (uraganContent) uraganContent.style.display = 'none';
+        if (halloweenContent) halloweenContent.style.display = 'none';
         if (wheelContent) wheelContent.style.display = 'none';
     }
     
-    showUraganEvent() {
+    // Хэллоуин-ивент: только копилка и таблица лидеров.
+    showHalloweenEvent() {
         const eventsList = document.getElementById('eventsList');
-        const uraganContent = document.getElementById('uraganContent');
+        const halloweenContent = document.getElementById('halloweenContent');
         const wheelContent = document.getElementById('wheelContent');
         if (eventsList) eventsList.style.display = 'none';
-        if (uraganContent) uraganContent.style.display = 'block';
+        if (halloweenContent) halloweenContent.style.display = 'block';
         if (wheelContent) wheelContent.style.display = 'none';
-        this.updateUraganUI();
-        this.renderUraganQuests();
-        this.updateUraganTop();
-        this.loadWishlist();
-        this.startQuestRefreshTimer();
+        this.updateHalloweenUI();
+        this.renderHalloweenRewards();
+        this.updateHalloweenTop();
     }
     
     showWheelEvent() {
         const eventsList = document.getElementById('eventsList');
-        const uraganContent = document.getElementById('uraganContent');
+        const halloweenContent = document.getElementById('halloweenContent');
         const wheelContent = document.getElementById('wheelContent');
         if (eventsList) eventsList.style.display = 'none';
-        if (uraganContent) uraganContent.style.display = 'none';
+        if (halloweenContent) halloweenContent.style.display = 'none';
         if (wheelContent) wheelContent.style.display = 'block';
         if (!this.wheel) this.wheel = new WheelOfFortune(this);
     }
@@ -1575,11 +1744,11 @@ class ClickerGame {
             });
         }
         this.updateEventsTimers();
-        const uraganCard = document.getElementById('uraganEventCard');
+        const halloweenCard = document.getElementById('halloweenEventCard');
         const wheelCard = document.getElementById('wheelEventCard');
-        const backToEvents = document.getElementById('uraganBackBtn');
+        const backToEvents = document.getElementById('halloweenBackBtn');
         const backFromWheel = document.getElementById('wheelBackBtn');
-        if (uraganCard) uraganCard.addEventListener('click', () => this.showUraganEvent());
+        if (halloweenCard) halloweenCard.addEventListener('click', () => this.showHalloweenEvent());
         if (wheelCard) wheelCard.addEventListener('click', () => this.showWheelEvent());
         if (backToEvents) backToEvents.addEventListener('click', () => this.showEventsList());
         if (backFromWheel) backFromWheel.addEventListener('click', () => this.showEventsList());
@@ -1597,19 +1766,19 @@ class ClickerGame {
             if (hours > 0) return `${hours}ч ${minutes}м`;
             return `${minutes}м`;
         };
-        eventsRef.child('dilicksHurricane').on('value', (snapshot) => {
+        eventsRef.child('halloween').on('value', (snapshot) => {
             const data = snapshot.val();
-            const timerEl = document.getElementById('uraganTimer');
-            const statusEl = document.getElementById('uraganStatus');
-            const cardEl = document.getElementById('uraganEventCard');
-            if (data && data.active === true && data.endTime) {
-                const timeLeft = formatTimeRemaining(data.endTime);
-                if (timeLeft === null) {
+            const timerEl = document.getElementById('halloweenTimer');
+            const statusEl = document.getElementById('halloweenStatus');
+            const cardEl = document.getElementById('halloweenEventCard');
+            if (data && data.active === true) {
+                const timeLeft = data.endTime ? formatTimeRemaining(data.endTime) : null;
+                if (data.endTime && timeLeft === null) {
                     if (timerEl) timerEl.textContent = 'Ивент завершён';
                     if (statusEl) { statusEl.textContent = 'ЗАВЕРШЁН'; statusEl.className = 'event-status ended'; }
                     if (cardEl) { cardEl.style.opacity = '0.6'; cardEl.classList.add('disabled'); }
                 } else {
-                    if (timerEl) timerEl.textContent = timeLeft;
+                    if (timerEl) timerEl.textContent = timeLeft || 'Бессрочно';
                     if (statusEl) { statusEl.textContent = 'АКТИВЕН'; statusEl.className = 'event-status active'; }
                     if (cardEl) { cardEl.style.opacity = '1'; cardEl.classList.remove('disabled'); }
                 }
@@ -1643,207 +1812,83 @@ class ClickerGame {
         });
     }
     
-    checkAndResetQuests() {
-        const FOUR_HOURS = 4 * 60 * 60 * 1000;
-        const now = Date.now();
-        const lastReset = this.userData.eventQuests?.lastReset || 0;
-        if (now - lastReset >= FOUR_HOURS) {
-            this.userData.eventQuests = { lastReset: now, quests: this.generateDailyQuests() };
-            this.saveGame();
-            this.showToast('🔄 Задания ивента обновлены!', 'success');
-            const el = document.getElementById('uraganContent');
-            if (el && el.style.display === 'block') this.renderUraganQuests();
-        }
-    }
-    
-    generateDailyQuests() {
-        const allQuests = [
-            { id: 'clicks', name: 'Сделать кликов', target: 1000, reward: 5000 },
-            { id: 'clicks2', name: 'Сделать кликов x2', target: 5000, reward: 15000 },
-            { id: 'clicks3', name: 'Сделать кликов x3', target: 10000, reward: 25000 },
-            { id: 'dilicksEarned', name: 'Заработать диликов', target: 10000, reward: 10000 },
-            { id: 'dilicksEarned2', name: 'Заработать диликов x2', target: 50000, reward: 30000 },
-            { id: 'wheelSpins', name: 'Крутить колесо', target: 5, reward: 5000 },
-            { id: 'wheelSpins2', name: 'Крутить колесо x2', target: 15, reward: 15000 },
-            { id: 'upgrades', name: 'Купить улучшений', target: 3, reward: 5000 },
-            { id: 'upgrades2', name: 'Купить улучшений x2', target: 10, reward: 15000 },
-            { id: 'moneyEarned', name: 'Заработать денег', target: 100000, reward: 5000 },
-            { id: 'moneyEarned2', name: 'Заработать денег x2', target: 500000, reward: 15000 }
-        ];
-        const shuffled = [...allQuests];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        const selected = shuffled.slice(0, 5);
-        selected.push({ id: 'all', name: 'Выполнить все задания', target: 1, reward: 50000 });
-        return selected.map(q => ({ id: q.id, name: q.name, target: q.target, reward: q.reward, progress: 0, completed: false }));
-    }
-    
-    startQuestRefreshTimer() {
-        const timerElement = document.getElementById('questsRefreshTimer');
-        if (!timerElement) return;
-        const updateTimer = () => {
-            const lastReset = this.userData.eventQuests?.lastReset || 0;
-            const FOUR_HOURS = 4 * 60 * 60 * 1000;
-            const nextReset = lastReset + FOUR_HOURS;
-            const remaining = Math.max(0, nextReset - Date.now());
-            if (remaining <= 0) {
-                timerElement.textContent = 'Обновление...';
-                this.checkAndResetQuests();
-                setTimeout(() => updateTimer(), 1000);
-                return;
-            }
-            const hours = Math.floor(remaining / (1000 * 60 * 60));
-            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-            timerElement.textContent = `Следующее обновление: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        };
-        updateTimer();
-        if (this.questTimerInterval) clearInterval(this.questTimerInterval);
-        this.questTimerInterval = setInterval(updateTimer, 1000);
-    }
-    
-    updateQuestProgress(type, amount = 1) {
-        if (!this.userData.eventQuests) return;
-        let changed = false;
-        for (let quest of this.userData.eventQuests.quests) {
-            if (quest.completed) continue;
-            if (quest.id === type) {
-                quest.progress = Math.min(quest.target, quest.progress + amount);
-                if (quest.progress >= quest.target && !quest.completed) {
-                    quest.completed = true;
-                    this.userData.dilicks += quest.reward;
-                    changed = true;
-                    this.showToast(`✅ Задание "${quest.name}" выполнено! +${quest.reward.toLocaleString()} ${this.getDilicksIcon()}`, 'success');
-                }
-                break;
-            }
-        }
-        const allQuest = this.userData.eventQuests.quests.find(q => q.id === 'all');
-        if (allQuest && !allQuest.completed) {
-            // было filter(...).length === 5 — лишние аллокации в цикле клика
-            let completedCount = 0;
-            for (const q of this.userData.eventQuests.quests) {
-                if (q.id !== 'all' && q.completed) completedCount++;
-            }
-            if (completedCount === 5) {
-                allQuest.completed = true;
-                this.userData.dilicks += allQuest.reward;
-                changed = true;
-                this.showToast(`✅ Задание "Выполнить все задания" выполнено! +${allQuest.reward.toLocaleString()} ${this.getDilicksIcon()}`, 'success');
-            }
-        }
-        if (changed) { this.saveGame(); this.renderUraganQuests(); }
-    }
+    // Задания и вишлист убраны из ивента: остались только копилка и топ.
+    // Методы-заглушки сохранены, чтобы старые вызовы не падали.
+    checkAndResetQuests() {}
+    startQuestRefreshTimer() {}
+    updateQuestProgress() {}
     
     getDilicksIcon() { return `<img src="${this.DILICKS_ICON}" onerror="this.onerror=null;this.src='${this.DILICKS_ICON_REMOTE}';" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle;">`; }
     getMoneyIcon() { return `<img src="${this.MONEY_ICON}" onerror="this.onerror=null;this.src='${this.MONEY_ICON_REMOTE}';" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle;">`; }
     
-    async loadWishlist() {
-        const wishlistGrid = document.getElementById('wishlistGrid');
-        if (!wishlistGrid) return;
-        const savedWishlist = this.userData.wishlist || null;
-        const wishlistItems = wishlistGrid.querySelectorAll('.wishlist-item');
-        wishlistItems.forEach(item => {
-            const wishValue = item.dataset.wish;
-            if (savedWishlist === wishValue) item.classList.add('selected');
-            else item.classList.remove('selected');
-            item.removeEventListener('click', this.wishlistClickHandler);
-            this.wishlistClickHandler = async () => {
-                wishlistItems.forEach(i => i.classList.remove('selected'));
-                item.classList.add('selected');
-                this.userData.wishlist = wishValue;
-                await this.saveGame();
-                this.showToast(`🎁 Вишлист обновлен`, 'success');
-            };
-            item.addEventListener('click', this.wishlistClickHandler);
-        });
-    }
-    
-    initUraganEvent() {
-        const eventsRef = firebase.database().ref('events/dilicksHurricane');
+    initHalloweenEvent() {
+        const eventsRef = firebase.database().ref('events/halloween');
         eventsRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            this.uraganEventActive = data && data.active === true;
-            this.currentUraganMultiplier = data?.multiplier || 1;
-            this.updateUraganUI();
+            const data = snapshot.val() || {};
+            this.halloweenEventActive = data.active === true;
+            this.halloweenGoal = Number(data.goal) || 1000000;
+            // Рисуем копилку прямо из пришедших данных: раньше на каждое
+            // изменение (а копилка пишется каждые 5 секунд) шёл лишний once().
+            this.renderHalloweenPool(data);
         });
         setInterval(() => {
-            const el = document.getElementById('uraganContent');
-            if (el && el.style.display === 'block') { this.updateUraganTop(); this.renderUraganQuests(); }
+            const el = document.getElementById('halloweenContent');
+            if (el && el.style.display === 'block') this.updateHalloweenTop();
         }, 10000);
     }
     
-    updateUraganUI() {
-        const multiplierDisplay = document.getElementById('multiplierDisplay');
+    updateHalloweenUI() {
+        const usernameEl = document.getElementById('halloweenUsername');
+        const dilicksEl = document.getElementById('halloweenDilicks');
+        const contributionEl = document.getElementById('userContribution');
+        if (usernameEl && this.userData) usernameEl.textContent = this.userData.settings?.displayName || this.userData.username;
+        if (dilicksEl && this.userData) dilicksEl.textContent = this.userData.dilicks?.toLocaleString() || 0;
+        if (contributionEl && this.userData) contributionEl.textContent = (this.userData.halloweenContribution || 0).toLocaleString();
+        firebase.database().ref('events/halloween').once('value', (snapshot) => {
+            this.renderHalloweenPool(snapshot.val() || {});
+        });
+    }
+
+    renderHalloweenPool(data) {
         const eventTimer = document.getElementById('eventTimer');
-        const dayBadge = document.getElementById('dayBadge');
         const totalPoolSpan = document.getElementById('totalPool');
+        const poolGoalSpan = document.getElementById('halloweenGoalValue');
         const poolProgressFill = document.getElementById('poolProgress');
-        const uraganUsername = document.getElementById('uraganUsername');
-        const uraganDilicks = document.getElementById('uraganDilicks');
-        const userContributionSpan = document.getElementById('userContribution');
-        if (uraganUsername && this.userData) uraganUsername.textContent = this.userData.settings?.displayName || this.userData.username;
-        if (uraganDilicks && this.userData) uraganDilicks.textContent = this.userData.dilicks?.toLocaleString() || 0;
-        if (userContributionSpan && this.userData) userContributionSpan.textContent = this.userData.eventContribution?.toLocaleString() || 0;
-        if (this.uraganEventActive && this.currentUraganMultiplier) {
-            if (multiplierDisplay) multiplierDisplay.textContent = `x${this.currentUraganMultiplier} ДИЛИКОВ`;
-        } else {
-            if (multiplierDisplay) multiplierDisplay.textContent = 'x1 ДИЛИКОВ';
-        }
-        firebase.database().ref('events/dilicksHurricane').once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.active === true) {
+        if (data) this.renderHalloweenTopRewards(data.topRewardsPaid || {});
+        if (data && data.active === true) {
+            if (eventTimer) {
                 if (data.endTime) {
                     const remaining = Math.max(0, data.endTime - Date.now());
-                    if (remaining <= 0) { if (eventTimer) eventTimer.textContent = 'Ивент завершён'; }
-                    else {
-                        const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                        if (eventTimer) {
-                            if (days > 0) eventTimer.textContent = `${days}д ${hours}ч ${minutes}м`;
-                            else if (hours > 0) eventTimer.textContent = `${hours}ч ${minutes}м`;
-                            else eventTimer.textContent = `${minutes}м`;
-                        }
+                    if (remaining <= 0) {
+                        eventTimer.textContent = 'Ивент завершён';
+                    } else {
+                        const days = Math.floor(remaining / 86400000);
+                        const hours = Math.floor((remaining % 86400000) / 3600000);
+                        const minutes = Math.floor((remaining % 3600000) / 60000);
+                        eventTimer.textContent = days > 0 ? `${days}д ${hours}ч ${minutes}м`
+                            : hours > 0 ? `${hours}ч ${minutes}м` : `${minutes}м`;
                     }
+                } else {
+                    eventTimer.textContent = 'Бессрочно';
                 }
-                const day = data.day || 1;
-                if (dayBadge) dayBadge.textContent = `ДЕНЬ ${day}`;
-                const totalPool = data.totalPool || 0;
-                const progress = (totalPool / 100000000) * 100;
-                if (totalPoolSpan) totalPoolSpan.textContent = totalPool.toLocaleString();
-                if (poolProgressFill) poolProgressFill.style.width = Math.min(100, progress) + '%';
-            } else {
-                if (eventTimer) eventTimer.textContent = 'Не активен';
-                if (dayBadge) dayBadge.textContent = 'ДЕНЬ -';
-                if (totalPoolSpan) totalPoolSpan.textContent = '0';
-                if (poolProgressFill) poolProgressFill.style.width = '0%';
             }
-        });
+            const totalPool = Number(data.totalPool) || 0;
+            const goal = Number(data.goal) || this.halloweenGoal || 1000000;
+            if (totalPoolSpan) totalPoolSpan.textContent = totalPool.toLocaleString();
+            if (poolGoalSpan) poolGoalSpan.textContent = goal.toLocaleString();
+            if (poolProgressFill) poolProgressFill.style.width = Math.min(100, (totalPool / goal) * 100) + '%';
+        } else {
+            if (eventTimer) eventTimer.textContent = 'Не активен';
+            if (totalPoolSpan) totalPoolSpan.textContent = '0';
+            if (poolProgressFill) poolProgressFill.style.width = '0%';
+        }
     }
     
-    renderUraganQuests() {
-        const questsList = document.getElementById('questsList');
-        if (!questsList) return;
-        questsList.innerHTML = '';
-        if (!this.userData.eventQuests) return;
-        this.userData.eventQuests.quests.forEach(quest => {
-            const questItem = document.createElement('div');
-            questItem.className = 'quest-item';
-            const isCompleted = quest.completed;
-            const progressPercent = (quest.progress / quest.target) * 100;
-            questItem.innerHTML = `<div class="quest-info"><div class="quest-name">${quest.name}</div><div class="quest-progress">${quest.progress.toLocaleString()} / ${quest.target.toLocaleString()}</div><div class="progress-bar" style="height: 4px; margin-top: 5px;"><div class="progress-fill" style="width: ${progressPercent}%; height: 4px;"></div></div></div><div class="quest-reward">+${quest.reward.toLocaleString()} ${this.getDilicksIcon()}</div><div class="quest-status ${isCompleted ? 'completed' : 'active'}">${isCompleted ? '✅ ВЫПОЛНЕНО' : '🏃 В ПРОЦЕССЕ'}</div>`;
-            questsList.appendChild(questItem);
-        });
-    }
-    
-    async updateUraganTop() {
+    async updateHalloweenTop() {
         const topList = document.getElementById('topList');
         if (!topList) return;
-        if (this._uraganTopBusy) return;      // не запускаем повторно, пока идёт загрузка
-        this._uraganTopBusy = true;
+        if (this._halloweenTopBusy) return;      // не запускаем повторно, пока идёт загрузка
+        this._halloweenTopBusy = true;
         topList.innerHTML = '<div class="top-item">Загрузка...</div>';
         try {
             // Раньше читалась ВСЯ ветка users целиком — тот же тяжёлый запрос, что
@@ -1859,7 +1904,7 @@ class ClickerGame {
                     while (cursor < ids.length) {
                         const id = ids[cursor++];
                         try {
-                            const contribution = Number(await self._restGet('/users/' + id + '/eventContribution.json', 6000)) || 0;
+                            const contribution = Number(await self._restGet('/users/' + id + '/halloweenContribution.json', 6000)) || 0;
                             if (contribution > 0) topPlayers.push({ name: id, contribution, id });
                         } catch (e) { /* пропускаем только этого игрока */ }
                     }
@@ -1884,7 +1929,7 @@ class ClickerGame {
                 topPlayers = [];
                 for (const [id, user] of Object.entries(users)) {
                     if (!user || typeof user !== 'object') continue;
-                    const contribution = Number(user.eventContribution) || 0;
+                    const contribution = Number(user.halloweenContribution) || 0;
                     if (contribution > 0) topPlayers.push({ name: user.settings?.displayName || user.username || 'Игрок', contribution, id });
                 }
                 topPlayers.sort((a, b) => b.contribution - a.contribution);
@@ -1900,57 +1945,213 @@ class ClickerGame {
                 if (index === 0) medal = '🥇';
                 else if (index === 1) medal = '🥈';
                 else if (index === 2) medal = '🥉';
-                item.innerHTML = `<div class="top-rank">${medal || (index + 1)}</div><div class="top-name">${player.name} ${player.id === localStorage.getItem('userId') ? '👑' : ''}</div><div class="top-value">${player.contribution.toLocaleString()} ${this.getDilicksIcon()}</div>`;
+                item.innerHTML = `<div class="top-rank">${medal || (index + 1)}</div><div class="top-name">${player.name} ${player.id === localStorage.getItem('userId') ? '👑' : ''}</div><div class="top-value">${player.contribution.toLocaleString()} 🍬</div>`;
                 topList.appendChild(item);
             });
         } catch (error) {
             console.error(error);
             topList.innerHTML = '<div class="top-item">Не удалось загрузить</div>';
         } finally {
-            this._uraganTopBusy = false;
+            this._halloweenTopBusy = false;
         }
     }
     
-    // Вклад в ивент. Раньше на КАЖДЫЙ КЛИК выполнялись чтение всей ветки ивента из
-    // базы + запись + сохранение профиля. Теперь вклад копится локально, а в базу
-    // уходит раз в 5 секунд через транзакцию (атомарный инкремент — без гонок, когда
-    // играют несколько человек одновременно).
-    addEventContribution(amount) {
-        if (!this.uraganEventActive) return;
+    // Конфеты за клик. Раньше на КАЖДЫЙ КЛИК выполнялись чтение всей ветки ивента
+    // из базы + запись + сохранение профиля. Теперь вклад копится локально, а в
+    // базу уходит раз в 5 секунд через транзакцию (атомарный инкремент — без гонок).
+    addHalloweenContribution(amount) {
+        if (!this.halloweenEventActive) return;
         if (amount <= 0) return;
-        const booster = (this.userData.eventBooster || 0) * 0.05;
-        const boostedAmount = Math.floor(amount * (1 + booster));
-        this.userData.eventContribution = (this.userData.eventContribution || 0) + boostedAmount;
-        this._eventAccum = (this._eventAccum || 0) + boostedAmount;
+        this.userData.halloweenContribution = (this.userData.halloweenContribution || 0) + amount;
+        this._eventAccum = (this._eventAccum || 0) + amount;
 
         if (this._eventContribEl === undefined) this._eventContribEl = document.getElementById('userContribution');
         if (this._eventContribEl) {
-            const text = this.formatNumber(this.userData.eventContribution);
+            const text = this.formatNumber(this.userData.halloweenContribution);
             if (this._eventContribEl.textContent !== text) this._eventContribEl.textContent = text;
         }
 
         if (!this._eventFlushTimer) {
             this._eventFlushTimer = setTimeout(() => {
                 this._eventFlushTimer = null;
-                this.flushEventContribution();
+                this.flushHalloweenContribution();
             }, 5000);
         }
+        this.scheduleHalloweenRewardsRender();
         this.saveGame();
     }
 
-    flushEventContribution() {
+    // Перерисовка списка наград не чаще раза в 700 мс: иначе на каждый клик
+    // создавалось бы по 5 карточек.
+    scheduleHalloweenRewardsRender() {
+        if (this._halloweenRewardsTimer) return;
+        this._halloweenRewardsTimer = setTimeout(() => {
+            this._halloweenRewardsTimer = null;
+            this.renderHalloweenRewards();
+        }, 700);
+    }
+
+    // ===== НАГРАДЫ ХЭЛЛОУИН-ИВЕНТА ЗА КОНФЕТЫ =====
+    // Скин «Тыквенный дилик» выдаётся здесь — за 250 собранных конфет.
+    renderHalloweenRewards() {
+        const list = document.getElementById('halloweenRewardsList');
+        if (!list || !this.userData) return;
+        const candies = this.userData.halloweenContribution || 0;
+        const claimed = this.userData.halloweenClaimed || [];
+        list.innerHTML = '';
+        this.halloweenRewards.forEach((reward) => {
+            const isClaimed = claimed.indexOf(reward.at) !== -1;
+            const canClaim = !isClaimed && candies >= reward.at;
+            const percent = Math.min(100, (candies / reward.at) * 100);
+
+            const item = document.createElement('div');
+            item.className = `hw-reward${isClaimed ? ' claimed' : ''}${canClaim ? ' ready' : ''}`;
+            item.innerHTML = `
+                <div class="hw-reward-top">
+                    <span class="hw-reward-candy">🍬 ${reward.at.toLocaleString()}</span>
+                    <span class="hw-reward-label">${reward.label}</span>
+                </div>
+                <div class="progress-bar hw-reward-bar"><div class="progress-fill" style="width: ${percent}%"></div></div>
+                ${isClaimed
+                    ? '<div class="hw-reward-status done">✅ ПОЛУЧЕНО</div>'
+                    : canClaim
+                        ? '<button class="glass-btn hw-reward-btn liquid-glass">ЗАБРАТЬ</button>'
+                        : `<div class="hw-reward-status">${candies.toLocaleString()} / ${reward.at.toLocaleString()}</div>`}
+            `;
+            const btn = item.querySelector('.hw-reward-btn');
+            if (btn) btn.addEventListener('click', () => this.claimHalloweenReward(reward.at));
+            list.appendChild(item);
+        });
+    }
+
+    // ===== НАГРАДЫ ЗА ТОП-3 ПО КОНФЕТАМ =====
+    // Сами награды выдаёт админ после окончания ивента; здесь показываем
+    // условия и статус выдачи (кого уже наградили).
+    renderHalloweenTopRewards(paidData) {
+        const list = document.getElementById('halloweenTopRewardsList');
+        if (!list) return;
+        const paid = paidData || {};
+        list.innerHTML = '';
+        this.halloweenTopRewards.forEach((reward) => {
+            const info = paid[String(reward.place)];
+            const item = document.createElement('div');
+            item.className = 'hw-top-reward' + (info ? ' paid' : '');
+            item.innerHTML = `
+                <div class="hw-top-reward-place">${reward.medal} ${reward.title}</div>
+                <div class="hw-top-reward-value">${reward.money.toLocaleString()} монет + ${reward.dilicks.toLocaleString()} диликов</div>
+                <div class="hw-top-reward-status">${info ? `✅ Выдано: ${info.name || info.id}` : '⏳ По итогам ивента'}</div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    async claimHalloweenReward(at) {
+        const reward = this.halloweenRewards.find(r => r.at === at);
+        if (!reward || !this.userData) return;
+        if (!Array.isArray(this.userData.halloweenClaimed)) this.userData.halloweenClaimed = [];
+        if (this.userData.halloweenClaimed.indexOf(at) !== -1) return;
+        if ((this.userData.halloweenContribution || 0) < at) {
+            this.showToast('❌ Ещё не собрано столько конфет', 'error');
+            return;
+        }
+
+        let message = '';
+        if (reward.type === 'money') {
+            this.userData.money += reward.value;
+            message = `+${reward.value.toLocaleString()} ${this.getMoneyIcon()}`;
+        } else if (reward.type === 'dilicks') {
+            this.userData.dilicks += reward.value;
+            message = `+${reward.value.toLocaleString()} ${this.getDilicksIcon()}`;
+        } else if (reward.type === 'skin') {
+            if (!this.userData.inventory) this.userData.inventory = [];
+            if (this.userData.inventory.indexOf(reward.skinId) === -1) {
+                this.userData.inventory.push(reward.skinId);
+                message = `+скин «${this.skinsData[reward.skinId].name}» ✨`;
+            } else {
+                // Скин уже есть — даём компенсацию, чтобы награда не пропала
+                message = 'скин уже был';
+            }
+            if (reward.extraDilicks) {
+                this.userData.dilicks += reward.extraDilicks;
+                message += `, +${reward.extraDilicks.toLocaleString()} ${this.getDilicksIcon()}`;
+            }
+        }
+
+        this.userData.halloweenClaimed.push(at);
+        this.updateUI();
+        this.updateInventory();
+        this.updateSkinStats();
+        this.renderHalloweenRewards();
+        await this.saveGame(true);
+        this.checkAchievements();
+        this.showToast(`🎁 Награда за ${at.toLocaleString()} конфет: ${message}`, 'success');
+    }
+
+    // ===== КОНФЕТНЫЙ БОНУС НА ГЛАВНОЙ (раз в 4 часа) =====
+    claimCandyBonus() {
+        if (!this.userData) return;
+        const now = Date.now();
+        const last = this.userData.halloweenBonusAt || 0;
+        if (now - last < this.CANDY_BONUS_COOLDOWN) {
+            this.showToast('⏰ Бонус ещё не готов', 'warning');
+            return;
+        }
+        this.userData.halloweenBonusAt = now;
+        // Конфеты всегда идут в личный зачёт, а в общую копилку — только пока
+        // ивент активен (иначе копилка не должна расти).
+        this.userData.halloweenContribution = (this.userData.halloweenContribution || 0) + this.CANDY_BONUS_AMOUNT;
+        if (this.halloweenEventActive) {
+            this._eventAccum = (this._eventAccum || 0) + this.CANDY_BONUS_AMOUNT;
+            if (!this._eventFlushTimer) {
+                this._eventFlushTimer = setTimeout(() => {
+                    this._eventFlushTimer = null;
+                    this.flushHalloweenContribution();
+                }, 5000);
+            }
+        }
+        const contributionEl = document.getElementById('userContribution');
+        if (contributionEl) contributionEl.textContent = this.formatNumber(this.userData.halloweenContribution);
+        this.scheduleHalloweenRewardsRender();
+        this.saveGame();
+        this.updateCandyBonusUI();
+        this.createClickEffect(window.innerWidth / 2, window.innerHeight / 2, `🍬 +${this.CANDY_BONUS_AMOUNT}`);
+        this.showToast(`🍬 Бонус получен: +${this.CANDY_BONUS_AMOUNT} конфет!`, 'success');
+    }
+
+    updateCandyBonusUI() {
+        const btn = document.getElementById('candyBonusBtn');
+        const timerEl = document.getElementById('candyBonusTimer');
+        if (!btn || !timerEl || !this.userData) return;
+        const now = Date.now();
+        const last = this.userData.halloweenBonusAt || 0;
+        const remaining = Math.max(0, this.CANDY_BONUS_COOLDOWN - (now - last));
+        if (remaining <= 0) {
+            btn.disabled = false;
+            btn.classList.remove('disabled');
+            timerEl.textContent = 'готово!';
+        } else {
+            btn.disabled = true;
+            btn.classList.add('disabled');
+            const h = Math.floor(remaining / 3600000);
+            const m = Math.floor((remaining % 3600000) / 60000);
+            const s = Math.floor((remaining % 60000) / 1000);
+            timerEl.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+    }
+
+    flushHalloweenContribution() {
         const pending = this._eventAccum || 0;
         if (pending <= 0) return;
         this._eventAccum = 0;
         try {
-            firebase.database().ref('events/dilicksHurricane/totalPool').transaction((current) => {
+            firebase.database().ref('events/halloween/totalPool').transaction((current) => {
                 return (current || 0) + pending;
             }).catch((error) => {
-                console.error('❌ Ошибка обновления пула ивента:', error);
+                console.error('❌ Ошибка обновления копилки ивента:', error);
                 this._eventAccum = (this._eventAccum || 0) + pending;
             });
         } catch (error) {
-            console.error('❌ Ошибка обновления пула ивента:', error);
+            console.error('❌ Ошибка обновления копилки ивента:', error);
             this._eventAccum = (this._eventAccum || 0) + pending;
         }
     }
@@ -1962,9 +2163,10 @@ class ClickerGame {
         let clickPower = this.userData.clickPower * skinMultiplier;
         const rechargeBonus = (this.userData.rechargeBonus || 0) * 0.1;
         clickPower = Math.floor(clickPower * (1 + rechargeBonus));
-        const uraganMultiplier = this.uraganEventActive ? this.currentUraganMultiplier : 1;
-        const dilicksEarned = uraganMultiplier;
-        let moneyEarned = clickPower;
+        // Буст x2 на монеты (если активен)
+        const moneyBoost = (this.userData.moneyBoostEnd && Date.now() < this.userData.moneyBoostEnd) ? 2 : 1;
+        const dilicksEarned = 1;
+        let moneyEarned = clickPower * moneyBoost;
         let critMultiplier = 2;
         const masteryBonus = (this.userData.clickerMastery || 0) * 0.1;
         critMultiplier = 2 + masteryBonus;
@@ -1978,7 +2180,14 @@ class ClickerGame {
         this.userData.clicks++;
         this.userData.money += moneyEarned;
         this.userData.dilicks += dilicksEarned;
-        if (this.uraganEventActive) this.addEventContribution(dilicksEarned);
+        if (this.halloweenEventActive) {
+            this.addHalloweenContribution(1);
+            // Хэллоуинский дроп: примерно каждый 10-й клик приносит горсть конфет
+            if (Math.random() < 0.10) {
+                this.addHalloweenContribution(3);
+                this.createClickEffect(e.clientX, e.clientY - 30, '🍬 +3');
+            }
+        }
         this.addSeasonExp(moneyEarned);
         this.updateUI();
         this.saveGame();
@@ -2020,6 +2229,29 @@ class ClickerGame {
     async buyItem(item, price) {
         if (item === 'wheel_dragon_skin') { this.showToast('❌ Этот скин можно получить только в колесе фортуны!', 'error'); return; }
         if (item.startsWith('uragan_')) { this.showToast('❌ Этот скин можно получить только в ивенте!', 'error'); return; }
+        if (item.startsWith('boost_')) {
+            // Бусты покупаются в сток, активируются из инвентаря.
+            // Лимит: MAX_DAILY_BOOST одного типа в день.
+            if (!this.userData.boostStock) this.userData.boostStock = {};
+            if (!this.userData.boostDailyCounts || this.userData.boostDailyDate !== new Date().toDateString()) {
+                this.userData.boostDailyCounts = {};
+                this.userData.boostDailyDate = new Date().toDateString();
+            }
+            const dailyCount = this.userData.boostDailyCounts[item] || 0;
+            if (dailyCount >= this.MAX_DAILY_BOOST) {
+                this.showToast(`❌ Лимит: можно купить только ${this.MAX_DAILY_BOOST} шт. одного буста в день!`, 'error');
+                return;
+            }
+            if (this.userData.money < price) { this.showToast(`❌ Недостаточно денег!`, 'error'); return; }
+            this.userData.money -= price;
+            this.userData.boostStock[item] = (this.userData.boostStock[item] || 0) + 1;
+            this.userData.boostDailyCounts[item] = dailyCount + 1;
+            this.updateUI();
+            await this.saveGame(true);
+            this.updateShopStatus();
+            this.showToast(`✅ Буст куплен! Осталось сегодня: ${this.MAX_DAILY_BOOST - dailyCount - 1} шт.`, 'success');
+            return;
+        }
         if (this.userData.inventory && this.userData.inventory.includes(item)) { this.showToast('⚠️ Этот скин уже куплен!', 'warning'); return; }
         if (item === 'dragon_skin') {
             if (this.userData.dilicks >= price) this.userData.dilicks -= price;
@@ -2032,6 +2264,7 @@ class ClickerGame {
         if (!this.userData.inventory.includes(item)) this.userData.inventory.push(item);
         this.userData.currentSkin = item;
         if (this.clickIcon) this.clickIcon.src = this.skinsData[item].image;
+        this.applySkinTheme(item);
         this.updateUI();
         await this.saveGame(true);   // покупка скина фиксируется сразу
         this.updateInventory();
@@ -2088,10 +2321,13 @@ class ClickerGame {
     
     updateShopStatus() {
         document.querySelectorAll('.shop-item').forEach(item => {
-            const skinId = item.dataset.skin;
-            const statusEl = document.getElementById(`status-${skinId}`);
+            const itemId = item.dataset.skin || item.dataset.item;
+            const statusEl = document.getElementById(`status-${itemId}`);
             const buyBtn = item.querySelector('.buy-btn');
-            if (this.userData.inventory && this.userData.inventory.includes(skinId)) {
+            // Бусты — не проверяем inventory, показываем лимит X/10
+            if (itemId.startsWith('boost_')) {
+                this._updateBoostShopStatus(item, itemId, statusEl, buyBtn);
+            } else if (this.userData.inventory && this.userData.inventory.includes(itemId)) {
                 if (statusEl) statusEl.textContent = 'В инвентаре';
                 if (buyBtn) { buyBtn.textContent = 'Куплено'; buyBtn.classList.add('disabled'); buyBtn.disabled = true; }
             } else {
@@ -2100,17 +2336,108 @@ class ClickerGame {
             }
         });
     }
-    
+
+    _updateBoostShopStatus(item, itemId, statusEl, buyBtn) {
+        if (!this.userData) {
+            if (statusEl) statusEl.textContent = 'Не куплено';
+            if (buyBtn) { buyBtn.textContent = 'Купить'; buyBtn.classList.remove('disabled'); buyBtn.disabled = false; }
+            return;
+        }
+        // Сброс дневного лимита если наступил новый день
+        if (!this.userData.boostDailyCounts || this.userData.boostDailyDate !== new Date().toDateString()) {
+            this.userData.boostDailyCounts = {};
+            this.userData.boostDailyDate = new Date().toDateString();
+        }
+        const dailyCount = this.userData.boostDailyCounts[itemId] || 0;
+        const remaining = this.MAX_DAILY_BOOST - dailyCount;
+        if (remaining <= 0) {
+            if (statusEl) statusEl.textContent = `${dailyCount}/10`;
+            if (buyBtn) { buyBtn.textContent = 'Лимит'; buyBtn.classList.add('disabled'); buyBtn.disabled = true; }
+        } else {
+            if (statusEl) statusEl.textContent = `${remaining}/10`;
+            if (buyBtn) { buyBtn.textContent = 'Купить'; buyBtn.classList.remove('disabled'); buyBtn.disabled = false; }
+        }
+    }
+
+    // ===== БУСТЫ В ИНВЕНТАРЕ =====
+    renderBoostInventory() {
+        const grid = document.getElementById('boostInventoryGrid');
+        if (!grid || !this.userData) return;
+        const stock = this.userData.boostStock || {};
+        const boostData = {
+            boost_money:  { name: 'Буст x2 на 1 час',  desc: 'Удваивает монеты на 1 час',  icon: 'https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13', type: 'money_boost', duration: 3600000 },
+            boost_money2: { name: 'Буст x2 на 3 часа', desc: 'Удваивает монеты на 3 часа', icon: 'https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13', type: 'money_boost', duration: 10800000 },
+            boost_money3: { name: 'Буст x2 на 12 часов', desc: 'Удваивает монеты на 12 часов', icon: 'https://avatars.mds.yandex.net/i?id=d2747e92b4fb93d8cee0b3582cb46ea6_l-5332707-images-thumbs&n=13', type: 'money_boost', duration: 43200000 },
+            boost_click:  { name: 'Буст клика +5',  desc: 'Вечно +5 к силе клика', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', type: 'click_boost', bonus: 5 },
+            boost_click2: { name: 'Буст клика +15', desc: 'Вечно +15 к силе клика', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', type: 'click_boost', bonus: 15 },
+            boost_click3: { name: 'Буст клика +50', desc: 'Вечно +50 к силе клика', icon: 'https://cdn-icons-png.flaticon.com/512/4366/4366891.png', type: 'click_boost', bonus: 50 }
+        };
+        grid.innerHTML = '';
+        const keys = Object.keys(stock).filter(k => stock[k] > 0);
+        if (keys.length === 0) {
+            grid.innerHTML = '<div class="inventory-empty">Бустов пока нет. Купи их в магазине!</div>';
+            return;
+        }
+        keys.forEach((boostId) => {
+            const info = boostData[boostId];
+            if (!info) return;
+            const count = stock[boostId];
+            const card = document.createElement('div');
+            card.className = 'glass-card inventory-item liquid-glass';
+            card.innerHTML = `<div class="skin-preview"><img src="${info.icon}" alt="${info.name}"></div><h3>${info.name}</h3><p class="skin-description">${info.desc}</p><p class="skin-multiplier">📦 В наличии: <strong>${count}</strong> шт.</p><button class="glass-btn equip-btn liquid-glass boost-use-btn">ИСПОЛЬЗОВАТЬ</button>`;
+            const btn = card.querySelector('.boost-use-btn');
+            if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); this.activateBoost(boostId); });
+            grid.appendChild(card);
+        });
+    }
+
+    async activateBoost(boostId) {
+        if (!this.userData.boostStock || !this.userData.boostStock[boostId]) { this.showToast('❌ Буст не найден', 'error'); return; }
+        if (this.userData.boostStock[boostId] <= 0) { this.showToast('❌ Бусты закончились', 'error'); return; }
+        this.userData.boostStock[boostId]--;
+        const boostData = {
+            boost_money:  { type: 'money_boost', duration: 3600000 },
+            boost_money2: { type: 'money_boost', duration: 10800000 },
+            boost_money3: { type: 'money_boost', duration: 43200000 },
+            boost_click:  { type: 'click_boost', bonus: 5 },
+            boost_click2: { type: 'click_boost', bonus: 15 },
+            boost_click3: { type: 'click_boost', bonus: 50 }
+        };
+        const info = boostData[boostId];
+        if (!info) { this.showToast('❌ Неизвестный буст', 'error'); return; }
+        if (info.type === 'money_boost') {
+            const now = Date.now();
+            const base = Math.max(this.userData.moneyBoostEnd || 0, now);
+            this.userData.moneyBoostEnd = base + info.duration;
+            const hours = Math.floor(info.duration / 3600000);
+            this.showToast(`✅ Буст x2 активирован на ${hours} час(ов)!`, 'success');
+        } else if (info.type === 'click_boost') {
+            this.userData.clickPower += info.bonus;
+            this.showToast(`✅ Сила клика увеличена на +${info.bonus}!`, 'success');
+        }
+        this.updateUI();
+        await this.saveGame(true);
+        this.renderBoostInventory();
+    }
+
     updateInventory() {
         if (!this.inventoryGrid) return;
-        // Пропускаем перерисовку, если инвентарь и активный скин не менялись
-        const invKey = (this.userData.inventory || []).join(',') + '|' + this.userData.currentSkin;
+        const inventory = (this.userData.inventory || ['classic']).slice();
+        if (!inventory.includes('classic')) inventory.unshift('classic');
+        // Фильтр «ЛИМИТКИ»: только скины с флагом limited.
+        const visible = this.inventoryFilter === 'limited'
+            ? inventory.filter((skinId) => this.skinsData[skinId] && this.skinsData[skinId].limited)
+            : inventory;
+        // Пропускаем перерисовку, если инвентарь, активный скин и фильтр не менялись
+        const invKey = visible.join(',') + '|' + this.userData.currentSkin + '|' + this.inventoryFilter;
         if (this._inventoryKey === invKey) return;
         this._inventoryKey = invKey;
         this.inventoryGrid.innerHTML = '';
-        const inventory = this.userData.inventory || ['classic'];
-        if (!inventory.includes('classic')) inventory.unshift('classic');
-        inventory.forEach((skinId) => {
+        if (visible.length === 0) {
+            this.inventoryGrid.innerHTML = '<div class="inventory-empty">Лимитных скинов пока нет. Участвуй в ивентах и колесе фортуны!</div>';
+            return;
+        }
+        visible.forEach((skinId) => {
             const skin = this.skinsData[skinId];
             if (!skin) return;
             const skinCard = document.createElement('div');
@@ -2122,6 +2449,9 @@ class ClickerGame {
             if (skinId === 'uragan_holo_top10') extraClass = 'skin-uragan-top10';
             if (skinId === 'uragan_banana_top50') extraClass = 'skin-uragan-top50';
             if (skinId === 'uragan_cursor_top100') extraClass = 'skin-uragan-top100';
+            if (skinId === 'wheel_dragon_skin') extraClass = 'skin-wheel-dragon';
+            if (skinId === 'wheel_ghost_skin') extraClass = 'skin-ghost';
+            if (skinId === 'halloween_pumpkin') extraClass = 'skin-halloween';
             if (extraClass) skinCard.classList.add(extraClass);
             skinCard.innerHTML = `<div class="skin-preview"><img src="${skin.image}" alt="${skin.name}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4366/4366891.png'"></div><h3>${skin.name}</h3><p class="skin-description">${skin.description}</p>${skin.multiplier > 1 ? `<p class="skin-multiplier">✨ x${skin.multiplier} множитель!</p>` : ''}${isCurrentSkin ? '<p class="skin-equipped">✅ ЭКИПИРОВАНО</p>' : '<button class="glass-btn equip-btn liquid-glass">ЭКИПИРОВАТЬ</button>'}`;
             const equipBtn = skinCard.querySelector('.equip-btn');
@@ -2133,6 +2463,7 @@ class ClickerGame {
     async equipSkin(skinId) {
         this.userData.currentSkin = skinId;
         if (this.clickIcon) this.clickIcon.src = this.skinsData[skinId].image;
+        this.applySkinTheme(skinId);
         const multiplier = this.getSkinMultiplier(skinId);
         if (multiplier > 1 && this.clickPowerSpan && this.userData) this.clickPowerSpan.textContent = this.userData.clickPower * multiplier;
         await this.saveGame(true);   // экипировку фиксируем сразу
@@ -2146,7 +2477,7 @@ class ClickerGame {
     // на каждую итерацию автокликера — теперь создаётся один раз.
     getSkinMultipliers() {
         if (!this._skinMultipliers) {
-            this._skinMultipliers = { 'uragan_dragon_top3': 145, 'uragan_holo_top10': 100, 'uragan_banana_top50': 55, 'uragan_cursor_top100': 15, 'wheel_dragon_skin': 250 };
+            this._skinMultipliers = { 'uragan_dragon_top3': 145, 'uragan_holo_top10': 100, 'uragan_banana_top50': 55, 'uragan_cursor_top100': 15, 'wheel_dragon_skin': 250, 'wheel_ghost_skin': 35, 'halloween_pumpkin': 5 };
         }
         return this._skinMultipliers;
     }
@@ -2160,17 +2491,20 @@ class ClickerGame {
                 const rechargeBonus = (this.userData.rechargeBonus || 0) * 0.1;
                 const critMultiplier = 2 + (this.userData.clickerMastery || 0) * 0.1;
                 const baseClickPower = Math.floor(this.userData.clickPower * skinMultiplier * (1 + rechargeBonus));
-                const uraganMultiplier = this.uraganEventActive ? this.currentUraganMultiplier : 1;
+                const moneyBoost = (this.userData.moneyBoostEnd && Date.now() < this.userData.moneyBoostEnd) ? 2 : 1;
                 const iterations = this.userData.autoClickerLevel;
 
                 let moneyTotal = 0;
                 let dilicksTotal = 0;
                 let seasonXpTotal = 0;
+                let candyDrop = 0;
                 for (let i = 0; i < iterations; i++) {
-                    let moneyEarned = baseClickPower;
+                    let moneyEarned = baseClickPower * moneyBoost;
                     if (Math.random() * 100 < this.userData.critChance) moneyEarned *= critMultiplier;
                     moneyTotal += moneyEarned;
-                    dilicksTotal += uraganMultiplier;
+                    dilicksTotal += 1;
+                    // Хэллоуинский дроп конфет: те же ~10%, что и на ручном клике
+                    if (Math.random() < 0.10) candyDrop += 3;
                     // XP считаем пачкой: раньше на каждую итерацию шло отдельное
                     // обновление сезонной ленты — из-за этого автокликер и лагал.
                     seasonXpTotal += Math.max(1, Math.floor(moneyEarned / 100));
@@ -2179,7 +2513,7 @@ class ClickerGame {
                 this.userData.clicks += iterations;
                 this.userData.money += moneyTotal;
                 this.userData.dilicks += dilicksTotal;
-                if (this.uraganEventActive) this.addEventContribution(dilicksTotal);
+                if (this.halloweenEventActive) this.addHalloweenContribution(iterations + candyDrop);
                 this.addSeasonExpBatch(seasonXpTotal * 100);
 
                 this.updateUI();
@@ -2196,7 +2530,12 @@ class ClickerGame {
     
     startPlaytimeTracker() {
         this.playtimeInterval = setInterval(() => {
-            if (this.isLoaded) { this.userData.playtime++; this.updatePlaytimeDisplay(); this.saveGame(); }
+            if (this.isLoaded) {
+                this.userData.playtime++;
+                this.updatePlaytimeDisplay();
+                this.updateCandyBonusUI();
+                this.saveGame();
+            }
         }, 1000);
     }
     
@@ -2974,7 +3313,7 @@ class ClickerGame {
         if (this.maintenanceTimerInterval) clearInterval(this.maintenanceTimerInterval);
         if (this._seasonBarFrame) cancelAnimationFrame(this._seasonBarFrame);
         if (this._eventFlushTimer) { clearTimeout(this._eventFlushTimer); this._eventFlushTimer = null; }
-        this.flushEventContribution();     // не теряем вклад в ивент
+        this.flushHalloweenContribution(); // не теряем конфеты ивента
         this.flushSaveNow();               // и не теряем прогресс
         localStorage.removeItem('currentUser');
         localStorage.removeItem('userId');
@@ -3087,6 +3426,7 @@ class ClickerGame {
             case 'wheelMaster': return this.userData.inventory?.includes('wheel_dragon_skin') ? 100 : 0;
             case 'uraganKing': return this.userData.inventory?.includes('uragan_dragon_top3') ? 100 : 0;
             case 'uraganLord': return this.userData.inventory?.includes('uragan_holo_top10') ? 100 : 0;
+            case 'halloweenKing': return this.userData.inventory?.includes('halloween_pumpkin') ? 100 : 0;
             default: return 0;
         }
     }
@@ -3119,6 +3459,9 @@ class ClickerGame {
                 if (skinId === 'uragan_holo_top10') skinTag.classList.add('skin-uragan-top10');
                 if (skinId === 'uragan_banana_top50') skinTag.classList.add('skin-uragan-top50');
                 if (skinId === 'uragan_cursor_top100') skinTag.classList.add('skin-uragan-top100');
+                if (skinId === 'wheel_dragon_skin') skinTag.classList.add('skin-wheel-dragon');
+                if (skinId === 'wheel_ghost_skin') skinTag.classList.add('skin-ghost');
+                if (skinId === 'halloween_pumpkin') skinTag.classList.add('skin-halloween');
                 skinTag.innerHTML = `<img src="${skin.image}" alt="${skin.name}"><span>${skin.name}</span>`;
                 this.ownedSkinsList.appendChild(skinTag);
             }
@@ -3291,7 +3634,10 @@ class Settings {
         if (languageSelect) languageSelect.value = this.game.userData.settings.language || 'ru';
         const perfCheckbox = document.getElementById('performanceMode');
         if (perfCheckbox) perfCheckbox.checked = this.game.userData.settings.performanceMode || false;
+        // Настройки применены программно — подтягиваем вид iOS-тумблеров.
+        if (window.syncLiquidToggles) window.syncLiquidToggles();
     }
+
     async saveDisplayName() {
         const input = document.getElementById('displayName');
         const newName = input.value.trim();
@@ -3392,7 +3738,7 @@ class Settings {
     async resetProgress() {
         const username = this.game.userData.username;
         const password = this.game.userData.password;
-        const resetData = { clicks: 0, money: 1000, dilicks: 500, clickPower: 1, autoClickerLevel: 0, critChance: 5, inventory: ['classic'], currentSkin: 'classic', seasonLevel: 1, seasonExp: 0, playtime: 0, seasonClaimed: { free: [], premium: [] }, premiumPass: false, completedAchievements: [], activatedPromocodes: [], promocodesHistory: [], compensationReceived: false, rechargeBonus: 0, clickerMastery: 0, eventBooster: 0, settings: this.game.userData.settings, lastSave: Date.now(), username, password };
+        const resetData = { clicks: 0, money: 1000, dilicks: 500, clickPower: 1, autoClickerLevel: 0, critChance: 5, inventory: ['classic'], currentSkin: 'classic', seasonLevel: 1, seasonExp: 0, playtime: 0, seasonClaimed: { free: [], premium: [] }, premiumPass: false, completedAchievements: [], activatedPromocodes: [], promocodesHistory: [], compensationReceived: false, rechargeBonus: 0, clickerMastery: 0, eventBooster: 0, eventContribution: 0, halloweenContribution: 0, halloweenClaimed: [], halloweenBonusAt: 0, boostStock: {}, boostDailyCounts: {}, boostDailyDate: '', moneyBoostEnd: 0, settings: this.game.userData.settings, lastSave: Date.now(), username, password };
         this.game.userData = resetData;
         await this.game.saveGame(true);   // сброс прогресса пишем сразу
         this.game.updateUI();
@@ -3434,13 +3780,16 @@ class Settings {
 class WheelOfFortune {
     constructor(game) {
         this.game = game;
+        // Хэллоуинская палитра секторов: тыква, ведьмин яд, ночь, кровь, слизь, проклятие.
+        // Два скиновых сектора: старый дракон (x250) и новый призрак (x35).
         this.PRIZES = [
-            { name: '2500 МОНЕТ', value: 2500, type: 'money', prob: 50, color: '#2e7d32' },
-            { name: '5500 МОНЕТ', value: 5500, type: 'money', prob: 35, color: '#f9a825' },
-            { name: '8500 МОНЕТ', value: 8500, type: 'money', prob: 25, color: '#ef6c00' },
-            { name: '11500 МОНЕТ', value: 11500, type: 'money', prob: 15, color: '#d32f2f' },
-            { name: '5000 ДИЛИКОВ', value: 5000, type: 'dilicks', prob: 5, color: '#7b1fa2' },
-            { name: 'ОСОБЕННЫЙ СКИН', value: 'skin', type: 'skin', prob: 2.5, color: '#c2185b' }
+            { name: '2500 МОНЕТ', value: 2500, type: 'money', prob: 50, color: '#5a2d0c' },
+            { name: '5500 МОНЕТ', value: 5500, type: 'money', prob: 35, color: '#ff8c1a' },
+            { name: '8500 МОНЕТ', value: 8500, type: 'money', prob: 25, color: '#7a2ecc' },
+            { name: '11500 МОНЕТ', value: 11500, type: 'money', prob: 15, color: '#8b0000' },
+            { name: '5000 ДИЛИКОВ', value: 5000, type: 'dilicks', prob: 5, color: '#4a1a6b' },
+            { name: 'ПРИЗРАК x35', value: 'ghost', type: 'skin_ghost', prob: 4.5, color: '#f5f5ff' },
+            { name: 'ОСОБЕННЫЙ СКИН', value: 'skin', type: 'skin', prob: 2.5, color: '#c86bff' }
         ];
         this.SPIN_COST = 2500;
         this.MONEY_ICON = GAME_LOCAL_ICONS.money; this.MONEY_ICON_REMOTE = GAME_REMOTE_ICONS.money;
@@ -3450,6 +3799,7 @@ class WheelOfFortune {
         this.DILICKS_ICON = GAME_LOCAL_ICONS.dilicks;
         
         this.SKIN_ID = 'wheel_dragon_skin';
+        this.GHOST_SKIN_ID = 'wheel_ghost_skin';
         this.rotation = 0;
         this.isSpinning = false;
         this.spinVelocity = 0;
@@ -3462,6 +3812,7 @@ class WheelOfFortune {
         this.canvas = document.getElementById('wheelCanvas');
         if (this.canvas) this.ctx = this.canvas.getContext('2d');
         this.spinBtn = document.getElementById('wheelSpinBtn');
+        this.skipBtn = document.getElementById('wheelSkipBtn');
         this.balanceSpan = document.getElementById('wheelBalance');
         this.resultDisplay = document.getElementById('wheelResultDisplay');
         this.costSpan = document.getElementById('wheelSpinCost');
@@ -3478,12 +3829,29 @@ class WheelOfFortune {
     }
     setupEventListeners() {
         if (this.spinBtn) this.spinBtn.addEventListener('click', () => this.spin());
-        const showSkinBtn = document.getElementById('showSkinBtn');
-        const closeModal = document.getElementById('closeModal');
-        if (showSkinBtn) showSkinBtn.addEventListener('click', () => { if (this.modal) this.modal.style.display = 'flex'; });
-        if (closeModal) closeModal.addEventListener('click', () => { if (this.modal) this.modal.style.display = 'none'; });
-        window.addEventListener('click', (e) => { if (e.target === this.modal && this.modal) this.modal.style.display = 'none'; });
+        if (this.skipBtn) this.skipBtn.addEventListener('click', () => this.skipSpin());
+        // Просмотр скинов-призов: кнопка с data-skin-modal открывает модалку с этим id.
+        document.querySelectorAll('[data-skin-modal]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const modal = document.getElementById(btn.getAttribute('data-skin-modal'));
+                if (modal) modal.style.display = 'flex';
+            });
+        });
+        document.querySelectorAll('.wheel-modal-close').forEach((btn) => {
+            btn.addEventListener('click', () => this._closeSkinModals());
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target && e.target.classList && e.target.classList.contains('wheel-skin-modal')) this._closeSkinModals();
+        });
+        // Картинка призрака — из skinsData (SVG data URI): внешние файлы в Telegram WebView не грузятся.
+        const ghostImg = document.getElementById('ghostSkinPreviewImg');
+        const ghostData = this.game.skinsData && this.game.skinsData[this.GHOST_SKIN_ID];
+        if (ghostImg && ghostData) ghostImg.src = ghostData.image;
     }
+    _closeSkinModals() {
+        document.querySelectorAll('.wheel-skin-modal').forEach((m) => { m.style.display = 'none'; });
+    }
+
     // Сумма вероятностей призов. Она НЕ равна 100 (сейчас 132.5), поэтому
     // делить на 100 нельзя: сектора занимали 477° вместо 360°, часть колеса
     // рисовалась дважды, и выпадал не тот приз, на который показывает указатель.
@@ -3501,12 +3869,13 @@ class WheelOfFortune {
         return (Number(prize.prob) || 0) / this.getPrizeTotal();
     }
 
+    // Рисование колеса: сплошные сектора во весь круг, без колышков и обода.
     drawWheel() {
         const w = this.canvas.width;
         const h = this.canvas.height;
         const cx = w / 2;
         const cy = h / 2;
-        const r = Math.min(w, h) * 0.4;
+        const r = Math.min(w, h) * 0.48;
         this.ctx.clearRect(0, 0, w, h);
         let startAngle = this.rotation - Math.PI / 2;
         for (let i = 0; i < this.PRIZES.length; i++) {
@@ -3530,7 +3899,7 @@ class WheelOfFortune {
         this.ctx.beginPath();
         this.ctx.arc(cx, cy, r * 0.15, 0, 2 * Math.PI);
         this.ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        this.ctx.shadowColor = 'rgba(255,215,0,0.5)';
+        this.ctx.shadowColor = 'rgba(255,140,26,0.6)';
         this.ctx.shadowBlur = 20;
         this.ctx.fill();
         this.ctx.shadowBlur = 0;
@@ -3538,7 +3907,10 @@ class WheelOfFortune {
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
     }
+
+
     spin() {
+
         if (this.isSpinning) return;
         this.updateSpinCost();
         if (this.game.userData.dilicks < this.SPIN_COST) {
@@ -3554,21 +3926,37 @@ class WheelOfFortune {
         this.spinDeceleration = 0.982 + (Math.random() * 0.01);
         this.spinActive = true;
         this.isSpinning = true;
+        this._skipRequested = false;
         this.spinBtn.disabled = true;
+        if (this.skipBtn) this.skipBtn.style.display = 'inline-block';
+        // Анимация кручения самой карточки
+        const wrapper = this.canvas && this.canvas.closest('.wheel-wrapper');
+        if (wrapper) wrapper.classList.add('spinning');
         this.resultDisplay.innerHTML = '⏳ КРУТИТСЯ...';
         if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
         this.animationFrame = requestAnimationFrame(() => this.spinAnimation());
         if (navigator.vibrate) navigator.vibrate(30);
+    }
+    // Пропуск анимации: колесо мгновенно докручивается до результата
+    skipSpin() {
+        if (!this.isSpinning || this._skipRequested) return;
+        this._skipRequested = true;
+        this.spinVelocity = 0.35;   // быстрое затухание за ~0.5 сек
+        this.spinDeceleration = 0.88;
     }
     spinAnimation() {
         if (!this.spinActive) return;
         this.rotation += this.spinVelocity;
         this.spinVelocity *= this.spinDeceleration;
         this.drawWheel();
+
         if (this.spinVelocity < 0.002) {
             this.spinActive = false;
             this.isSpinning = false;
             this.spinBtn.disabled = false;
+            if (this.skipBtn) this.skipBtn.style.display = 'none';
+            const wrapper = this.canvas && this.canvas.closest('.wheel-wrapper');
+            if (wrapper) wrapper.classList.remove('spinning');
             // Определяем, на каком секторе остановился указатель.
             // Здесь было ДВЕ ошибки, из-за которых выпадал не тот приз:
             //  1) деление на 100, хотя сумма вероятностей 132.5 — сектора
@@ -3590,8 +3978,21 @@ class WheelOfFortune {
         this.animationFrame = requestAnimationFrame(() => this.spinAnimation());
     }
     givePrize(prize) {
+
         let resultHTML = '';
-        if (prize.type === 'skin') {
+        if (prize.type === 'skin_ghost') {
+            if (!this.game.userData.inventory.includes(this.GHOST_SKIN_ID)) {
+                this.game.userData.inventory.push(this.GHOST_SKIN_ID);
+                resultHTML = '👻 ПРИЗРАК КОЛЕСА 👻';
+                this.resultDisplay.style.color = '#f5f5ff';
+                this.resultDisplay.style.textShadow = '0 0 30px #f5f5ff';
+                this.game.showToast(`👻 Вы получили скин ПРИЗРАК КОЛЕСА x35!`, 'success');
+            } else {
+                this.game.userData.dilicks += 3000;
+                resultHTML = `<span>+3000</span><img src="${this.DILICKS_ICON}" class="wheel-result-icon"><span>(призрак уже был)</span>`;
+                this.game.showToast(`+3000 ${this.game.getDilicksIcon()}`, 'success');
+            }
+        } else if (prize.type === 'skin') {
             if (!this.game.userData.inventory.includes(this.SKIN_ID)) {
                 this.game.userData.inventory.push(this.SKIN_ID);
                 resultHTML = '✨ ОСОБЕННЫЙ СКИН ✨';
@@ -3668,10 +4069,17 @@ function renderAdminMaintenanceBadge(data) {
     const barEl = document.getElementById('adminMaintBar');
     const iconEl = document.getElementById('adminMaintIcon');
     const titleEl = document.getElementById('adminMaintTitle');
+    const noteEl = document.getElementById('adminMaintNote');
 
     const isUpdate = data.type === 'timer' && !!data.endTime;
-    if (iconEl) iconEl.textContent = isUpdate ? '🆙' : '🔧';
+    if (iconEl) iconEl.textContent = isUpdate ? '👻' : '🎃';
+    // Класс меняет свечение иконки: у обнова оно холодное, как на экране игроков.
+    badge.classList.toggle('is-update', isUpdate);
     if (titleEl) titleEl.textContent = isUpdate ? 'До обновы' : 'Технические работы';
+    if (noteEl) noteEl.textContent = isUpdate
+        ? 'Ведутся технические работы. Скоро обнова появится!'
+        : 'Ведутся технические работы. Скоро всё заработает!';
+
 
     badge.style.display = 'block';
 
@@ -3871,3 +4279,85 @@ else initScreens();
     window.addEventListener('resize', updateNavButtonsDisplay);
     updateNavButtonsDisplay();
 })();
+
+/* ============================================================
+   UPDATE REVEAL — витрина обновы.
+   Пока /updateState.activeId пуст, в игре нет НИЧЕГО из обновы:
+   ни декора вкладок, ни баннеров, ни конфетного бонуса,
+   ни хэллоуинского колеса, ни плашек ивента.
+
+   scheduledId = обнова «привязана к концу таймера» (СИНХРО).
+   Когда activeId появляется впервые И он был запланирован —
+   играем катсцену появления. Если обнова включена кнопкой без
+   таймера — контент просто появляется сразу, без анимаций.
+   ============================================================ */
+const UPDATE_HW_SELECTOR = [
+    '.hw-decor', '.halloween-banner', '#halloweenBanner', '#candyBonusBtn',
+    '.hw-wheel-decor', '#halloweenEventCard', '.halloween-progress-card',
+    '#halloweenTopSection', '.hw-event-tile'
+].join(', ');
+
+const UpdateReveal = {
+    state: null,
+    wasScheduled: false,
+    appliedId: null,
+    playing: false,
+
+    init() {
+        try {
+            firebase.database().ref('updateState').on('value', snap => this.onChange(snap.val()));
+        } catch (e) {
+            console.warn('updateState недоступен — оставляю игру без обновы', e);
+            this.apply('none', false);
+        }
+    },
+
+    onChange(v) {
+        this.state = v || {};
+        const activeId = this.state.activeId || null;
+        const scheduledId = this.state.scheduledId || null;
+        if (scheduledId) this.wasScheduled = true;
+
+        if (!activeId) { this.wasScheduled = false; this.apply('none', false); return; }
+
+        const isNew = activeId !== this.appliedId;
+        // катсцена — только когда обнова появилась впервые и была запланирована через СИНХРО
+        const cinematic = isNew && this.wasScheduled;
+        this.apply(activeId, cinematic);
+        if (isNew) this.wasScheduled = false;
+    },
+
+    apply(id, cinematic) {
+        const on = id && id !== 'none';
+        this.appliedId = on ? id : null;
+        document.body.classList.toggle('update-hw-on', !!on && id === 'halloween-2026');
+        document.body.classList.toggle('update-on', !!on);
+        if (on && cinematic && !this.playing) this.playCinematic();
+    },
+
+    playCinematic() {
+        this.playing = true;
+        const stage = document.createElement('div');
+        stage.className = 'upd-cine';
+        stage.innerHTML = '<div class="upd-cine-flash"></div>' +
+            '<div class="upd-cine-card"><div class="upd-cine-emoji">🎃</div>' +
+            '<div class="upd-cine-title">Диликовый Хэллоуин 2026</div>' +
+            '<div class="upd-cine-sub">обнова уже в игре</div></div>';
+        document.body.appendChild(stage);
+        document.body.classList.add('upd-cine-live');
+
+        // волной по вкладкам: декор и баннеры вспыхивают слева направо
+        const tabs = Array.prototype.slice.call(document.querySelectorAll('.content > .tab'));
+        tabs.forEach((tab, i) => { setTimeout(() => tab.classList.add('upd-swept'), i * 260); });
+
+        const total = 900 + tabs.length * 260;
+        setTimeout(() => {
+            stage.classList.add('upd-cine-out');
+            document.body.classList.remove('upd-cine-live');
+            setTimeout(() => { stage.remove(); this.playing = false; tabs.forEach(tb => tb.classList.remove('upd-swept')); }, 700);
+        }, total);
+    }
+};
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => UpdateReveal.init());
+else UpdateReveal.init();
