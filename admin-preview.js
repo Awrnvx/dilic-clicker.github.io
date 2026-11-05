@@ -1,1066 +1,742 @@
 'use strict';
-/* ============================================================
-   ТЕСТОВЫЙ СЛОЙ редизайна админки. Без Firebase: демо в localStorage.
+/* Превью редизайна админки: мок-данные в localStorage, без Firebase. */
 
-   ОБНОВЫ заданы списком ниже (UPDATES) - создавать их из админки нельзя.
-   У обновы ровно три действия:
-     - СИНХРО          : только с включённым таймером работ (в проде обнова выйдет у игроков по катсцене)
-     - Включить обнову : включает сразу, без всяких анимаций
-     - Убрать обнову   : скрывает всё (баннеры, декор, баннер ивента)
-   Toggle нет. Катсцены в админке тоже нет - она живёт только в игре.
-   ============================================================ */
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
-const clock = ms => {
-  ms = Math.max(0, Math.round(ms / 1000));
-  const d = Math.floor(ms / 86400), h = Math.floor(ms % 86400 / 3600), m = Math.floor(ms % 3600 / 60), s = ms % 60;
-  return (d ? d + 'д ' : '') + (h || d ? h + ':' : '') + pad(m) + ':' + pad(s);
+const clock = t => {
+  t = Math.max(0, Math.round(t / 1000));
+  const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 };
 const dateStr = ts => new Date(ts).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-const fmt = n => Math.round(n).toLocaleString('ru-RU');
-const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-/* ---------- ОБНОВЫ: список задаётся в коде ---------- */
-/* Единственная обнова — Диликовый Хэллоуин. Ничего другого не добавляем. */
-const UPDATES = [
-  { id: 'halloween-2026', theme: 'halloween', title: 'Диликовый Хэллоуин 2026' }
-];
-
-/* ---------- темы экрана работ ---------- */
-const SCREEN_THEMES = {
-  classic: { name: 'Обычные', emoji: '🔧', decor: '⚙️✨🔧' },
-  halloween: { name: 'Хэллоуин', emoji: '🎃', decor: '🕸️🍬🕷️' }
+const KINDS = {
+  halloween: { name: 'Хэллоуин', emoji: '🎃', banner: 'Хэллоуин уже в игре', text: 'Собирай конфеты и крути колесо', candy: '🍬', color: '#ff8a3d', decor: '🕸️🦇🍬🎃🕷️' },
+  classic: { name: 'Классика', emoji: '🔧', banner: 'Обнова уже в игре', text: 'Свежие награды ждут тебя', candy: '🎁', color: '#ffd166', decor: '✨🎉🔧⚙️🎊' },
+  wheel: { name: 'Колесо', emoji: '🎡', banner: 'Колесо фортуны крутится', text: '100 билетов на кону', candy: '🎟️', color: '#5ee0b8', decor: '🎡💫🎟️🍀✨' },
+  newyear: { name: 'Новый год', emoji: '❄️', banner: 'Зимний сезон открыт', text: 'Ледяные награды и снег на вкладках', candy: '🎁', color: '#7fd3ff', decor: '❄️⛄🎄✨🧊' },
+  dragon: { name: 'Год Дракона', emoji: '🐉', banner: 'Дракон пробудился', text: 'Восточный сезон на кухне', candy: '🧧', color: '#ff6b6b', decor: '🐉🏮🧧🎆🥟' }
 };
+const PRESETS = { '24h': 24, '3d': 72, '7d': 168, '14d': 336 };
+const SCREEN_PRESETS = { '5m': 300, '30m': 1800, '1h': 3600, '3h': 10800 };
+const BAN_PRESETS = { '1h': 1, '24h': 24, '7d': 168, '30d': 720 };
 
-/* ---------- демо-игроки ---------- */
-/* ADMIN_UID: в проде uid создателя объявлен в firebase-config.js как CREATOR_ID.
-   Локально (admin-preview.html без Firebase) — демо-идентификатор.
-   Своё const CREATOR_ID в этом файле объявлять нельзя: будет конфликт имён в одной
-   глобальной области, и весь скрипт админки не выполнится ни на строчке. */
-const ADMIN_UID = (function () { try { return CREATOR_ID || 'creator_dilik'; } catch (e) { return 'creator_dilik'; } })();
-const DEMO_USERS = [
-  { id: ADMIN_UID, name: 'Дилик', username: 'dilik' },
-  { id: 'u_kkirill', name: 'kkirill', username: 'kkirill' },
-  { id: 'u_masha', name: 'masha_k', username: 'masha_k' },
-  { id: 'u_ronin', name: 'ronin', username: 'ronin' },
-  { id: 'u_sanya', name: 'Sanya_Pro', username: 'sanya_pro' },
-  { id: 'u_vera', name: 'vera', username: 'vera' },
-  { id: 'u_nikita', name: 'nikita228', username: 'nikita228' },
-  { id: 'u_liza', name: 'lisa_the_cat', username: 'lisa_the_cat' },
-  { id: 'u_mrcheat', name: 'mrcheater', username: 'mrcheater' }
-];
-
-/* игроки подтягиваются из Firebase /users; до загрузки — пустой список */
-let USERS_CACHE = [];
-
-/* ---------- состояние ---------- */
-const KEY = 'dilig_admin_preview_v5';
 const DEFAULTS = {
-  screens: { theme: 'halloween', type: 'timer', endsAt: 0, startedAt: 0 },
-  updates: UPDATES.map(u => ({ id: u.id, theme: u.theme, title: u.title, active: false, scheduled: false })),
-  events: {
-    halloween: { active: false, endsAt: 0, total: 7 * 864e5, goal: 1000000, paidTop: false },
-    wheel: { active: true, endsAt: Date.now() + 90 * 864e5, total: 150 * 864e5, spinCost: 2500 }
-  },
-  top: [{ n: 'Дилик', id: ADMIN_UID, v: 642500 }, { n: 'kkirill', id: 'u_kkirill', v: 412300 }, { n: 'masha_k', id: 'u_masha', v: 198400 }, { n: 'ronin', id: 'u_ronin', v: 88100 }, { n: 'Sanya_Pro', id: 'u_sanya', v: 41200 }],
-  announcements: [{ id: 'a1', text: '🎃 Хэллоуин стартует в 20:00 по Москве', at: Date.now() - 36e5 * 4 }],
-  poll: null,
-  bans: [{ id: 'u_mrcheat', name: 'mrcheater', reason: 'накрутка кликов', until: Date.now() + 20 * 36e5 }],
+  screens: { theme: 'halloween', type: 'timer', endsAt: Date.now() + 23 * 60000 },
+  updates: [
+    {
+      id: 'upd-hw', kind: 'halloween', title: 'Хэллоуин 2026', status: 'scheduled',
+      startsAt: Date.now() + 15000, autoStopAt: null, showBanner: true, showDecor: true,
+      eventOn: true, eventActive: false, eventEndsAt: null, goal: 10000, pool: 6420,
+      bannerTitle: 'Хэллоуин уже в игре', bannerText: 'Собирай конфеты и крути колесо',
+      lifeHours: 168, revealAt: null, createdAt: Date.now() - 86400000
+    },
+    {
+      id: 'upd-wheel', kind: 'wheel', title: 'Колесо: сезон билетов', status: 'active',
+      startsAt: Date.now() - 3600000, autoStopAt: Date.now() + 40 * 60000, showBanner: true, showDecor: false,
+      eventOn: true, eventActive: true, eventEndsAt: Date.now() + 2 * 3600000, goal: 100, pool: 37,
+      bannerTitle: 'Колесо крутится', bannerText: 'Каждый спин — билет к призу',
+      lifeHours: 72, revealAt: null, createdAt: Date.now() - 7200000
+    }
+  ],
+  announcements: [
+    { id: 'an-1', text: 'Хэллоуин стартует в 20:00 по Москве', at: Date.now() - 3600000 * 4 },
+    { id: 'an-2', text: 'Обновы на кухне: теперь конфеты падают чаще', at: Date.now() - 3600000 * 26 }
+  ],
+  polls: { q: 'Какой сезон следующим?', opts: [{ t: 'Новый год', v: 41 }, { t: 'Год Дракона', v: 23 }, { t: 'Весна', v: 12 }], at: Date.now() - 7200000 },
+  bans: [{ id: 'bn-1', name: 'mrcheater', reason: 'накрутка кликов', until: Date.now() + 3600000 * 20 }],
   log: []
 };
-/* ============================================================
-   FIREBASE-СЛОЙ. Единственная запись preview-админки живёт по пути
-   /adminPreviewState — состояние экрана работ, обнов и демо-логов.
-   Ивенты/копила/опросы/анонсы/баны/награды пишутся В РЕАЛЬНЫЕ узлы,
-   которые читает игра (script.js): events/halloween, events/wheelEvent,
-   polls/current, announcements, bans/<id>, users/<id>.
-   ============================================================ */
-const FS = {
-  /* try/catch ловит ReferenceError от TDZ: если firebase-config.js не догрузился,
-     const database остаётся необъявленным и typeof по нему бросает исключение. */
-  db: (function () { try { return (typeof firebase !== 'undefined' && database) ? database : null; } catch (e) { return null; } })(),
-  cacheKey: KEY + '_fbcache',
-  ready: false,
-  cacheGet() { try { return localStorage.getItem(this.cacheKey) || localStorage.getItem(KEY); } catch (e) { return null; } },
-  cacheSet(json) { try { localStorage.setItem(this.cacheKey, json); } catch (e) {} },
-  async loadFromDb() {
-    if (!this.db) { this.ready = true; return null; }
-    const snap = await this.db.ref('adminPreviewState').once('value');
-    const v = snap.val();
-    if (v) { this.cacheSet(JSON.stringify(v)); this.ready = true; return v; }
-    // первый запуск с живой базой: переносим локальное демо или стартуем с DEFAULTS
-    let seed = null;
-    try { seed = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-    const init = (seed && seed.updates) ? seed : JSON.parse(JSON.stringify(DEFAULTS));
-    init._createdAt = Date.now();
-    await this.db.ref('adminPreviewState').set(init);
-    this.cacheSet(JSON.stringify(init));
-    this.ready = true;
-    return init;
-  },
-  push() {
-    if (!this.db || !this.ready) return;
-    this.cacheSet(JSON.stringify(S));
-    this.db.ref('adminPreviewState').set(S).catch(e => console.warn('adminPreviewState write failed', e));
-  }
-};
 
-let saveT = 0;
-const save = () => { clearTimeout(saveT); saveT = setTimeout(() => { FS.push(); syncAll(); }, 250); };
-
-let S = load();
+const KEY = 'dilig_admin_preview_v2';
+let state = load();
 function load() {
   try {
-    const raw = JSON.parse(FS.cacheGet());
-    if (raw && raw.updates && raw.events && raw.events.halloween) {
-      if (!('poll' in raw)) raw.poll = null;
-      /* список берём из кода, состояние — из демо */
-      const merged = UPDATES.map(u => {
-        const found = raw.updates.find(x => x.id === u.id);
-        return { id: u.id, theme: u.theme, title: u.title, active: !!(found && found.active), scheduled: !!(found && found.scheduled) };
-      });
-      return Object.assign({}, DEFAULTS, raw, { updates: merged });
-    }
-  } catch (e) { /* битое демо — старт с чистого */ }
+    const raw = JSON.parse(localStorage.getItem(KEY));
+    if (raw && raw.updates) return Object.assign({}, DEFAULTS, raw);
+  } catch (e) { /* демо повреждено — старт с нуля */ }
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
+let saveT = 0;
+function save() { clearTimeout(saveT); saveT = setTimeout(() => localStorage.setItem(KEY, JSON.stringify(state)), 200); }
 
-/* ============================================================
-   ТОСТ / МОДАЛКА / ЛОГ
-   ============================================================ */
+let filter = 'all', search = '', openSettings = null, playing = false;
+
+/* ---------------- лог админки ---------------- */
+function log(type, msg) {
+  state.log.unshift({ t: Date.now(), type, msg });
+  state.log = state.log.slice(0, 60);
+  renderLog();
+}
+const LOGICON = { ok: '✅', warn: '⚠️', sync: '📡', err: '⛔' };
+function renderLog() {
+  $('logBadge').textContent = state.log.length;
+  $('logBox').innerHTML = state.log.length
+    ? state.log.map(l => `<div class="log-row"><span>${LOGICON[l.type] || '•'}</span><b>${dateStr(l.t)}</b> ${esc(l.msg)}</div>`).join('')
+    : '<div class="empty">Пока пусто. Действия появятся здесь.</div>';
+}
+
+/* ---------------- тост и модалка ---------------- */
 let toastT = 0;
-function toast(msg, tone) {
+function toast(msg) {
   const t = $('toast');
-  t.className = 'toast show' + (tone ? ' ' + tone : '');
   t.textContent = msg;
+  t.classList.add('show');
   clearTimeout(toastT);
   toastT = setTimeout(() => t.classList.remove('show'), 2600);
 }
-let modalCb = null;
-function ask(title, body, okLabel, cb) {
-  $('modalIn').innerHTML = `<h3>${title}</h3><p class="hint">${body}</p>
-    <div class="row"><button class="btn xs ok" data-m="ok">${okLabel}</button><button class="btn xs" data-close>Отмена</button></div>`;
-  modalCb = cb;
-  $('modal').classList.add('on');
+let modalOk = null;
+function ask(title, text, okLabel, cb) {
+  $('modal').querySelector('h3').textContent = title;
+  $('modal').querySelector('p').innerHTML = text;
+  $('modal').querySelector('.m-ok').textContent = okLabel;
+  modalOk = cb;
+  $('modalIn').className = 'modal';
+  $('modal').classList.add('show');
 }
-$('modal').addEventListener('click', e => {
-  if (e.target === $('modal') || e.target.closest('[data-close]')) return $('modal').classList.remove('on');
-  if (e.target.closest('[data-m="ok"]')) { $('modal').classList.remove('on'); if (modalCb) modalCb(); }
-});
+function closeModal() { $('modal').classList.remove('show'); modalOk = null; }
+$('modal').addEventListener('click', e => { if (e.target === $('modal') || e.target.hasAttribute('data-x')) closeModal(); });
+$('modalIn').querySelector('.m-ok').addEventListener('click', () => { const cb = modalOk; closeModal(); if (cb) cb(); });
 
-const LOGICON = { ok: '✅', warn: '⚠️', sync: '🔄', err: '⛔' };
-function addLog(type, msg) {
-  S.log.unshift({ t: Date.now(), type, msg });
-  S.log = S.log.slice(0, 30);
-  renderLog(); save();
-}
-function renderLog() {
-  $('logBox').innerHTML = S.log.length
-    ? S.log.map(l => `${LOGICON[l.type] || '•'} ${new Date(l.t).toLocaleTimeString('ru-RU')} ${esc(l.msg)}`).join('<br>')
-    : 'пусто — действия появятся здесь';
-}
-/* btnLog обработчик ниже (после renderLog), здесь дубль убран */
-$('logClear').addEventListener('click', () => { S.log = []; renderLog(); save(); });
-
-/* ============================================================
-   НАВИГАЦИЯ (хедер как в игре)
-   ============================================================ */
+/* ---------------- навигация ---------------- */
 function showView(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.dataset.view === name));
   document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  const active = document.querySelector('.nav-btn[data-view].active');
+  if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
 }
 $('navLinks').addEventListener('click', e => {
   const b = e.target.closest('.nav-btn[data-view]');
   if (b) showView(b.dataset.view);
 });
 
-/* ============================================================
-   СПИСКИ: выбор игрока (как в старой админке)
-   ============================================================ */
-const PICKER_LIMIT = 300;
-function createUserPicker(o) {
-  const picker = $(o.pickerId), search = $(o.searchId), hidden = $(o.hiddenId), list = $(o.listId), caret = $(o.caretId);
-  let filtered = [], highlight = -1;
-
-  function render() {
-    const q = search.value.trim().toLowerCase();
-    const selected = hidden.value;
-    filtered = (USERS_CACHE.length ? USERS_CACHE : DEMO_USERS).filter(u => !q || u.name.toLowerCase().includes(q) || u.username.toLowerCase().includes(q) || u.id.toLowerCase().includes(q));
-    highlight = -1;
-    if (!filtered.length) { list.innerHTML = '<div class="pempty">Никого не нашли</div>'; return; }
-    list.innerHTML = filtered.slice(0, PICKER_LIMIT).map((u, i) =>
-      `<div class="popt${u.id === selected ? ' sel' : ''}" data-i="${i}"><span class="pn">${esc(u.name)}</span>${u.id === ADMIN_UID ? '<span class="crown">👑</span>' : ''}<span class="pid">${esc(u.id)}</span></div>`).join('')
-      + (filtered.length > PICKER_LIMIT ? `<div class="pempty">Показаны первые ${PICKER_LIMIT} — уточните поиск</div>` : '');
-  }
-  function open() { closeAllPickers(picker); picker.classList.add('open'); render(); }
-  function close() { picker.classList.remove('open'); highlight = -1; }
-  function pick(u) { hidden.value = u.id; search.value = u.name; close(); }
-  function move(dir) {
-    if (!picker.classList.contains('open')) return open();
-    highlight = Math.max(-1, Math.min(filtered.length - 1, highlight + dir));
-    list.querySelectorAll('.popt').forEach(el => el.classList.toggle('sel', +el.dataset.i === highlight));
-    const cur = list.querySelector('.popt.sel');
-    if (cur) cur.scrollIntoView({ block: 'nearest' });
-  }
-
-  search.addEventListener('focus', e => { e.stopPropagation(); open(); });
-  search.addEventListener('input', () => { hidden.value = ''; open(); });
-  search.addEventListener('keydown', e => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
-    else if (e.key === 'Enter') { e.preventDefault(); const u = filtered[highlight >= 0 ? highlight : 0]; if (u) pick(u); }
-    else if (e.key === 'Escape') close();
-  });
-  if (caret) caret.addEventListener('click', e => { e.stopPropagation(); picker.classList.contains('open') ? close() : open(); });
-  list.addEventListener('mousedown', e => {
-    const row = e.target.closest('.popt');
-    if (row) { e.preventDefault(); pick(filtered[+row.dataset.i]); }
-  });
-  document.addEventListener('click', e => { if (!picker.contains(e.target)) close(); });
-
-  return {
-    name: () => search.value.trim(),
-    resolve() {
-      const q = search.value.trim().toLowerCase();
-      const pool = USERS_CACHE.length ? USERS_CACHE : DEMO_USERS;
-      const byId = pool.find(u => u.id === hidden.value);
-      if (byId) return byId;
-      return pool.find(u => u.name.toLowerCase() === q || u.username.toLowerCase() === q) || null;
-    },
-    reset() { hidden.value = ''; search.value = ''; close(); }
-  };
+/* ---------------- пилюли статуса ---------------- */
+function setPill(el, txtEl, tone, text) {
+  el.className = 'pill ' + tone;
+  txtEl.textContent = text;
 }
-function closeAllPickers(except) {
-  document.querySelectorAll('.picker.open, .pick.open').forEach(p => { if (p !== except) p.classList.remove('open'); });
+function renderPills() {
+  const live = state.updates.filter(u => u.status === 'active');
+  const soon = state.updates.filter(u => u.status === 'scheduled');
+  if (live.length) setPill($('pillUpd'), $('pillUpdT'), 'good', `Обнов в игре: ${live.length}`);
+  else if (soon.length) setPill($('pillUpd'), $('pillUpdT'), 'warn', `СИНХРО: ${soon.length}`);
+  else setPill($('pillUpd'), $('pillUpdT'), 'off', 'Обнов нет');
+
+  const scr = state.screens;
+  if (scr.type === 'infinite') setPill($('pillScr'), $('pillScrT'), 'bad', 'Работы идут');
+  else if (scr.endsAt > Date.now()) setPill($('pillScr'), $('pillScrT'), 'warn', `Работы: ${clock(scr.endsAt - Date.now())}`);
+  else setPill($('pillScr'), $('pillScrT'), 'good', 'Игра открыта');
+
+  $('ncUpd').textContent = live.length + soon.length;
+  $('ncScr').textContent = scr.type === 'infinite' || scr.endsAt > Date.now() ? 1 : 0;
+  $('ncEvt').textContent = state.updates.filter(u => u.eventActive).length;
 }
 
-const rwPicker = createUserPicker({ pickerId: 'rewardPicker', searchId: 'rewardUserSearch', hiddenId: 'rewardUserId', listId: 'rewardList', caretId: 'rewardCaret' });
-const bnPicker = createUserPicker({ pickerId: 'banPicker', searchId: 'banUserSearch', hiddenId: 'banUserId', listId: 'banList', caretId: 'banCaret' });
-const unbPicker = createUserPicker({ pickerId: 'unbanPicker', searchId: 'unbanUserSearch', hiddenId: 'unbanUserId', listId: 'unbanList', caretId: 'unbanCaret' });
-const clrPicker = createUserPicker({ pickerId: 'clearPicker', searchId: 'clearUserSearch', hiddenId: 'clearUserId', listId: 'clearList', caretId: 'clearCaret' });
-
-/* стеклянный выпадашек вместо select (там системный скрол) */
-function createGlassSelect(o) {
-  const box = $(o.pickId), btn = $(o.pickId).querySelector('.pick-btn'), lbl = $(o.labelId), pop = $(o.popId);
-  let value = o.options[0].v;
-  function render() {
-    pop.innerHTML = o.options.map(op =>
-      `<div class="opt${op.v === value ? ' sel' : ''}" data-v="${op.v}">${op.e ? `<span>${op.e}</span>` : ''}<span>${esc(op.l)}</span></div>`).join('');
-    const cur = o.options.find(x => x.v === value);
-    lbl.textContent = (cur.e ? cur.e + ' ' : '') + cur.l;
+/* ---------------- раздел «Обновы» ---------------- */
+function updStatus(u) {
+  if (u.status === 'active') {
+    if (u.autoStopAt && Date.now() > u.autoStopAt) { u.status = 'ended'; u.eventActive = false; }
   }
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const wasOpen = box.classList.contains('open');
-    closeAllPickers(box);
-    if (!wasOpen) { box.classList.add('open'); render(); }
-  });
-  pop.addEventListener('mousedown', e => {
-    const op = e.target.closest('.opt');
-    if (!op) return;
-    e.preventDefault();
-    value = op.dataset.v;
-    box.classList.remove('open');
-    render();
-    if (o.onChange) o.onChange(value);
-  });
-  document.addEventListener('click', () => box.classList.remove('open'), true);
-  render();
-  return { value: () => value, set: v => { value = v; render(); } };
+  if (u.status === 'scheduled' && Date.now() >= u.startsAt) activate(u.id, true);
+  return u.status;
 }
-const REWARD_OPTS = [{ v: 'dilicks', l: 'Дилики', e: '💎' }, { v: 'money', l: 'Деньги', e: '💰' }, { v: 'skin', l: 'Скин', e: '✨' }];
-const giveOpts = [{ v: 'dilicks', l: 'Дилики', e: '💎' }, { v: 'money', l: 'Деньги', e: '💰' }];
-let rewardType = 'dilicks';
-let giveAllType = 'dilicks';
-createGlassSelect({ pickId: 'rewardTypePick', labelId: 'rewardTypeLbl', popId: 'rewardTypePop', options: REWARD_OPTS, onChange: v => rewardType = v });
-createGlassSelect({ pickId: 'giveAllTypePick', labelId: 'giveAllTypeLbl', popId: 'giveAllTypePop', options: giveOpts, onChange: v => giveAllType = v });
-
-/* ============================================================
-   ОБНОВЫ: три кнопки и ничего лишнего
-   ============================================================ */
-const updDef = id => UPDATES.find(u => u.id === id);
-const stateOf = id => S.updates.find(u => u.id === id);
-const activeUpd = () => S.updates.find(u => u.active);
-const screenRunning = () => S.screens.type === 'infinite' || S.screens.endsAt > Date.now();
+const STATUS_META = {
+  active: ['good', 'В ИГРЕ'], scheduled: ['warn', 'СИНХРО'], ended: ['off', 'СКРЫТО'], off: ['off', 'ВЫКЛ']
+};
 
 function cardUpd(u) {
-  const st = stateOf(u.id);
-  const scr = SCREEN_THEMES[u.theme];
-  const running = screenRunning();
-  const whatIsNew = u.theme === 'halloween' ? 'баннеры, декор вкладок, хэллоуинская тема колеса, конфетный бонус, плашка ивента' : 'обычные баннеры';
+  const k = KINDS[u.kind];
+  const [tone, label] = STATUS_META[updStatus(u)];
+  const left = u.status === 'scheduled' ? u.startsAt - Date.now()
+    : u.status === 'active' && u.autoStopAt ? u.autoStopAt - Date.now() : null;
 
-  return `<div class="lg up ${st.active ? 'on-card' : 'off-card'}">
-    <div class="up-head">
-      <div class="up-ic">${scr.emoji}</div>
-      <div class="up-tt"><div class="t1">${esc(u.title)}</div>
-        <div class="t2"><span class="tag hal">${scr.name}</span><span class="pill ${st.active ? 'good' : st.scheduled ? 'warn' : 'off'}">${st.active ? 'в игре' : st.scheduled ? 'запланирована' : 'скрыта'}</span></div></div>
+  const sync = u.status === 'scheduled'
+    ? `<div class="upd-sync"><div class="live" style="background:${k.color}"></div>
+         <b>СИНХРО</b><span class="mono">появится через ${clock(left)}</span>
+         <button class="btn btn-s sm" data-skip="${u.id}">Скрыть</button>
+         <button class="btn btn-p sm" data-now="${u.id}">Показать сейчас</button></div>` : '';
+
+  const ev = u.eventOn ? `<div class="ev-line">
+        <span class="ev-ic">🎯</span>
+        <span>${u.eventActive ? 'ивент активен' : 'ивент выключен'}</span>
+        <div class="ev-prog"><i style="width:${Math.min(100, u.goal ? u.pool / u.goal * 100 : 0)}%"></i></div>
+        <span class="mono">${u.pool}/${u.goal}</span>
+        <button class="btn btn-s sm" data-evtoggle="${u.id}">${u.eventActive ? 'Остановить' : 'Запустить'}</button>
+      </div>` : '';
+
+  return `<article class="upd" data-card="${u.id}">
+    <div class="upd-head">
+      <div class="upd-ic" style="background:${k.color}22;color:${k.color}">${k.emoji}</div>
+      <div style="min-width:0">
+        <b>${esc(u.title)}</b>
+        <small>${k.name} · ${label} · ${u.status === 'active' ? (u.autoStopAt ? 'до ${dateStr(u.autoStopAt)}' : 'до выключения') : u.status === 'scheduled' ? 'старт ${dateStr(u.startsAt)}' : 'скрыта'}</small>
+      </div>
+      <span class="pill ${tone}" style="margin-left:auto">${label}</span>
+      <label class="sw"><input type="checkbox" data-sw="${u.id}" ${u.status === 'active' ? 'checked' : ''}><span></span></label>
     </div>
-    <p class="hint">Появится у игроков: <b>${whatIsNew}</b></p>
-    <div class="up-actions">
-      <button class="btn xs solid" data-act="sync" data-id="${u.id}">🔄 СИНХРО</button>
-      ${st.active
-        ? `<button class="btn xs danger" data-act="remove" data-id="${u.id}">⏹ Убрать обнову</button>`
-        : `<button class="btn xs ok" data-act="enable" data-id="${u.id}">✅ Включить обнову</button>`}
-      <span class="hint" style="margin-left:auto">${st.scheduled ? 'запланирована: катсцена пойдёт, когда таймер закончится' : (st.active ? 'обнова видна игрокам' : 'скрыта — в игре нет ничего из этой обновы')}</span>
+    ${sync}
+    <div class="upd-meta">
+      <span class="chip ${u.showBanner ? '' : 'off'}" data-chip="banner:${u.id}">📢 Баннер</span>
+      <span class="chip ${u.showDecor ? '' : 'off'}" data-chip="decor:${u.id}">🕸️ Декор</span>
+      <span class="chip ${u.eventOn ? '' : 'off'}" data-chip="event:${u.id}">🎯 Ивент</span>
+      ${u.status === 'active' && left ? `<span class="chip">⏳ Скрыть через <b class="mono" data-left="${u.id}">${clock(left)}</b></span>` : ''}
+      ${u.status === 'active' ? `<span class="chip off" data-chip="hidetimer:${u.id}">⏱ Таймер скрытия</span>` : ''}
     </div>
+    ${ev}
+    <div class="actions">
+      <button class="btn btn-s sm" data-settings="${u.id}">${openSettings === u.id ? '▲ настройки' : '⚙ настройки'}</button>
+      <button class="btn btn-s sm" data-reveal="${u.id}">▶ предпросмотр появления</button>
+      ${u.status === 'scheduled' ? `<button class="btn btn-s sm" data-cancel="${u.id}">Отменить СИНХРО</button>` : ''}
+      ${u.status === 'ended' || u.status === 'off' ? `<button class="btn btn-p sm" data-again="${u.id}">Включить обратно</button>` : ''}
+      <button class="btn btn-g sm" style="margin-left:auto" data-del="${u.id}">🗑</button>
+    </div>
+    ${openSettings === u.id ? settingsUpd(u) : ''}
+  </article>`;
+}
+
+function settingsUpd(u) {
+  const opts = Object.entries(KINDS).map(([id, k]) => `<option value="${id}" ${id === u.kind ? 'selected' : ''}>${k.emoji} ${k.name}</option>`).join('');
+  const when = u.status === 'scheduled' ? 'СИНХРО идёт' : 'сейчас';
+  return `<div class="upd-set">
+    <div class="fld"><label>Название</label><input data-f="title" value="${esc(u.title)}"></div>
+    <div class="fld"><label>Тема</label><select data-f="kind">${opts}</select></div>
+    <div class="fld"><label>Заголовок баннера</label><input data-f="bannerTitle" value="${esc(u.bannerTitle)}"></div>
+    <div class="fld"><label>Текст баннера</label><input data-f="bannerText" value="${esc(u.bannerText)}"></div>
+    <div class="fld"><label>Авто-скрытие</label>
+      <select data-f="auto">
+        <option value="none" ${!u.autoStopAt ? 'selected' : ''}>не прятать</option>
+        <option value="1h">через 1 час</option>
+        <option value="24h">через сутки</option>
+        <option value="168h">через неделю</option>
+      </select><small>текущий старт: ${when}</small></div>
+    <div class="fld"><label>Цель ивента</label><input data-f="goal" type="number" min="0" value="${u.goal}"></div>
+    <div class="check"><label><input type="checkbox" data-f="showBanner" ${u.showBanner ? 'checked' : ''}> показывать баннер</label></div>
+    <div class="check"><label><input type="checkbox" data-f="showDecor" ${u.showDecor ? 'checked' : ''}> показывать декор вкладок</label></div>
+    <div class="check"><label><input type="checkbox" data-f="eventOn" ${u.eventOn ? 'checked' : ''}> привязать ивент</label></div>
+    <div class="actions"><button class="btn btn-p sm" data-save="${u.id}">Сохранить</button></div>
   </div>`;
 }
 
 function renderUpd() {
-  $('updList').innerHTML = UPDATES.map(cardUpd).join('');
-  renderMirror();
+  const host = $('updList');
+  let list = state.updates.slice().sort((a, b) => (b.status === 'active') - (a.status === 'active') || b.createdAt - a.createdAt);
+  if (filter !== 'all') list = list.filter(u => u.status === filter);
+  if (search) list = list.filter(u => (u.title + KINDS[u.kind].name).toLowerCase().includes(search));
+  host.innerHTML = list.length ? list.map(cardUpd).join('') : '<div class="empty">Нет обнов под фильтр. Создай новую кнопкой «+ Новая обнова».</div>';
+
+  const live = state.updates.filter(u => u.status === 'active');
+  const first = live[0];
+  const mirror = $('sysMirror');
+  if (!first) mirror.innerHTML = '<span class="pill off">Обнов в игре нет — баннеры, декор и ивенты скрыты.</span>';
+  else {
+    const k = KINDS[first.kind];
+    mirror.innerHTML = `<span class="pill ${first.eventActive ? 'good' : 'warn'}">🎃 Ивент: ${first.eventActive ? 'активен' : 'выключен'}</span>
+      <span class="pill ${first.showBanner ? 'good' : 'off'}">📢 Баннеры: ${first.showBanner ? 'видны' : 'скрыты'}</span>
+      <span class="pill ${first.showDecor ? 'good' : 'off'}">🕸️ Декор: ${first.showDecor ? 'на вкладках' : 'нет'}</span>
+      <span class="pill ${first.autoStopAt ? 'warn' : 'off'}">⏳ ${first.autoStopAt ? 'Скроется через ' + clock(first.autoStopAt - Date.now()) : 'Без таймера скрытия'}</span>
+      <span class="pill ${state.screens.endsAt > Date.now() || state.screens.type === 'infinite' ? 'bad' : 'good'}">🔧 Экран работ: тема ${KINDS[first.kind].name} ${k ? '' : ''}</span>`;
+  }
 }
 
 $('updList').addEventListener('click', e => {
-  const b = e.target.closest('[data-act]');
-  if (!b) return;
-  const id = b.dataset.id;
-  const act = b.dataset.act;
+  const t = e.target.closest('button,[data-chip]');
+  if (!t) return;
+  const id = t.dataset.sw || t.dataset.settings || t.dataset.reveal || t.dataset.cancel || t.dataset.del || t.dataset.again || t.dataset.now || t.dataset.skip || t.dataset.evtoggle || t.dataset.save || (t.dataset.chip || '').split(':')[1];
+  if (!id) return;
+  const u = state.updates.find(x => x.id === id);
+  if (!u) return;
 
-  if (act === 'sync') {
-    const def = updDef(id), stS = stateOf(id);
-    if (!screenRunning()) { toast('Сначала включи экран работ — СИНХРО привязывает обнову к концу таймера', 'warn'); return; }
-    if (S.screens.type === 'infinite') { toast('Бесконечные техработы: у них нет конца таймера, включай обнову кнопкой', 'warn'); return; }
-    if (S.screens.theme !== def.theme) { toast(`Нужен экран темы «${SCREEN_THEMES[def.theme].name}» — сейчас «${SCREEN_THEMES[S.screens.theme].name}»`, 'warn'); return; }
-    scheduleSync(id);
-  syncUpdateState();
-  } else if (act === 'enable') {
-    enableUpdate(id);
-  } else if (act === 'remove') {
-    const st = stateOf(id);
-    st.active = false;
-    addLog('warn', `«${updDef(id).title}» убрана: баннеры, декор и баннер ивента скрыты у игроков`);
-    syncUpdateState();
+  if (t.dataset.settings) { openSettings = openSettings === id ? null : id; renderUpd(); return; }
+  if (t.dataset.reveal) { playReveal(id); return; }
+  if (t.dataset.cancel) { u.status = 'off'; log('warn', `Отменён СИНХРО «${u.title}»`); renderAll(); return; }
+  if (t.dataset.skip) { u.status = 'ended'; u.eventActive = false; log('warn', `«${u.title}» снята с показа`); renderAll(); return; }
+  if (t.dataset.now) { u.startsAt = Date.now(); activate(id, true); return; }
+  if (t.dataset.del) {
+    ask('Удалить обнову?', `«${esc(u.title)}» исчезнет из списка. В игре она будет скрыта.`, 'Удалить', () => {
+      state.updates = state.updates.filter(x => x.id !== id); log('warn', `Удалена обнова «${u.title}»`); renderAll();
+    });
+    return;
+  }
+  if (t.dataset.again) { u.status = 'scheduled'; u.startsAt = Date.now() + 15000; log('ok', `«${u.title}» снова в очереди: СИНХРО через 15 c (демо)`); renderAll(); return; }
+  if (t.dataset.evtoggle) { toggleEvent(id); return; }
+  if (t.dataset.save) { saveSettings(id); return; }
+  if (t.dataset.chip) {
+    const what = t.dataset.chip.split(':')[0];
+    if (what === 'hidetimer') {
+      u.autoStopAt = Date.now() + 60000;
+      log('ok', `«${u.title}»: авто-скрытие через 60 c`);
+      renderAll(); return;
+    }
+    u[what === 'banner' ? 'showBanner' : what === 'decor' ? 'showDecor' : 'eventOn'] = !u[what === 'banner' ? 'showBanner' : what === 'decor' ? 'showDecor' : 'eventOn'];
+    if (what === 'event' && !u.eventOn) u.eventActive = false;
+    log('ok', `«${u.title}»: ${what === 'banner' ? 'баннеры' : what === 'decor' ? 'декор' : 'ивент'} ${u[what === 'banner' ? 'showBanner' : what === 'decor' ? 'showDecor' : 'eventOn'] ? 'вкл' : 'выкл'}`);
     renderAll();
   }
 });
 
-/* «Включить обнову» — сразу, без катсцены и без всяких таймеров */
-function enableUpdate(id) {
-  S.updates.forEach(x => { x.active = false; x.scheduled = false; });
-  const st = stateOf(id);
-  st.active = true;
-  addLog('ok', `«${updDef(id).title}» включена сразу — у всех появится без анимаций`);
-  syncUpdateState();
+$('updList').addEventListener('change', e => {
+  const sw = e.target.closest('[data-sw]');
+  if (!sw) return;
+  const u = state.updates.find(x => x.id === sw.dataset.sw);
+  if (!u) return;
+  if (sw.checked) {
+    u.status = 'scheduled';
+    u.startsAt = Date.now() + 15000;
+    log('sync', `«${u.title}»: включена, СИНХРО через 15 c (демо)`);
+  } else {
+    u.status = 'ended'; u.eventActive = false;
+    log('warn', `«${u.title}»: выключена — баннеры, декор и ивент скрыты`);
+  }
+  renderAll();
+});
+
+function saveSettings(id) {
+  const card = document.querySelector(`[data-card="${id}"]`);
+  const u = state.updates.find(x => x.id === id);
+  if (!card || !u) return;
+  card.querySelectorAll('[data-f]').forEach(el => {
+    const f = el.dataset.f;
+    if (f === 'auto') {
+      if (el.value === 'none') u.autoStopAt = null;
+      else u.autoStopAt = Date.now() + { '1h': 3600000, '24h': 86400000, '168h': 604800000 }[el.value];
+      return;
+    }
+    if (f === 'goal') { u.goal = Math.max(0, +el.value || 0); return; }
+    if (el.type === 'checkbox') u[f] = el.checked;
+    else u[f] = el.value;
+  });
+  log('ok', `Настройки «${u.title}» сохранены (в проде — запись в Firebase)`);
+  openSettings = null;
   renderAll();
 }
 
-/* СИНХРО — обнова ПЛАНИРУЕТСЯ к концу текущего таймера. Таймер продолжает идти!
-   Катсцена у игроков стартует только когда таймер сам закончится (см. tick). */
-function scheduleSync(id) {
-  const st = stateOf(id);
-  st.scheduled = true;
-  st.active = false;
-  const t = S.screens.type === 'infinite' ? null : Math.max(0, S.screens.endsAt - Date.now());
-  addLog('sync', `СИНХРО: «${updDef(id).title}» привязана к экрану работ (${t == null ? 'бесконечные работы — ждётmanual-выключения' : 'катсцена пройдёт через ' + clock(t * 1000)})`);
-  toast('Обнова запланирована: катсцена начнётся, когда таймер закончится', 'ok');
+function activate(id, byTimer) {
+  const u = state.updates.find(x => x.id === id);
+  if (!u) return;
+  u.status = 'active';
+  u.revealAt = Date.now();
+  if (!u.autoStopAt && u.lifeHours) u.autoStopAt = Date.now() + u.lifeHours * 3600000;
+  log('sync', `«${u.title}» показана игрокам${byTimer ? ' по таймеру' : ''} — запущена катсцена`);
+  renderAll();
+  playReveal(id);
+}
+
+function toggleEvent(id) {
+  const u = state.updates.find(x => x.id === id);
+  if (!u) return;
+  u.eventActive = !u.eventActive;
+  u.eventEndsAt = u.eventActive ? Date.now() + 3 * 3600000 : null;
+  log(u.eventActive ? 'ok' : 'warn', `Ивент «${u.title}»: ${u.eventActive ? 'запущен (3 ч демо)' : 'остановлен'}`);
   renderAll();
 }
 
-/* момент истины: таймер экрана закончился → запланированная обнова выходит по катсцене */
-function fireScheduled() {
-  const idx = S.updates.findIndex(u => u.scheduled);
-  if (idx < 0) return false;
-  const u = S.updates[idx];
-  u.scheduled = false;
-  u.active = true;
-  addLog('sync', `⏱ Таймер закончился → «${updDef(u.id).title}» вышла из работ: у игроков началась КАТСКАЦЕНА появления`);
-  toast(`Катсцена: ${updDef(u.id).title}`, 'ok');
-  syncUpdateState();
-  return true;
-}
+$('upSearch').addEventListener('input', e => { search = e.target.value.trim().toLowerCase(); renderUpd(); });
+$('upFilters').addEventListener('click', e => {
+  const c = e.target.closest('.chip');
+  if (!c) return;
+  $('upFilters').querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+  c.classList.add('on');
+  filter = c.dataset.f;
+  renderUpd();
+});
 
-/* updateState — витрина обновы. Игра показывает хэллоуин-контент ТОЛЬКО
-   когда activeId непустой. scheduledId = «ждёт конца таймера» — в игре ничего
-   не появляется пока таймер сам не закончится. */
-function syncUpdateState() {
-  if (!FS.db) return;
-  const act = S.updates.find(u => u.active);
-  const sch = S.updates.find(u => u.scheduled);
-  const body = {
-    activeId: act ? act.id : null,
-    activeTheme: act ? act.theme : null,
-    scheduledId: sch ? sch.id : null,
-    scheduledTheme: sch ? sch.theme : null,
-    screenTheme: S.screens.theme,
-    updatedAt: Date.now()
+/* создание обновы */
+$('btnNewUpd').addEventListener('click', () => {
+  const f = $('newUpdForm');
+  f.classList.toggle('show');
+  if (f.classList.contains('show')) $('nuTitle').focus();
+});
+$('nuCancel').addEventListener('click', () => $('newUpdForm').classList.remove('show'));
+$('nuKind').addEventListener('change', e => {
+  const k = KINDS[e.target.value];
+  $('nuTitle').value = k.name + ' ' + new Date().getFullYear();
+  $('nuBanner').value = k.banner;
+});
+function collectNew(sync) {
+  const title = $('nuTitle').value.trim() || 'Новая обнова';
+  const kind = $('nuKind').value;
+  const life = +$('nuLife').value;
+  const u = {
+    id: 'upd-' + Date.now().toString(36), kind, title,
+    status: sync ? 'scheduled' : 'active',
+    startsAt: sync ? Date.now() + 15000 : Date.now(),
+    autoStopAt: life ? Date.now() + life * 3600000 : null,
+    showBanner: $('nuBannerOn').checked, showDecor: $('nuDecor').checked,
+    eventOn: $('nuEventWith').value !== 'none', eventActive: false, eventEndsAt: null,
+    goal: 1000, pool: 0,
+    bannerTitle: $('nuBanner').value.trim() || KINDS[kind].banner, bannerText: KINDS[kind].text,
+    lifeHours: life || 168, revealAt: null, createdAt: Date.now()
   };
-  FS.db.ref('updateState').set(body).catch(e => console.warn('updateState write failed', e));
+  state.updates.unshift(u);
+  $('newUpdForm').classList.remove('show');
+  $('nuTitle').value = ''; $('nuBanner').value = '';
+  if (sync) { log('sync', `«${title}» создана, СИНХРО через 15 c (демо)`); renderAll(); }
+  else { log('ok', `«${title}» активна`); renderAll(); playReveal(u.id); }
 }
-function renderMirror() {
-  const now = Date.now(), u = activeUpd(), hw = S.events.halloween, wh = S.events.wheel;
-  const work = screenRunning();
-  const tiles = [
-    ['обнова у игроков', u ? SCREEN_THEMES[u.theme].emoji + ' ' + u.title : 'нет', u ? 'баннеры и декор показаны' : 'витрина пустая', u ? 'gold' : ''],
-    ['экран работ', work ? (S.screens.type === 'infinite' ? 'идут ∞' : clock(S.screens.endsAt - now)) : 'выключен', 'тема: ' + SCREEN_THEMES[S.screens.theme].name, work ? 'bad' : 'good'],
-    ['хэллоуин', hw.active ? 'активен' : 'остановлен', hw.active ? clock(Math.max(0, hw.endsAt - now)) + ' до конца' : 'запуск кнопкой', hw.active ? 'good' : ''],
-    ['колесо', wh.active ? 'активно' : 'остановлено', fmt(wh.spinCost) + ' диликов за крутку', wh.active ? 'good' : '']
-  ];
-  $('sysMirror').innerHTML = tiles.map(([n, v, s, tone]) =>
-    `<div class="lg tile ${tone}"><div class="t-n">${n}</div><div class="t-v">${v}</div><div class="t-s">${s}</div></div>`).join('');
+$('nuCreate').addEventListener('click', () => collectNew(false));
+$('nuCreateSync').addEventListener('click', () => collectNew(true));
+
+/* ---------------- экраны работ ---------------- */
+function renderScreens() {
+  const s = state.screens;
+  document.querySelectorAll('#themeRow [data-theme]').forEach(b => b.classList.toggle('on', b.dataset.theme === s.theme));
+  const k = KINDS[s.theme];
+  $('themeName').textContent = `${k.emoji} ${k.name}`;
+
+  $('scrInfOn').classList.toggle('on', s.type === 'infinite');
+  $('scrInfOff').classList.toggle('on', s.type !== 'infinite');
+  $('scrTimerOn').classList.toggle('on', s.type === 'timer' && s.endsAt > Date.now());
+
+  const left = s.type === 'timer' ? s.endsAt - Date.now() : 0;
+  $('scrLeft').textContent = s.type === 'infinite' ? 'без таймера' : left > 0 ? clock(left) : 'завершены';
+  $('scrBar').style.width = s.type === 'timer' && left > 0 ? Math.min(100, left / 3600000 * 100) + '%' : s.type === 'infinite' ? '100%' : '0%';
+
+  /* мок-экран */
+  const inWork = s.type === 'infinite' || left > 0;
+  $('mock').classList.toggle('work', inWork);
+  $('mock').dataset.theme = s.theme;
+  $('mockTimer').textContent = s.type === 'infinite' ? '∞' : left > 0 ? clock(left) : '00:00';
+  $('mockBar').style.width = s.type === 'infinite' ? '100%' : Math.max(0, Math.min(100, left / 3600000 * 100)) + '%';
+
+  const live = state.updates.find(u => u.status === 'active');
+  const showBanner = live && live.showBanner;
+  const showDecor = live && live.showDecor;
+  $('mockBanner').classList.toggle('show', !!showBanner);
+  $('mockDecor').classList.toggle('show', !!showDecor);
+  if (live) {
+    $('mockBanner').style.setProperty('--bc', KINDS[live.kind].color);
+    $('mockBannerT').innerHTML = `<span class="em">${KINDS[live.kind].emoji}</span> ${esc(live.bannerTitle)}<span class="x">✕</span>`;
+    $('mockIcon').textContent = KINDS[live.kind].candy;
+    $('mockTitle').textContent = live.title;
+    $('mockText').textContent = live.bannerText;
+    $('mockDecor').innerHTML = ('012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789')
+      .split('').map((_, i) => { const d = KINDS[live.kind].decor.replace(/\s/g, ''); return `<span>${d[i % d.length]}</span>`; }).join('');
+  }
+  $('scrBanner').checked = !!(live && live.showBanner);
+  $('scrDecor').checked = !!(live && live.showDecor);
+  $('scrBanner').disabled = !live;
+  $('scrDecor').disabled = !live;
 }
 
-/* ============================================================
-   ЭКРАНЫ РАБОТ
-   ============================================================ */
-function renderScreens() {
-  const sc = S.screens, now = Date.now();
-  document.querySelectorAll('#themeRow [data-theme]').forEach(b => b.classList.toggle('sel', b.dataset.theme === sc.theme));
-  $('themeName').textContent = SCREEN_THEMES[sc.theme].name;
-  const work = screenRunning();
-  $('scrLeft').textContent = sc.type === 'infinite' ? '∞' : work ? clock(sc.endsAt - now) : '—';
-  const total = Math.max(1, (sc.endsAt || 0) - (sc.startedAt || 0));
-  $('scrBar').style.width = sc.type === 'infinite' ? '100%' : work ? Math.min(100, Math.max(2, (sc.endsAt - now) / total * 100)) + '%' : '0%';
-}
 $('themeRow').addEventListener('click', e => {
   const b = e.target.closest('[data-theme]');
   if (!b) return;
-  S.screens.theme = b.dataset.theme;
-  addLog('ok', `Тема экрана работ: ${SCREEN_THEMES[b.dataset.theme].name}`);
-  renderAll();
+  if (b.dataset.lock) { toast('Заготовка: тема появится после добавления баннеров в игру'); return; }
+  state.screens.theme = b.dataset.theme;
+  log('ok', `Экран работ: тема ${KINDS[b.dataset.theme].name}`);
+  renderScreens();
 });
-$('scrInfOn').addEventListener('click', () => { S.screens.type = 'infinite'; S.screens.fired = false; addLog('warn', 'Бесконечные техработы включены'); renderAll(); });
-$('scrInfOff').addEventListener('click', () => { S.screens.type = 'timer'; S.screens.startedAt = 0; S.screens.endsAt = 0; addLog('ok', 'Техработы сняты — игра открыта'); renderAll(); });
+$('scrInfOn').addEventListener('click', () => { state.screens.type = 'infinite'; log('warn', 'Работы идут без таймера'); renderAll(); });
+$('scrInfOff').addEventListener('click', () => { state.screens.type = 'timer'; state.screens.endsAt = Date.now() + 3600000; log('ok', 'Работы сняты'); renderAll(); });
 $('scrPresets').addEventListener('click', e => {
   const c = e.target.closest('.chip');
   if (!c) return;
-  $('scrSec').value = c.dataset.s;
-  $('scrPresets').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
-});
-$('scrTimerOn').addEventListener('click', () => {
-  const sec = Math.max(1, +$('scrSec').value || 60);
-  S.screens.type = 'timer';
-  S.screens.startedAt = Date.now();
-  S.screens.endsAt = Date.now() + sec * 1000;
-  S.screens.fired = false;
-  addLog('sync', `Экран работ на ${clock(sec * 1000)} — потом жми СИНХРО в «Обновах»`);
-  toast('Экран включён. Когда таймер кончится — нажми СИНХРО в «Обновах»', 'ok');
+  state.screens.type = 'timer';
+  state.screens.endsAt = Date.now() + SCREEN_PRESETS[c.dataset.sec] * 1000;
+  log('ok', `Работы на ${c.textContent}`);
   renderAll();
 });
+let secVal = 300;
+$('scrSec').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  secVal = Math.max(5, Math.min(86400, secVal + (+b.textContent)));
+  $('scrSecVal').textContent = clock(secVal * 1000);
+});
+$('scrSecVal').textContent = clock(secVal * 1000);
+$('scrStart').addEventListener('click', () => {
+  state.screens.type = 'timer';
+  state.screens.endsAt = Date.now() + secVal * 1000;
+  log('sync', `Экран работ на ${clock(secVal * 1000)} — по концу сработает СИНХРО`);
+  renderAll();
+});
+['scrBanner', 'scrDecor'].forEach(id => $(id).addEventListener('change', () => {
+  const live = state.updates.find(u => u.status === 'active');
+  if (!live) return;
+  live.showBanner = $('scrBanner').checked;
+  live.showDecor = $('scrDecor').checked;
+  log('ok', `Живое переключение: баннер ${live.showBanner ? 'вкл' : 'выкл'}, декор ${live.showDecor ? 'вкл' : 'выкл'}`);
+  renderAll();
+}));
+$('btnMockReveal').addEventListener('click', () => {
+  const live = state.updates.find(u => u.status === 'active') || state.updates[0];
+  if (live) playReveal(live.id);
+});
 
-/* ============================================================
-   ИВЕНТЫ: хэллоуин + колесо
-   ============================================================ */
-const sumTop = () => S.top.reduce((s, x) => s + x.v, 0);
+/* ---------------- катсцена появления обновы ---------------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function playReveal(id) {
+  const u = state.updates.find(x => x.id === id);
+  if (!u) return;
+  if (playing) return;
+  playing = true;
+  const k = KINDS[u.kind];
+  const stage = $('stage');
 
-function renderEvents() {
-  const now = Date.now(), hw = S.events.halloween, wh = S.events.wheel;
-  const anyOn = hw.active || wh.active;
-  $('evState').className = 'currency' + (anyOn ? ' on' : '');
-  $('evStateT').textContent = anyOn
-    ? [hw.active ? '🎃 хэллоуин' : null, wh.active ? '🎡 колесо' : null].filter(Boolean).join(' + ')
-    : 'ивентов нет';
+  $('cineEmoji').textContent = k.emoji;
+  $('cineBannerT').textContent = u.bannerTitle;
+  $('cineBannerX').textContent = u.bannerText;
+  $('cineCardT').textContent = u.title;
+  $('cineNote').textContent = u.eventOn ? 'Ивент стартует отдельно — кнопкой «Запустить»' : 'Ивент не привязан к этой обнове';
+  $('cinePool').innerHTML = `<b class="mono">${u.pool}/${u.goal}</b> копилка · ${k.name}`;
+  $('cineGlow').style.setProperty('--k', k.color);
+  $('cineSpark').innerHTML = Array.from({ length: 22 }, () => `<i style="left:${Math.random() * 100}%;--d:${(Math.random() * .9).toFixed(2)}s;--s:${(.5 + Math.random()).toFixed(2)}">${k.decor.replace(/\s/g, '')[(Math.random() * 5) | 0]}</i>`).join('');
+  $('cineDecor').innerHTML = $('mockDecor').innerHTML || '';
 
-  $('evLeft').textContent = hw.active ? clock(Math.max(0, hw.endsAt - now)) : 'стоп';
-  $('evBar').style.width = hw.active ? Math.min(100, Math.max(2, (hw.endsAt - now) / Math.max(1, hw.total) * 100)) + '%' : '0%';
+  stage.classList.add('show');
+  $('cineVeil').classList.remove('go');
+  $('cineBanner').className = 'cine-banner';
+  $('cineCandy').className = 'cine-candy';
+  $('cineCap').className = 'cine-cap';
+  $('cineSpark').className = 'cine-spark';
+  $('cineDecor').className = 'cine-decor';
+  $('cineGlow').className = 'cine-glow';
 
-  const pool = sumTop();
-  $('evPoolVal').textContent = fmt(pool) + ' 🍬';
-  $('evGoalVal').textContent = fmt(hw.goal);
-  $('evPoolBar').style.width = Math.min(100, hw.goal ? pool / hw.goal * 100 : 0) + '%';
-  $('halloweenGoalInput').value = hw.goal;
+  /* 1. шторка работ считает обратный отсчёт */
+  $('cineHead').textContent = 'Идёт обновление Dilig Clicker';
+  for (let i = 3; i > 0; i--) { $('cineVeil').querySelector('.vn').textContent = i; await sleep(700); }
+  $('cineVeil').classList.add('go');
+  await sleep(600);
 
-  $('topList').innerHTML = S.top.length ? S.top.slice().sort((a, b) => b.v - a.v).map((p, i) =>
-    `<div class="top-li"><span class="r">${['🥇', '', '🥉'][i] || i + 1}</span><span class="n">${esc(p.n)}${p.id === ADMIN_UID ? ' 👑' : ''}</span><span class="v">${fmt(p.v)}</span></div>`).join('')
-    : '<div class="empty">Пока нет участников</div>';
+  /* 2. баннер влетает */
+  $('cineBanner').className = 'cine-banner in';
+  $('cineGlow').className = 'cine-glow on';
+  await sleep(900);
 
-  $('halloweenTopPaidInfo').textContent = hw.paidTop ? '✅ Награды топ-3 уже выданы' : 'Награды ещё не выданы';
+  /* 3. баннер «раскрывается» в декор */
+  $('cineBanner').className = 'cine-banner fold';
+  await sleep(700);
+  $('cineBanner').classList.add('gone');
+  $('cineDecor').className = 'cine-decor on';
+  $('cineSpark').className = 'cine-spark on';
+  await sleep(500);
 
-  $('whLeft').textContent = wh.active ? clock(Math.max(0, wh.endsAt - now)) : 'стоп';
-  $('whBar').style.width = wh.active ? Math.min(100, Math.max(2, (wh.endsAt - now) / Math.max(1, wh.total) * 100)) + '%' : '0%';
-  $('spinCostNow').textContent = fmt(wh.spinCost);
+  /* 4. конфетный бонус */
+  $('cineCandy').className = 'cine-candy on';
+  $('cineCap').className = 'cine-cap on';
+  $('cineHead').textContent = 'Обнова уже в игре';
+  await sleep(2400);
 
-  $('tileHw').className = 'lg tile ' + (hw.active ? 'good' : '');
-  $('tileHw').querySelector('.t-v').textContent = hw.active ? 'активен' : 'остановлен';
-  $('tileWh').className = 'lg tile ' + (wh.active ? 'good' : '');
-  $('tileWh').querySelector('.t-v').textContent = wh.active ? 'активно' : 'остановлено';
+  stage.classList.add('out');
+  await sleep(400);
+  stage.classList.remove('show', 'out');
+  playing = false;
+  log('ok', `Катсцена «${u.title}» проиграна (в проде — баннер и декор в index.html)`);
+}
+$('cinClose').addEventListener('click', () => {
+  const stage = $('stage');
+  stage.classList.remove('show');
+  playing = false;
+});
+stageKeys();
+function stageKeys() {
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 }
 
-$('evStart').addEventListener('click', () => {
-  const days = Math.max(1, +$('evDays').value || 7);
-  const hw = S.events.halloween;
-  hw.active = true; hw.total = days * 864e5; hw.endsAt = Date.now() + hw.total;
-  addLog('ok', `Хэллоуин запущен на ${days} д`);
-  renderAll();
+/* ---------------- ивенты ---------------- */
+function renderEvent() {
+  const act = state.updates.filter(u => u.eventActive);
+  $('evState').className = 'status-chip ' + (act.length ? 'on' : 'off');
+  $('evStateT').textContent = act.length ? act.map(u => u.title).join(', ') : 'Ивенты остановлены';
+  $('evDays').textContent = state.updates.filter(u => u.status === 'active' && u.eventOn).length;
+
+  const rows = state.updates.filter(u => u.eventOn).map(u => `<tr>
+      <td>${KINDS[u.kind].emoji} ${esc(u.title)}</td>
+      <td class="mono">${u.pool}/${u.goal}</td>
+      <td class="mono">${u.eventActive ? clock(Math.max(0, (u.eventEndsAt || Date.now()) - Date.now())) : '—'}</td>
+      <td><span class="pill ${u.eventActive ? 'good' : 'off'}">${u.eventActive ? 'активен' : 'стоп'}</span></td>
+      <td><button class="btn btn-s sm" data-ev="${u.id}">${u.eventActive ? 'Остановить' : 'Запустить'}</button></td>
+    </tr>`).join('');
+  $('evTable').innerHTML = rows || '<tr><td colspan="5" class="empty">Нет ивентов. Привяжи ивент к обнове в её настройках.</td></tr>';
+
+  const main = act[0] || state.updates.find(u => u.eventOn) || state.updates[0];
+  if (main) {
+    $('evPoolVal').textContent = main.pool;
+    $('evPoolBar').style.width = Math.min(100, main.goal ? main.pool / main.goal * 100 : 0) + '%';
+    $('evGoalVal').textContent = main.goal;
+    $('evTopList').innerHTML = main.eventActive || main.pool ? `<b class="mono">${main.pool}</b> · топ-1: <b class="mono">${Math.round(main.pool * .3)}</b>, топ-2: <b class="mono">${Math.round(main.pool * .2)}</b>, топ-3: <b class="mono">${Math.round(main.pool * .1)}</b>` : '<span class="empty">Пока нет вкладов</span>';
+  }
+}
+$('evTable').addEventListener('click', e => {
+  const b = e.target.closest('[data-ev]');
+  if (b) toggleEvent(b.dataset.ev);
 });
-$('evStop').addEventListener('click', () => { S.events.halloween.active = false; addLog('warn', 'Хэллоуин остановлен'); renderAll(); });
 $('evPresets').addEventListener('click', e => {
   const c = e.target.closest('.chip');
   if (!c) return;
-  $('evDays').value = c.dataset.d;
-  $('evPresets').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
-});
-$('setHalloweenGoalBtn').addEventListener('click', () => {
-  const v = Math.max(1, +$('halloweenGoalInput').value || 0);
-  if (!v) return toast('Укажи цель', 'warn');
-  S.events.halloween.goal = v;
-  addLog('ok', `Цель копилки: ${fmt(v)}`);
+  const act = state.updates.find(u => u.eventActive) || state.updates.find(u => u.eventOn);
+  if (!act) { toast('Сначала включи обнову с ивентом'); return; }
+  act.eventActive = true;
+  act.eventEndsAt = Date.now() + PRESETS[c.dataset.h] * 3600000;
+  log('ok', `Ивент «${act.title}» на ${c.textContent}`);
   renderAll();
 });
-/* ---------- копилка: реальный узел events/halloween/totalPool ---------- */
-function poolDelta(sign) {
-  const v = Math.max(0, +$('poolAmount').value || 0) * sign;
-  if (!v) return toast('Укажи количество', 'warn');
-  if (!FS.db) { S.top.forEach(() => {}); addLog('warn', 'Копилка: только локально'); return toast('Firebase недоступен', 'warn'); }
-  dbTx('events/halloween/totalPool', cur => Math.max(0, (Number(cur) || 0) + v))
-    .then(ok => ok && addLog('ok', `Копилка ${v > 0 ? '+' : ''}${fmt(v)} → /events/halloween/totalPool`));
-}
-$('addPoolBtn').addEventListener('click', () => poolDelta(1));
-$('removePoolBtn').addEventListener('click', () => poolDelta(-1));
-$('resetPoolBtn').addEventListener('click', () => ask('Сбросить копилку?', 'Конфеты в <span class="cmd">events/halloween/totalPool</span> станут 0.', 'Сбросить', () => {
-  dbSet('events/halloween/totalPool', 0, 'Копилка обнулена');
-}));
-
-/* ---------- топ: читается из users/<id>/halloweenContribution ---------- */
-function readTop() {
-  if (!FS.db) { renderEvents(); return toast('Firebase недоступен — демо-топ', 'warn'); }
-  toast('Загружаю топ из базы...', 'ok');
-  FS.db.ref('users').once('value').then(snap => {
-    const v = snap.val() || {};
-    const rows = Object.keys(v).map(id => ({
-      id,
-      n: (v[id].settings && v[id].settings.displayName) || v[id].username || id,
-      v: Number(v[id].halloweenContribution) || 0
-    })).filter(r => r.v > 0).sort((a, b) => b.v - a.v).slice(0, 10);
-    S.top = rows;
-    renderEvents();
-    addLog('ok', `Топ ивента: ${rows.length} игроков из базы`);
-  }).catch(e => { console.warn(e); addLog('err', 'Топ не загружен: нет прав на чтение /users'); toast('Не удалось прочитать топ', 'err'); });
-}
-$('loadTopBtn').addEventListener('click', readTop);
-
-/* ---------- награды топ-3 ---------- */
-const HW_PRIZES = [
-  { money: 1000000, dilicks: 100000 },
-  { money: 500000, dilicks: 50000 },
-  { money: 250000, dilicks: 25000 }
-];
-$('payHalloweenTopBtn').addEventListener('click', () => {
-  if (!FS.db) return toast('Firebase недоступен', 'warn');
-  if (!S.top.length) return toast('Сначала загрузи топ', 'warn');
-  FS.db.ref('events/halloween/topRewardsPaid').once('value').then(snap => {
-    if (snap.val() === true) return toast('Награды уже выданы', 'warn');
-    ask('Выдать награды топ-3?',
-      '🥇 1 000 000 монет + 100 000 диликов · 🥈 500 000 + 50 000 · 🥉 250 000 + 25 000<br>Флаг <span class="cmd">topRewardsPaid</span> защитит от повтора.', 'Выдать', () => {
-        const winners = S.top.slice(0, 3);
-        Promise.all(winners.flatMap((w, i) => [
-          FS.db.ref('users/' + w.id + '/money').transaction(cur => (Number(cur) || 0) + HW_PRIZES[i].money),
-          FS.db.ref('users/' + w.id + '/dilicks').transaction(cur => (Number(cur) || 0) + HW_PRIZES[i].dilicks)
-        ])).then(() => {
-          FS.db.ref('events/halloween/topRewardsPaid').set(true);
-          S.events.halloween.paidTop = true;
-          addLog('ok', `Награды выданы: ${winners.map(w => w.n).join(', ')}`);
-          toast('Награды топ-3 выданы', 'ok');
-          renderAll();
-        }).catch(e => { console.warn(e); addLog('err', 'Выдача наград не удалась'); toast('Ошибка выдачи', 'err'); });
-      });
-  }).catch(e => { console.warn(e); toast('Не удалось проверить флаг выдачи', 'err'); });
-});
-
-/* ---------- очистки ---------- */
-$('clearUraganTopBtn').addEventListener('click', () => ask('Очистить весь топ?', 'Обнулит <span class="cmd">halloweenContribution</span> всем игрокам из топа и копилку. Необратимо.', 'Очистить', () => {
-  if (!FS.db) return toast('Firebase недоступен', 'warn');
-  const ids = S.top.map(p => p.id);
-  if (!ids.length) return toast('Топ пуст — сначала загрузи его', 'warn');
-  Promise.all(ids.map(id => FS.db.ref('users/' + id + '/halloweenContribution').remove()))
-    .then(() => FS.db.ref('events/halloween/totalPool').set(0))
-    .then(() => { S.top = []; renderAll(); addLog('warn', `Топ очищен: ${ids.length} игроков`); toast('Топ очищен', 'warn'); })
-    .catch(e => { console.warn(e); addLog('err', 'Очистка топа не удалась'); });
-}));
-$('clearAdminBtn').addEventListener('click', () => ask('Очистить админа?', 'Обнулит конфеты администратора.', 'Очистить', () => {
-  dbRemove('users/' + ADMIN_UID + '/halloweenContribution', 'Счёт админа очищен').then(() => readTop());
-}));
-$('clearPlayerBtn').addEventListener('click', () => {
-  const u = clrPicker.resolve();
-  if (!u) return toast('Выбери игрока из списка', 'warn');
-  ask(`Обнулить конфеты: ${esc(u.name)}?`, `ID: <span class="cmd">${esc(u.id)}</span>`, 'Очистить', () => {
-    dbRemove('users/' + u.id + '/halloweenContribution', `Счёт очищен: ${u.name}`).then(() => {
-      clrPicker.reset(); readTop();
-    });
-  });
-});
-
-$('startWheelEventBtn').addEventListener('click', () => {
-  const days = Math.max(1, +$('wheelDays').value || 150);
-  const wh = S.events.wheel;
-  wh.active = true; wh.total = days * 864e5; wh.endsAt = Date.now() + wh.total;
-  addLog('ok', `Колесо запущено на ${days} д`);
+$('evPoolFill').addEventListener('click', () => {
+  const act = state.updates.find(u => u.eventActive) || state.updates.find(u => u.eventOn);
+  if (!act) return;
+  act.pool = Math.min(act.goal, act.pool + Math.round(act.goal * .05));
+  log('ok', `Демо: копилка «${act.title}» +${Math.round(act.goal * .05)}`);
   renderAll();
 });
-$('stopWheelEventBtn').addEventListener('click', () => { S.events.wheel.active = false; addLog('warn', 'Колесо остановлено'); renderAll(); });
-$('wheelPresets').addEventListener('click', e => {
-  const c = e.target.closest('.chip');
-  if (!c) return;
-  $('wheelDays').value = c.dataset.d;
-  $('wheelPresets').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
-});
-$('setSpinCostBtn').addEventListener('click', () => {
-  const v = Math.max(1, +$('spinCostInput').value || 0);
-  if (!v) return toast('Укажи стоимость', 'warn');
-  S.events.wheel.spinCost = v;
-  addLog('ok', `Цена крутки колеса: ${fmt(v)} диликов`);
+$('evGoalSet').addEventListener('click', () => {
+  const act = state.updates.find(u => u.eventActive) || state.updates.find(u => u.eventOn);
+  const v = +$('evGoal').value;
+  if (!act || !v) { toast('Выбери активный ивент и укажи цель'); return; }
+  act.goal = v;
+  log('ok', `Цель «${act.title}»: ${v}`);
   renderAll();
 });
 
-/* ============================================================
-   АНОНСЫ
-   ============================================================ */
-function pollTotal(p) { return p.options.reduce((s, o) => s + o.votes, 0); }
-function renderPoll() {
-  const box = $('pollLive');
-  const p = S.poll;
-  if (!p || p.closed) { box.innerHTML = '<div class="empty">Опросов нет</div>'; return; }
-  const total = pollTotal(p);
-  box.innerHTML = `<div class="lg" style="padding:12px;border-radius:18px">
-      <div class="l-t" style="font-size:13px;font-weight:800">${esc(p.question)}</div>
-      <div class="hint" style="margin-top:2px">${fmt(total)} голосов · до ${dateStr(p.endsAt)}</div>
-      ${p.options.map((o, i) => `<div class="cd" style="margin-top:8px;padding:7px 10px">
-          <span style="font-size:12px;font-weight:700;min-width:90px">${esc(o.text)}</span>
-          <div class="bar-lite"><i style="width:${total ? Math.round(o.votes / total * 100) : 0}%"></i></div>
-          <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--gold)">${fmt(o.votes)} · ${total ? Math.round(o.votes / total * 100) : 0}%</span>
-        </div>`).join('')}
-      <div class="row" style="margin-top:9px">
-        <button class="btn xs ok" data-pv="0">Голосовать за 1-й</button>
-        <button class="btn xs ok" data-pv="1">Голосовать за 2-й</button>
-      </div>
-    </div>`;
-}
+/* ---------------- анонсы / опросы ---------------- */
 function renderSocial() {
-  renderPoll();
-  $('anList').innerHTML = S.announcements.length ? S.announcements.map(a =>
-    `<div class="li"><div class="l-main"><div class="l-t">${esc(a.text)}</div><div class="l-s">${dateStr(a.at)}</div></div>
-      <button class="btn xs" data-an="pin" data-id="${a.id}">📌 Закрепить</button><button class="btn xs danger" data-an="del" data-id="${a.id}">✕</button></div>`).join('')
+  $('anList').innerHTML = state.announcements.length
+    ? state.announcements.map(a => `<div class="mini-row"><span>${esc(a.text)}</span><small class="mono">${dateStr(a.at)}</small><button class="btn btn-g sm" data-an="${a.id}">✕</button></div>`).join('')
     : '<div class="empty">Анонсов нет</div>';
+  const p = state.polls;
+  const sum = p.opts.reduce((s, o) => s + o.v, 0) || 1;
+  $('poList').innerHTML = `<div class="mini-row" style="flex-direction:column;align-items:stretch"><b>${esc(p.q)}</b>
+    ${p.opts.map(o => `<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="flex:1">${esc(o.t)}</span><div style="flex:2;height:7px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden"><i style="display:block;height:100%;width:${o.v / sum * 100}%;background:linear-gradient(90deg,#ff8a3d,#ffd166)"></i></div><small class="mono">${o.v}</small></div>`).join('')}
+    <small class="mono">${sum} голосов</small></div>`;
+  $('poQ').value = p.q;
+  $('poO').value = p.opts.map(o => o.t).join('\n');
 }
 $('anSend').addEventListener('click', () => {
   const v = $('anText').value.trim();
-  if (!v) return toast('Введи текст анонса', 'warn');
-  S.announcements.unshift({ id: 'a' + Date.now().toString(36), text: v, at: Date.now() });
+  if (!v) { toast('Введи текст анонса'); return; }
+  state.announcements.unshift({ id: 'an-' + Date.now().toString(36), text: v, at: Date.now() });
+  log('ok', `Анонс отправлен: ${v.slice(0, 40)}`);
   $('anText').value = '';
-  addLog('ok', `Анонс отправлен: ${v.slice(0, 48)}`);
-  renderSocial(); save();
+  renderSocial();
 });
 $('anQuick').addEventListener('click', e => {
   const c = e.target.closest('.chip');
-  if (c) { $('anText').value = c.dataset.t; $('anText').focus(); }
+  if (!c) return;
+  $('anText').value = c.dataset.an;
+  $('anText').focus();
 });
 $('anList').addEventListener('click', e => {
   const b = e.target.closest('[data-an]');
   if (!b) return;
-  if (b.dataset.an === 'del') { S.announcements = S.announcements.filter(a => a.id !== b.dataset.id); addLog('warn', 'Анонс удалён'); }
-  else { const a = S.announcements.find(x => x.id === b.dataset.id); if (a) { a.at = Date.now(); addLog('ok', 'Анонс закреплён заново'); } }
-  renderSocial(); save();
+  state.announcements = state.announcements.filter(a => a.id !== b.dataset.an);
+  log('warn', 'Анонс удалён');
+  renderSocial();
+});
+$('poCreate').addEventListener('click', () => {
+  const q = $('poQ').value.trim();
+  const opts = $('poO').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!q || opts.length < 2) { toast('Нужен вопрос и минимум 2 варианта'); return; }
+  state.polls = { q, opts: opts.map(t => ({ t, v: 0 })), at: Date.now() };
+  log('ok', `Опрос создан: ${q}`);
+  renderSocial();
 });
 
-/* ---------- опросы (как в старой админке) ---------- */
-$('pollCreateBtn').addEventListener('click', () => {
-  const q = $('pollQuestion').value.trim();
-  const o1 = $('pollOpt1').value.trim();
-  const o2 = $('pollOpt2').value.trim();
-  if (!q || !o1 || !o2) return toast('Заполни вопрос и оба варианта', 'warn');
-  S.poll = { question: q, options: [{ text: o1, votes: 0 }, { text: o2, votes: 0 }], endsAt: Date.now() + 24 * 36e5, closed: false };
-  $('pollQuestion').value = ''; $('pollOpt1').value = ''; $('pollOpt2').value = '';
-  addLog('ok', `Опрос опубликован: ${q.slice(0, 48)}`);
-  toast('Опрос активен 24 часа (демо)', 'ok');
-  renderSocial(); save();
-});
-$('pollCloseBtn').addEventListener('click', () => {
-  if (!S.poll || S.poll.closed) return toast('Активного опроса нет', 'warn');
-  S.poll.closed = true;
-  addLog('warn', `Опрос закрыт досрочно: ${S.poll.question.slice(0, 40)}`);
-  renderSocial(); save();
-});
-$('pollLive').addEventListener('click', e => {
-  const b = e.target.closest('[data-pv]');
-  if (!b || !S.poll || S.poll.closed) return;
-  S.poll.options[+b.dataset.pv].votes += 1;   // демо: эмуляция голосов игроков
-  renderPoll(); save();
-});
-
-/* ============================================================
-   ИГРОКИ: награды и баны
-   ============================================================ */
+/* ---------------- игроки и баны ---------------- */
 function renderPlayers() {
-  $('bannedList').innerHTML = S.bans.length ? S.bans.map(b =>
-    `<div class="li"><div class="l-main"><div class="l-t">⛔ ${esc(b.name)}</div><div class="l-s">${esc(b.reason)} · ${b.until > Date.now() ? clock(b.until - Date.now()) : 'навсегда'}${b.id === ADMIN_UID ? ' · 👑' : ''}</div></div>
-      <button class="btn xs ok" data-unb="${b.id}">Разбанить</button></div>`).join('')
-    : '<div class="empty">Забаненных нет</div>';
+  $('bnList').innerHTML = state.bans.length
+    ? state.bans.map(b => `<div class="mini-row"><span><b>${esc(b.name)}</b> — ${esc(b.reason)}</span><small class="mono">${clock(b.until - Date.now())}</small><button class="btn btn-s sm" data-unb="${b.id}">Снять</button></div>`).join('')
+    : '<div class="empty">Банов нет</div>';
 }
-$('banPresets').addEventListener('click', e => {
+$('bnPresets').addEventListener('click', e => {
   const c = e.target.closest('.chip');
   if (!c) return;
-  $('banHours').value = c.dataset.h;
-  $('banPresets').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
+  $('bnHours').value = BAN_PRESETS[c.dataset.ban];
+  $('bnPresets').querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+  c.classList.add('on');
 });
-$('banUserBtn').addEventListener('click', () => {
-  const u = bnPicker.resolve();
-  if (!u) return toast('Выбери игрока из списка', 'warn');
-  const h = Math.max(0, +$('banHours').value || 0);
-  S.bans = S.bans.filter(b => b.id !== u.id);
-  S.bans.push({ id: u.id, name: u.name, reason: $('banReason').value.trim() || 'без причины', until: h ? Date.now() + h * 36e5 : Infinity });
-  bnPicker.reset(); $('banReason').value = '';
-  addLog('warn', `Бан: ${u.name} ${h ? 'на ' + h + ' ч' : 'навсегда'}`);
-  toast(`Забанен ${u.name}`, 'warn');
-  renderPlayers(); save();
+$('bnDo').addEventListener('click', () => {
+  const name = $('bnName').value.trim() || 'player';
+  const h = +$('bnHours').value || 24;
+  state.bans.push({ id: 'bn-' + Date.now().toString(36), name, reason: $('bnReason').value.trim() || 'без причины', until: Date.now() + h * 3600000 });
+  log('warn', `Бан: ${name} на ${h} ч`);
+  toast(`Бан ${name} на ${h} ч (демо)`);
+  renderPlayers();
 });
-function unbanById(id) {
-  const b = S.bans.find(x => x.id === id);
-  if (!b) return false;
-  S.bans = S.bans.filter(x => x.id !== id);
-  addLog('ok', `Разбанен: ${b.name}`);
-  return true;
-}
-$('unbanUserBtn').addEventListener('click', () => {
-  const u = unbPicker.resolve();
-  if (!u) return toast('Выбери игрока из списка', 'warn');
-  const ok = unbanById(u.id);
-  unbPicker.reset();
-  toast(ok ? `Разбанен ${u.name}` : `Бан не найден: ${u.name}`, ok ? 'ok' : 'err');
-  renderPlayers(); save();
+$('unbDo').addEventListener('click', () => {
+  const name = $('unbName').value.trim().toLowerCase();
+  if (!name) { toast('Введи ник'); return; }
+  const before = state.bans.length;
+  state.bans = state.bans.filter(b => b.name.toLowerCase() !== name);
+  log('ok', before === state.bans.length ? `Бан не найден: ${name}` : `Снят бан: ${name}`);
+  renderPlayers();
 });
-$('bannedList').addEventListener('click', e => {
+$('bnList').addEventListener('click', e => {
   const b = e.target.closest('[data-unb]');
   if (!b) return;
-  unbanById(b.dataset.unb);
-  renderPlayers(); save();
+  state.bans = state.bans.filter(x => x.id !== b.dataset.unb);
+  log('ok', 'Бан снят');
+  renderPlayers();
 });
-$('giveRewardBtn').addEventListener('click', () => {
-  const u = rwPicker.resolve();
-  const a = +$('rewardAmount').value || 0;
-  if (!u) return toast('Выбери игрока из списка', 'warn');
-  if (!a) return toast('Укажи количество', 'warn');
-  giveReward(u, rewardType, a);
+$('gwGive').addEventListener('click', () => {
+  const n = +$('gwAmount').value || 0;
+  if (!n) { toast('Укажи сумму'); return; }
+  log('ok', `Награда ${$('gwName').value || 'player'}: ${n} × ${$('gwType').value} (демо)`);
+  toast(`Выдано ${n} ${$('gwType').value}`);
 });
-
-/* награда в реальную базу: только своё поле, через transaction */
-const REWARD_LABEL = { dilicks: '💎 диликов', money: '💰 денег', skin: '✨ скин' };
-function giveReward(u, type, amount) {
-  if (!FS.db) {
-    addLog('warn', `Локально: ${u.name} → ${fmt(amount)} ${REWARD_LABEL[type]}`);
-    return toast('Firebase недоступен — только локально', 'warn');
-  }
-  if (type === 'skin') {
-    const skinId = String(amount);
-    dbTx('users/' + u.id + '/inventory', cur => {
-      const arr = Array.isArray(cur) ? cur.slice() : [];
-      if (!arr.includes(skinId)) arr.push(skinId);
-      return arr;
-    }).then(ok => ok && addLog('ok', `Скин ${skinId} → /users/${u.id}/inventory`));
-    return toast(`${u.name}: скин ${skinId}`, 'ok');
-  }
-  dbTx('users/' + u.id + '/' + type, cur => (Number(cur) || 0) + amount)
-    .then(ok => ok && addLog('ok', `+${fmt(amount)} ${REWARD_LABEL[type]} → /users/${u.id}/${type}`));
-  toast(`${u.name}: +${fmt(amount)} ${REWARD_LABEL[type]}`, 'ok');
-}
-
-$('giveAllBtn').addEventListener('click', () => {
-  const a = +$('giveAllAmount').value || 0;
-  if (!a) return toast('Укажи количество', 'warn');
-  ask('Выдать всем?', `${fmt(a)} × ${giveAllType} каждому игроку. Идёт транзакция по <span class="cmd">users/&lt;id&gt;</span> — не закрывай вкладку.`, 'Выдать всем', () => {
-    if (!FS.db) return toast('Firebase недоступен — только локально', 'warn');
-    const ids = USERS_CACHE.map(x => x.id);
-    if (!ids.length) return toast('Список игроков ещё не загружен', 'warn');
-    addLog('sync', `Раздача: ${fmt(a)} ${giveAllType} × ${ids.length} игроков`);
-    giveAllBatch(ids, giveAllType, a, 0);
+$('gwAll').addEventListener('click', () => {
+  const n = +$('gwAllAmount').value || 0;
+  ask('Выдать всем?', `${n} × ${$('gwAllType').value} всем активным игрокам. В проде уйдёт в Firebase.`, 'Выдать', () => {
+    log('ok', `Раздача всем: ${n} ${$('gwAllType').value} (демо)`);
+    toast('Раздача отправлена (демо)');
   });
 });
 
-/* по 12 игроков за подход, чтобы не вешать вкладку */
-function giveAllBatch(ids, field, amount, i) {
-  const slice = ids.slice(i, i + 12);
-  Promise.all(slice.map(id => FS.db.ref('users/' + id + '/' + field).transaction(cur => (Number(cur) || 0) + amount)))
-    .catch(e => console.warn(e))
-    .then(() => {
-      const done = i + slice.length;
-      if (done % 120 === 0 && done < ids.length) addLog('sync', `Раздача: ${done}/${ids.length}`);
-      if (done < ids.length) return giveAllBatch(ids, field, amount, done);
-      addLog('ok', `Раздача завершена: ${fmt(amount)} ${field} для ${ids.length} игроков`);
-      toast('Раздача готова', 'ok');
-    });
-}
+/* ---------------- журнал ---------------- */
+$('btnLog').addEventListener('click', () => $('logBox').closest('.log-pop').classList.toggle('show'));
+$('logClear').addEventListener('click', () => { state.log = []; renderLog(); });
 
-/* ============================================================
-   ПИЮЛИ ХЕДЕРА + ТИК
-   ============================================================ */
-function renderPills() {
-  const now = Date.now(), u = activeUpd(), work = screenRunning();
-  $('pillUpd').className = 'currency' + (u ? ' on' : '');
-  $('pillUpdT').textContent = u ? (u.theme === 'halloween' ? '🎃 Хэллоуин' : '✨ обнова') : 'обнов нет';
-  $('ncUpd').className = 'nav-count' + (u ? '' : ' off');
-  $('ncUpd').textContent = u ? 'в игре' : 'нет';
-
-  $('pillScr').className = 'currency' + (work ? ' bad' : '');
-  $('pillScrT').textContent = work ? (S.screens.type === 'infinite' ? '🔧 работы' : '⏱ ' + clock(S.screens.endsAt - now)) : 'открыта';
-  $('ncScr').className = 'nav-count' + (work ? ' wait' : ' off');
-  $('ncScr').textContent = work ? 'работы' : 'выкл';
-
-  const ev = (S.events.halloween.active ? 1 : 0) + (S.events.wheel.active ? 1 : 0);
-  $('ncEvt').className = 'nav-count' + (ev ? '' : ' off');
-  $('ncEvt').textContent = ev || 'нет';
-}
-
+/* ---------------- тик ---------------- */
 function tick() {
-  const now = Date.now();
-  let dirty = false;
-
-  ['halloween', 'wheel'].forEach(k => {
-    const ev = S.events[k];
-    if (ev.active && ev.endsAt && now >= ev.endsAt) {
-      ev.active = false;
-      addLog('warn', `${k === 'halloween' ? 'Хэллоуин' : 'Колесо'} завершились по таймеру`);
-      dirty = true;
+  let changed = false;
+  state.updates.forEach(u => {
+    if (u.status === 'scheduled' && Date.now() >= u.startsAt) { activate(u.id, true); changed = true; }
+    else if (u.status === 'active' && u.autoStopAt && Date.now() > u.autoStopAt) {
+      u.status = 'ended'; u.eventActive = false;
+      log('warn', `«${u.title}» автоскрыта по таймеру`);
+      changed = true;
+    } else if (u.eventActive && u.eventEndsAt && Date.now() > u.eventEndsAt) {
+      u.eventActive = false;
+      log('warn', `Ивент «${u.title}» завершён по таймеру`);
+      changed = true;
     }
   });
-
-  const sc = S.screens;
-  if (sc.type === 'timer' && sc.endsAt > 0 && now >= sc.endsAt && !sc.fired) {
-    sc.fired = true;
-    // истёк таймер → запланированная обнова выходит по катсцене
-    if (fireScheduled()) {
-      sc.type = 'timer'; sc.startedAt = 0; sc.endsAt = 0;   // работы окончены, экран открыт
-    } else {
-      const ready = S.updates.find(u => !u.active && !u.scheduled);
-      addLog(ready ? 'sync' : 'ok', ready ? `Работы окончились → можно жать СИНХРО для «${ready.title}»` : 'Работы окончены — обнова не запланирована');
-      if (ready) toast('Таймер закончился — зайди в «Обновы» и жми СИНХРО', 'ok');
+  const s = state.screens;
+  if (s.type === 'timer' && s.endsAt > Date.now() - 1000 && s.endsAt <= Date.now()) {
+    const queued = state.updates.filter(u => u.status === 'scheduled').sort((a, b) => a.startsAt - b.startsAt)[0];
+    if (queued) {
+      log('sync', `Работы окончены → СИНХРО «${queued.title}»`);
+      activate(queued.id, true);
     }
-    dirty = true;
+    changed = true;
   }
-
-  if (dirty) renderAll();
+  if (changed) renderAll();
   else {
+    document.querySelectorAll('[data-left]').forEach(el => {
+      const u = state.updates.find(x => x.id === el.dataset.left);
+      if (u && u.autoStopAt) el.textContent = clock(u.autoStopAt - Date.now());
+    });
+    if (s.type === 'timer') {
+      const left = s.endsAt - Date.now();
+      $('scrLeft').textContent = left > 0 ? clock(left) : 'завершены';
+      $('mockTimer').textContent = left > 0 ? clock(left) : '00:00';
+      if (document.querySelector('.view[data-view="updates"]').classList.contains('on')) renderScreens();
+    }
     renderPills();
-    renderMirror();
-    if (document.querySelector('.view[data-view="screens"]').classList.contains('active')) {
-      $('scrLeft').textContent = sc.type === 'infinite' ? '∞' : sc.endsAt > now ? clock(sc.endsAt - now) : '—';
-    }
-    if (document.querySelector('.view[data-view="events"]').classList.contains('active')) renderEvents();
   }
-  save();
 }
-
-/* ============================================================
-   ЗАПИСЬ В РЕАЛЬНЫЕ УЗЛЫ БАЗЫ. Схема совпадает со script.js:
-     maintenance        {active, type:'timer'|'infinite', endTime, duration}
-     events/halloween   {active, endTime, duration, goal}
-     events/wheelEvent  {active, endTime, duration, spinCost}
-     announcements/<id> {text, date, timestamp, isPinned}
-     ban/<id>           {active, reason, endTime, isPermanent}
-     users/<id>         money / dilicks / inventory / halloweenContribution
-   update() пишет только наши поля — totalPool и topRewardsPaid не затираются.
-   ============================================================ */
-let lastPush = { maint: '', hw: '', wh: '', ann: {}, ban: {} };
-const jkey = o => JSON.stringify(o);
-
-function dbSet(path, data, note) {
-  if (!FS.db) { toast('Firebase недоступен — только локально', 'warn'); return Promise.resolve(false); }
-  return FS.db.ref(path).set(data)
-    .then(() => { if (note) addLog('sync', note + ' → /' + path); return true; })
-    .catch(e => { console.warn(e); addLog('err', 'Запись не удалась: /' + path); toast('Ошибка записи в Firebase', 'err'); return false; });
-}
-function dbUpdate(path, patch, note) {
-  if (!FS.db) { toast('Firebase недоступен — только локально', 'warn'); return Promise.resolve(false); }
-  return FS.db.ref(path).update(patch)
-    .then(() => { if (note) addLog('sync', note + ' → /' + path); return true; })
-    .catch(e => { console.warn(e); addLog('err', 'Обновление не удалось: /' + path); toast('Ошибка записи в Firebase', 'err'); return false; });
-}
-function dbRemove(path, note) {
-  if (!FS.db) return Promise.resolve(false);
-  return FS.db.ref(path).remove()
-    .then(() => { if (note) addLog('sync', note + ' → /' + path); return true; })
-    .catch(e => { console.warn(e); addLog('err', 'Удаление не удалось: /' + path); return false; });
-}
-function dbTx(path, fn) {
-  if (!FS.db) return Promise.resolve(false);
-  return FS.db.ref(path).transaction(fn)
-    .then(() => true)
-    .catch(e => { console.warn(e); addLog('err', 'Транзакция не прошла: /' + path); return false; });
-}
-
-/* экран работ -> maintenance */
-function syncMaintenance() {
-  if (!FS.db) return;
-  const running = screenRunning();
-  const timer = S.screens.type === 'timer' && running;
-  const body = {
-    active: running,
-    type: S.screens.type,
-    endTime: timer ? S.screens.endsAt : null,
-    duration: timer ? Math.max(1, Math.round((S.screens.endsAt - (S.screens.startedAt || S.screens.endsAt)) / 1000)) : null
-  };
-  const key = jkey(body);
-  if (key === lastPush.maint) return;
-  lastPush.maint = key;
-  FS.db.ref('maintenance').set(body).catch(e => console.warn('maintenance write failed', e));
-}
-
-/* ивенты -> events/halloween, events/wheelEvent */
-function syncEvents() {
-  if (!FS.db) return;
-  const hw = S.events.halloween;
-  const hwBody = { active: !!hw.active, endTime: hw.active ? hw.endsAt : null, duration: Math.round(hw.total / 1000), goal: hw.goal };
-  const hwKey = jkey(hwBody);
-  if (hwKey !== lastPush.hw) { lastPush.hw = hwKey; FS.db.ref('events/halloween').update(hwBody).catch(e => console.warn(e)); }
-  const wh = S.events.wheel;
-  const whBody = { active: !!wh.active, endTime: wh.active ? wh.endsAt : null, duration: Math.round(wh.total / 1000), spinCost: wh.spinCost };
-  const whKey = jkey(whBody);
-  if (whKey !== lastPush.wh) { lastPush.wh = whKey; FS.db.ref('events/wheelEvent').update(whBody).catch(e => console.warn(e)); }
-}
-
-/* анонсы -> announcements/<id> */
-function syncAnnouncements() {
-  if (!FS.db) return;
-  const alive = {};
-  S.announcements.forEach(a => {
-    alive[a.id] = 1;
-    const body = { text: a.text, date: dateStr(a.at), timestamp: a.at, isPinned: !!a.pinned };
-    if (jkey(lastPush.ann[a.id]) !== jkey(body)) {
-      lastPush.ann[a.id] = body;
-      FS.db.ref('announcements/' + a.id).update(body).catch(e => console.warn(e));
-    }
-  });
-  Object.keys(lastPush.ann).forEach(id => {
-    if (!alive[id]) { delete lastPush.ann[id]; FS.db.ref('announcements/' + id).remove().catch(e => console.warn(e)); }
-  });
-}
-
-/* баны -> ban/<id> */
-function syncBans() {
-  if (!FS.db) return;
-  const alive = {};
-  S.bans.forEach(b => {
-    alive[b.id] = 1;
-    const perm = !isFinite(b.until);
-    const body = { active: true, reason: b.reason, endTime: perm ? null : b.until, isPermanent: perm };
-    if (jkey(lastPush.ban[b.id]) !== jkey(body)) {
-      lastPush.ban[b.id] = body;
-      FS.db.ref('ban/' + b.id).set(body).catch(e => console.warn(e));
-    }
-  });
-  Object.keys(lastPush.ban).forEach(id => {
-    if (!alive[id]) { delete lastPush.ban[id]; FS.db.ref('ban/' + id).remove().catch(e => console.warn(e)); }
-  });
-}
-
-function syncAll() {
-  if (!FS.ready || !FS.db) return;
-  syncMaintenance(); syncEvents(); syncAnnouncements(); syncBans();
-}
+setInterval(tick, 1000);
 
 function renderAll() {
   renderPills();
   renderUpd();
   renderScreens();
-  renderEvents();
+  renderEvent();
   renderSocial();
   renderPlayers();
   renderLog();
   save();
 }
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { $('modal').classList.remove('on'); closeAllPickers(null); }
-});
-
-/* ---------- загрузка состояния из Firebase ---------- */
-async function bootFromFirebase() {
-  if (FS.db) {
-    try {
-      const v = await FS.loadFromDb();
-      if (v) S = Object.assign({}, DEFAULTS, v, { updates: mergeUpdates(v.updates) });
-      addLog('ok', 'Состояние загружено из Firebase (/adminPreviewState)');
-    } catch (e) {
-      console.warn(e);
-      addLog('err', 'Firebase недоступен — работаю на локальном кэше');
-    }
-  } else {
-    addLog('warn', 'Firebase SDK не подключён — только локальный кэш');
-  }
-  attachRealtimeWatches();
-}
-
-/* список обнов берём из кода (UPDATES), состояние — из записи */
-function mergeUpdates(rawList) {
-  return UPDATES.map(u => {
-    const found = Array.isArray(rawList) ? rawList.find(x => x && x.id === u.id) : null;
-    return { id: u.id, theme: u.theme, title: u.title, active: !!(found && found.active), scheduled: !!(found && found.scheduled) };
-  });
-}
-
-/* подписки на реальные узлы игры: обнова видела бы их в проде.
-   Здесь preview-админка сама пишет в эти же пути (см. push* ниже),
-   а подписки нужны, чтобы видеть изменения с других вкладок/устройств. */
-function attachRealtimeWatches() {
-  if (!FS.db) return;
-  FS.db.ref('maintenance').on('value', snap => {
-    const m = snap.val();
-    if (!m) return;
-    /* прод-семантика maintenance: {active, type: 'timer'|'infinite', endsAt}.
-       Тему экранаpreview хранит у себя (в проде — отдельный узел screenTheme). */
-    /* прод-схема узла: {active, type, endTime, duration}.
-       Игнорируем собственное эхо — иначе только что запущенный таймер
-       перезаписывался бы нул и «не запускался» вовсе. */
-    const echo = jkey({ active: !!m.active, type: m.type || 'timer', endTime: m.endTime || null, duration: m.duration || null });
-    if (echo === lastPush.maint) return;
-    const endsAt = (m.active && m.endTime) ? Number(m.endTime) : 0;
-    if (endsAt !== S.screens.endsAt) S.screens.startedAt = endsAt ? Date.now() : 0;
-    S.screens.type = m.type === 'infinite' ? 'infinite' : 'timer';
-    S.screens.endsAt = endsAt;
-    S.screens.fired = false;
-    renderScreens(); renderPills(); renderUpd();
-  });
-  FS.db.ref('events/halloween').on('value', snap => {
-    const h = snap.val(); if (!h) return;
-    S.events.halloween.active = !!h.active;
-    S.events.halloween.total = (h.duration || (h.endTime && h.startTime ? h.endTime - h.startTime : 7 * 864e5));
-    S.events.halloween.endsAt = h.endTime || 0;
-    S.events.halloween.goal = h.goal ?? S.events.halloween.goal;
-    if (typeof h.totalPool === 'number') S.pool = h.totalPool;
-    renderEvents(); renderMirror();
-  });
-  FS.db.ref('events/wheelEvent').on('value', snap => {
-    const w = snap.val(); if (!w) return;
-    S.events.wheel.active = !!w.active;
-    S.events.wheel.total = w.duration || S.events.wheel.total;
-    S.events.wheel.endsAt = w.endTime || 0;
-    S.events.wheel.spinCost = w.spinCost ?? S.events.wheel.spinCost;
-    renderEvents(); renderMirror();
-  });
-  FS.db.ref('polls/current').on('value', snap => {
-    S.poll = snap.val() || null;
-    renderPoll();
-  });
-  FS.db.ref('announcements').on('value', snap => {
-    const v = snap.val();
-    S.announcements = v ? Object.keys(v).map(k => ({ id: k, text: v[k].text, at: v[k].timestamp || v[k].createdAt || Date.now(), pinned: !!v[k].isPinned })) : [];
-    renderSocial();
-  });
-  FS.db.ref('ban').on('value', snap => {
-    const v = snap.val() || {};
-    S.bans = Object.keys(v).filter(k => v[k] && v[k].active !== false).map(k => ({
-      id: k,
-      name: (USERS_CACHE.find(u => u.id === k) || {}).name || k,
-      reason: v[k].reason || 'без причины',
-      until: v[k].isPermanent ? Infinity : (v[k].endTime || Infinity)
-    }));
-    renderPlayers();
-  });
-  FS.db.ref('users').on('value', snap => {
-    const v = snap.val() || {};
-    USERS_CACHE = Object.keys(v).map(id => ({
-      id, name: (v[id].settings && v[id].settings.displayName) || v[id].username || id,
-      username: v[id].username || ''
-    })).sort((a, b) => a.name.localeCompare(b.name));
-    renderPlayers();
-  }, () => {});
-}
-
-$('adminUid').textContent = "UID: " + ADMIN_UID;   // в проде — реальный uid админа из Firebase
 renderAll();
-bootFromFirebase();
-addLog('ok', 'Превью редизайна открыто — Firebase-слой активен');
-setInterval(tick, 1000);
-$('btnLog').addEventListener('click', () => { const on = $('logBadge').classList.toggle('on'); if (on) renderLog(); });
+showView('updates');
+
+
